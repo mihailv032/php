@@ -1,0 +1,13 @@
+body {
+    margin: 0
+}
+
+.App {
+    background: url("../public/bg.png");
+    height: 100vh;
+    width: 100wh;
+    background-size: cover;
+    display: flex;
+
+    padding: 100px
+}
