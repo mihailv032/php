@@ -10,10 +10,10 @@ class TodoWrapper extends React.Component {
     }
   }
   componentWillMount(){
-    const storedTodoItems = localStorage.getItem("todoItems") ? JSON.parse(localStorage.getItem("todoItems")) : "qwe"
+    const storedTodoItems = localStorage.getItem("todoItems") ? JSON.parse(localStorage.getItem("todoItems")) : []
     console.log(storedTodoItems)
     this.setState({todoItems: storedTodoItems})
-    console.log('hre')
+    console.log(storedTodoItems)
   }
   render() {
     return <Todo initialTodo={this.state.todoItems} />
