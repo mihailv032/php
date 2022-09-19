@@ -3,6 +3,7 @@ import './App.css'
 import TodoWrapper from './components/todo.js'
 import ChangeBgContainer from './components/changebg.js'
 import MailsContainer from './components/mails.js'
+import FeedContainer from './components/feed.js'
 
 import styled from 'styled-components'
 import {useState} from 'react'
@@ -21,7 +22,9 @@ function App() {
 	  <TodoWrapper/>
 	</MainContainer>
       </Main>
-
+      <FeedSection>
+	<FeedContainer/>
+      </FeedSection>
     </>
   );
 }
@@ -35,7 +38,7 @@ const Head = styled.header`
   justify-content: space-around;
   align-items: center;
   width 100wh;
-  height: 150px;
+  height: 100px;
 
   background: #111111;
 
@@ -52,7 +55,7 @@ const Main = styled.main`
   padding: 100px;
   padding-top: 350px;
   background-image: ${ props => `url('./images/${props.bg}')`};
-  height: 100vh;
+  height: 90vh;
   width: 100wh;
   background-size: cover;
   display: flex;
@@ -67,6 +70,10 @@ const MainContainer = styled.main`
   width: 100%;
   justify-content: space-between
 `
-
+const FeedSection = styled.section`
+  display: flex;
+  width: 100wh;
+  min-height: 100vh;
+`
 
 export default App;
