@@ -51,14 +51,14 @@ function Todo({initialTodo}){
 }
 function TodoItemsContainer({todoItems,handlDeleteItem}) {
   return (
-      <TodoContainer>
-	{
-	  todoItems.map( (todoItem,index) => {
-	    return < TodoItem text={todoItem} deleteItem={() => handlDeleteItem(index)} key={uuidv4()}/>
-	  })
-	}
-      </TodoContainer>
-
+    <TodoContainer>
+      {
+	todoItems.map( (todoItem,index) => {
+	  return < TodoItem text={todoItem} deleteItem={() => handlDeleteItem(index)} key={uuidv4()}/>
+	})
+      }
+    </TodoContainer>
+    
   )
 }
 
@@ -71,9 +71,16 @@ function TodoItem({text,deleteItem}) {
   )
 }
 
+const InputContainer = styled.form`
+  display: flex;
+  width: 100%;
+  margin-bottom: 30px;
+`
+
 const styledInput = {
   "fontSize": "20px",
-  "width": "277px"
+  "width": "272px",
+  "boxSizing": "border-box",
 }
 
 const StyledTodo = styled.div`
@@ -87,26 +94,38 @@ const TodoContainer = styled.div`
 
 const StyledTodoItem = styled.div`
   display:flex;
+  flex-wrap: wrapp;
+  min-height: 50px;
+  overflow-wrap: break-word;
+word-wrap: break-word;
+  hyphens: auto;
+  white-space: normal;
+  width: 277px;
+
+  padding-left: 20px;
+  padding-right: 20px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+
+  box-sizing: border-box;
+  background: white;
 `
 
 const TodoItemContainer = styled.div`
   display: flex;
   justifyContent: space-between;
-  marginTop: 15px;
-  marginBottom: 15px;
+  margin-bottom: 15px;
+  align-items: center;
 `
 
-const InputContainer = styled.form`
-  display: flex;
-  width: 100%;
-`
 
 const submitBtn = {
   "background": "#933939",
+  "width" : "110px",
   "color": "white",
   "fontWeight": "bold",
   "fontSize": "20px",
-
+  "maxHeight":"40px",
   "paddingTop": "5px",
   "paddingBottom": "5px",
   "paddingLeft": "20px",
