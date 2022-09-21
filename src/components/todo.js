@@ -6,8 +6,12 @@ class TodoWrapper extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      todoItems: []
+      todoItems: [],
+      inputValues: ""
     }
+    this.handlDeleteItem = this.handlDeleteItem.bind(this)
+    this.handleSubmitItem = this.handleSubmitItem.bind(this)
+    this.handleInput = this.handleInput.bind(this)
   }
   componentWillMount(){
     const storedTodoItems = localStorage.getItem("todoItems") ? JSON.parse(localStorage.getItem("todoItems")) : []
@@ -15,41 +19,54 @@ class TodoWrapper extends React.Component {
     this.setState({todoItems: storedTodoItems})
     console.log(storedTodoItems)
   }
+  componentDidUpdate(prevProps,prevState){
+    if( !(prevState.todoItems != this.state.todoItems)) return;
+    console.log(JSON.stringify(this.state.todoItems))
+    localStorage.setItem("todoItems",JSON.stringify(this.state.todoItems))
+  }
+
+  handleSubmitItem(e){
+    e.preventDefault()
+    this.setState( prevState => ({
+      todoItems: [...prevState.todoItems,prevState.inputValue]
+    }))
+  }
+  handleInput(e){
+    this.setState( prevState => ({
+      input: prevState.input+e.target.value
+    }))
+  }
+  handlDeleteItem(index){
+    const todoItemsArr = [...this.state.todoItems]
+    todoItemsArr.splice(index,1)
+    this.setState( prevState => ({
+      todoItems: [...prevState.todoItems.slice(index,1)]
+    }))
+  }
+  
   render() {
-    return <Todo initialTodo={this.state.todoItems} />
+    return <Todo todoItems={this.state.todoItems}
+    handleSubmitItem={this.handleSubmitItem}
+    handleInput={this.handleInput}
+    handlDeleteItem={this.handlDeleteItem}/>
   }
 };
 
-function Todo({initialTodo}){
-  const [todoItems, setTodoItems] = useState(initialTodo)
-  const [inputValue,setInputValue] = useState("")
-  function handlSubmitItem(e){
-    e.preventDefault()
-    setTodoItems([...todoItems,inputValue])
-  }
-  
-  function handlDeleteItem(index){
-    const todoItemsArr = [...todoItems]
-    todoItemsArr.splice(index,1)
-    setTodoItems(todoItemsArr)
-  }
-  useEffect( () => {
-    console.log(JSON.stringify(todoItems))
-    localStorage.setItem("todoItems",JSON.stringify(todoItems))
-  },[todoItems])
+function Todo({todoItems,inputValue,handleSubmitItem,handleInput,handlDeleteItem}){
   const TodoItemsContainerWrapp = useMemo( () => TodoItemsContainer({todoItems,handlDeleteItem}),[todoItems])
   return (
     <StyledTodo>
-      <InputContainer onSubmit={handlSubmitItem}>
-	<input style={styledInput} name="" type="text" onChange={e => setInputValue(e.target.value) } value={inputValue} />
-	<button style={submitBtn} onClick={handlSubmitItem}>Submit</button>
+      <InputContainer onSubmit={handleSubmitItem}>
+	<input style={styledInput} name="" type="text" onChange={handleInput} value={inputValue} />
+	<button style={submitBtn} onClick={handleSubmitItem}>Submit</button>
       </InputContainer>
       {TodoItemsContainerWrapp}
     </StyledTodo>
   );
-  
 }
+      
 function TodoItemsContainer({todoItems,handlDeleteItem}) {
+  console.log("render")
   return (
     <TodoContainer>
       {
