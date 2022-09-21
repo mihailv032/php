@@ -4,6 +4,8 @@ import TodoWrapper from './components/todo.js'
 import ChangeBgContainer from './components/changebg.js'
 import MailsContainer from './components/mails.js'
 import FeedContainer from './components/feed.js'
+import GithubContainer from './components/github'
+import RecentApps from './components/recentApps'
 
 import styled from 'styled-components'
 import {useState} from 'react'
@@ -15,10 +17,11 @@ function App() {
     <>
       <Head>
 	<ChangeBgContainer updateBg={ (newBg) => {setCurrentBg(newBg);localStorage.setItem('bg',newBg)}  } />
+	<RecentApps />
       </Head>
       <Main bg={currentBg}>
 	<MainContainer>
-	  <MailsContainer></MailsContainer>
+	  <GithubContainer/>
 	  <TodoWrapper/>
 	</MainContainer>
       </Main>
@@ -55,7 +58,8 @@ const Main = styled.main`
   padding: 100px;
   padding-top: 350px;
   background-image: ${ props => `url('./images/${props.bg}')`};
-  height: 90vh;
+  min-height: 90vh;
+  height: 1220px;
   width: 100wh;
   background-size: cover;
   display: flex;
