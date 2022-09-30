@@ -6,9 +6,10 @@ import MailsContainer from './components/mails.js'
 import FeedContainer from './components/feed.js'
 import GithubContainer from './components/github'
 import RecentApps from './components/recentApps'
+import SearchBar from './components/searchbar'
 
 import styled from 'styled-components'
-import {useState} from 'react'
+import {useState, useRef} from 'react'
 
 function App() {
   const [currentBg,setCurrentBg] = useState(localStorage.getItem('bg') ? localStorage.getItem('bg') : 'default.png')
@@ -17,6 +18,7 @@ function App() {
     <>
       <Head>
 	<ChangeBgContainer updateBg={ (newBg) => {setCurrentBg(newBg);localStorage.setItem('bg',newBg)}  } />
+	<SearchBar />
 	<RecentApps />
       </Head>
       <Main bg={currentBg}>
@@ -30,10 +32,6 @@ function App() {
       </FeedSection>
     </>
   );
-}
-
-function AppHeader() {
-
 }
 
 const Head = styled.header`
