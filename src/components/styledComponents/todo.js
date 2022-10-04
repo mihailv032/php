@@ -32,11 +32,11 @@ export const StyledTodoItem = styled.div`
   font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,
     Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
   font-size: 20px;
-  border-top-left-radius: 20px;
-  border-top-right-radius: 20px;
-`
+  `
 
 export const TodoContainer = styled.div`
+  position: relative;
+  z-index: 0;
   overflow: scroll;
   max-height: 700px;
   box-sizing: border-box;
@@ -46,7 +46,6 @@ export const TodoContainer = styled.div`
 
 export const TodoItemContainer = styled.div`
   position: relative;
-  z-index: 1;
   padding-right: 30px;
   display: flex;
   width: 100%;

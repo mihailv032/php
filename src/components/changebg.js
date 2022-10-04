@@ -67,7 +67,7 @@ const Popup = styled.div`
   max-width: 80%;
   height: 80vh;
   background-color: grey;
-  z-index: 19999;
+  z-index: 4;
   overflow:scroll;
 `
 const img={

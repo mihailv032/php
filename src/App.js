@@ -46,6 +46,7 @@ const Head = styled.header`
   box-sizing: border-box;
 
   position: fixed;
+  z-index: 100000;
   left: 0;
   right: 0;
 
