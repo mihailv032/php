@@ -135,7 +135,7 @@ function TodoItemDescription({desc,handleAddDesc,index,handleChangeDescription})
 	<DescriptionInput placeholder="Description" value={inputValue}  onChange={(e) => setInputValue(e.target.value)} />
       </DescritionInputContainer>
     }
-    {  (desc && desc.length !== 0)  ? (desc.length !== 1) && 
+    {  (desc && desc.length !== 0)  ? (desc.length !== 1 || desc[0].length > 30) && 
       <DescriptionButton onClick={handleShowDescription}>
 	{showDescription ? "Hide Description" : "Show Description"}
       </DescriptionButton> : null
