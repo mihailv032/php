@@ -17,9 +17,9 @@ function App() {
   return (
     <>
       <Head>
-	<ChangeBgContainer updateBg={ (newBg) => {setCurrentBg(newBg);localStorage.setItem('bg',newBg)}  } />
 	<SearchBar />
 	<RecentApps />
+	<ChangeBgContainer updateBg={ (newBg) => {setCurrentBg(newBg);localStorage.setItem('bg',newBg)}  } />
       </Head>
       <Main bg={currentBg}>
 	<MainContainer>

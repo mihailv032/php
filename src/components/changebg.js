@@ -46,8 +46,6 @@ const xButton = {
 }
 
 const BgBtn = styled.button`
-  position: absolute;
-  right: 20px;
   width: 250px;
   height: 50px;
   background: transparent;
