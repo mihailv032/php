@@ -1,5 +1,11 @@
 import styled from 'styled-components'
 
+export const TodoItemInputContainer = styled.form`
+  width: 100%;
+`
+export const TitleSubmitButton = styled.button` //needed for the submit to work -_-
+  display: none;
+`
 export const StyledInput = styled.input`
   font-size: 25px;
   width: 100%;
@@ -10,7 +16,7 @@ export const StyledInput = styled.input`
   }
 `
 
-export const StyledTodoItem = styled.div`
+export const StyledTodoItem = styled.input`
   display:flex;
   flex-wrap: wrapp;
   overflow-wrap: break-word;
@@ -18,7 +24,7 @@ export const StyledTodoItem = styled.div`
   hyphens: auto;
   white-space: normal;
   width: 100%;
-
+  
   padding-left: 20px;
   padding-right: 20px;
   padding-top: 5px;
@@ -32,6 +38,12 @@ export const StyledTodoItem = styled.div`
   font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,
     Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
   font-size: 20px;
+
+  border: none;
+
+  &:focus {
+  outline: none;
+  }
   `
 
 export const TodoContainer = styled.div`
@@ -101,8 +113,9 @@ export const DescriptionButton = styled.button`
   cursor: pointer;
 `
 
-export const DescriptionContentContainer = styled.form`
+export const DescriptionContentContainer = styled.div`
   width: 100%;
+  position: relative;
 `
 
 export const DescriptionContent = styled.textarea`
@@ -124,6 +137,31 @@ export const DescriptionContent = styled.textarea`
   &:focus {
   outline: none;
   }
+`
+
+export const DescriptionButtonContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  background: red;
+  max-width: 20px;
+  position: absolute;
+  right: 0;
+  top: 0;
+`
+
+export const DescriptionDeleteButton = styled.button`
+  width: 20px;
+  height: 20px;
+  background: red;
+  border: none;
+  color: white;
+`
+export const DescriptionSaveButton = styled.button`
+  width: 20px;
+  height: 20px;
+  border: none
+  background: green;
+  color: white;
 `
 
 export const DescritionInputContainer = styled.form`

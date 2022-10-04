@@ -1,7 +1,23 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import styled from 'styled-components'
 import { v4 as uuidv4 } from 'uuid';
-import {StyledInput,TodoContainer,TodoItemContainer,StyledTodoItem,DeleteBtn,DescriptionContainer,DescriptionButton,DescriptionContentContainer,DescriptionContent,DescriptionInput,DescritionInputContainer,InputContainer} from './styledComponents/todo'
+import {StyledInput,
+	TodoContainer,
+	TodoItemContainer,
+	StyledTodoItem,
+	DeleteBtn,
+	DescriptionContainer,
+	DescriptionButton,
+	DescriptionContentContainer,
+	DescriptionContent,
+	DescriptionInput,
+	DescritionInputContainer,
+	InputContainer,
+	DescriptionDeleteButton,
+	DescriptionSaveButton,
+	DescriptionButtonContainer,
+	TodoItemInputContainer,
+	TitleSubmitButton} from './styledComponents/todo'
 class TodoWrapper extends React.PureComponent {
   constructor(props) {
     super(props);
@@ -14,6 +30,8 @@ class TodoWrapper extends React.PureComponent {
     this.handleInput = this.handleInput.bind(this)
     this.handleAddDescription = this.handleAddDescription.bind(this)
     this.handleChangeDescription = this.handleChangeDescription.bind(this)
+    this.handleRemoveDescription = this.handleRemoveDescription.bind(this)
+    this.handleChangeTitle = this.handleChangeTitle.bind(this)
   }
   componentDidMount(){
     const storedTodoItems = localStorage.getItem("todoItems") ? JSON.parse(localStorage.getItem("todoItems")) : []
@@ -34,6 +52,12 @@ class TodoWrapper extends React.PureComponent {
   handleInput(e){
     this.setState({ inputValue: e.target.value })
   }
+  handleChangeTitle(e,todoIndex,newTitle){
+    e.preventDefault()
+    let todoItems = [...this.state.todoItems]
+    todoItems[todoIndex].title = newTitle
+    this.setState({todoItems: todoItems})
+  }
   handlDeleteItem(index){
     const todoItemsArr = [...this.state.todoItems]
     todoItemsArr.splice(index,1)
@@ -44,13 +68,20 @@ class TodoWrapper extends React.PureComponent {
     let todoItems = [...this.state.todoItems]
     if(todoItems[index].description.length === 0){
       todoItems[index].description = [desc]
-    }else todoItems[index].description = [desc,todoItems[index].description]
+    }else todoItems[index].description = [desc,...todoItems[index].description]
     this.setState({todoItems: todoItems})
   }
-  handleChangeDescription(e,index,desc,descIndex){
+  handleChangeDescription(e,TodoIndex,desc,descIndex){
     e.preventDefault()
     let todoItems = [...this.state.todoItems]
-    todoItems[index].description[descIndex] = desc
+    todoItems[TodoIndex].description[descIndex] = desc
+    this.setState({todoItems: todoItems})
+  }
+  handleRemoveDescription(e,todoIndex,descIndex){
+    e.preventDefault()
+    let todoItems = [...this.state.todoItems]
+    todoItems[todoIndex].description.splice(descIndex,1)
+    console.log(todoItems[todoIndex].description)
     this.setState({todoItems: todoItems})
   }
   render() {
@@ -60,24 +91,32 @@ class TodoWrapper extends React.PureComponent {
 	     handleSubmitItem={this.handleSubmitItem}
 	     handleInput={this.handleInput}
 	     handlDeleteItem={this.handlDeleteItem}
-    handleAddDescription={this.handleAddDescription}
-    handleChangeDescription={this.handleChangeDescription} />
+	     handleAddDescription={this.handleAddDescription}
+	     handleChangeDescription={this.handleChangeDescription}
+	     handleRemoveDescription={this.handleRemoveDescription}
+	     handleChangeTitle={this.handleChangeTitle} />
   }
 };
 
-function Todo({todoItems,inputValue,handleSubmitItem,handleInput,handlDeleteItem,handleAddDescription,handleChangeDescription}){
-  const TodoItemsContainerWrapp = useMemo( () => TodoItemsContainer({todoItems:todoItems,handlDeleteItem,handleAddDescription,handleChangeDescription}),[todoItems])
+function Todo({todoItems,inputValue,handleSubmitItem,handleInput,handlDeleteItem,handleAddDescription,handleChangeDescription,handleRemoveDescription,handleChangeTitle}){
+  const TodoItemsContainerWrapp = useMemo( () => TodoItemsContainer({todoItems:todoItems,handlDeleteItem,handleAddDescription,handleChangeDescription,handleRemoveDescription,handleChangeTitle}),[todoItems])
   return (
     <StyledTodo>
       <InputContainer onSubmit={handleSubmitItem}>
 	<StyledInput name="" type="text" onChange={handleInput} value={inputValue} />
       </InputContainer>
       {TodoItemsContainerWrapp}
+{/*      <TodoItemsContainer
+	todoItems={todoItems}
+	handlDeleteItem={handlDeleteItem}
+	handleAddDescription={handleAddDescription}
+	handleChangeDescription={handleChangeDescription}
+      />*/}
     </StyledTodo>
   );
 }
       
-function TodoItemsContainer({todoItems,handlDeleteItem,handleAddDescription,handleChangeDescription}) {
+function TodoItemsContainer({todoItems,handlDeleteItem,handleAddDescription,handleChangeDescription,handleRemoveDescription,handleChangeTitle}) {
   return (
     <TodoContainer>
       {
@@ -87,7 +126,9 @@ function TodoItemsContainer({todoItems,handlDeleteItem,handleAddDescription,hand
 	    key={uuidv4()}
 	    handleAddDesc={handleAddDescription} 
 	    index={index}
-	    handleChangeDescription={handleChangeDescription}/>
+	    handleChangeDescription={handleChangeDescription}
+	    handleRemoveDescription={handleRemoveDescription}
+	    handleChangeTitle={handleChangeTitle}/>
 	  )
 	})
       }
@@ -95,45 +136,53 @@ function TodoItemsContainer({todoItems,handlDeleteItem,handleAddDescription,hand
   )
 }
 
-function TodoItem({text,deleteItem,handleAddDesc,index,handleChangeDescription}) {
-  return (
-    <TodoItemContainer>
-      <StyledTodoItem>{text.title}</StyledTodoItem>
-      <DeleteBtn onClick={deleteItem}>X</DeleteBtn>
+function TodoItem({text,deleteItem,handleAddDesc,index,handleChangeDescription,handleRemoveDescription,handleChangeTitle}) {
+  const [title,setTitle] = useState(text.title)
+  const MemoizedTodoDescription = useMemo( () => {
+    return (
       <TodoItemDescription desc={text.description}
 			   handleAddDesc={handleAddDesc}
 			   index={index}
-			   handleChangeDescription={handleChangeDescription} />
+			   handleChangeDescription={handleChangeDescription}
+			   handleRemoveDescription={handleRemoveDescription} />
+      
+    )
+  },[text,index])
+  return (
+    <TodoItemContainer>
+      <TodoItemInputContainer onSubmit={e =>{ handleChangeTitle(e,index,title)}}>
+	<StyledTodoItem value={title} onChange={(e) => setTitle(e.target.value)} type="input" />
+	<TitleSubmitButton onSubmit={e =>{ handleChangeTitle(e,index,title)}}></TitleSubmitButton>
+      </TodoItemInputContainer>
+      <DeleteBtn onClick={deleteItem}>X</DeleteBtn>
+      {MemoizedTodoDescription}
     </TodoItemContainer>
   )
 }
 
-function TodoItemDescription({desc,handleAddDesc,index,handleChangeDescription}){
+const TodoItemDescription = ({desc,handleAddDesc,index,handleChangeDescription,handleRemoveDescription}) => {
   const [showDescription,setShowDescription] = useState(false)
-  const [inputValue,setInputValue] = useState("")
-  const [textAreatValue,setTextAreaValue] = useState(desc)
-  function handleShowDescription(index){
+  function handleShowDescription(){
     setShowDescription(!showDescription)
-  }
-  function handleDescInput(e,index){
-    let textArea = [...textAreatValue] 
-    textArea[index] = e.target.value
-    setTextAreaValue(textArea)
   }
   return (
     <DescriptionContainer>
     { (showDescription || (desc.length === 1 && desc[0].length < 30) ) &&
       desc.map( (description,descIndex) => {
-	return (
-	  <DescriptionContentContainer onSubmit={(e) => handleChangeDescription(e,index,description,descIndex)}>
-	    <DescriptionContent value={textAreatValue[descIndex]} onChange={ e => handleDescInput(e,descIndex)} />
-	  </DescriptionContentContainer>
-      )})
+	return (<DescriptionTextArea
+		  desc={description}
+		  descIndex={descIndex}
+		  handleChangeDescription={handleChangeDescription}
+		  handleRemoveDescription={handleRemoveDescription}
+		  todoIndex={index}
+		  key={uuidv4()} />
+	)	
+      })
     }
     { ((desc && desc.length !== 0 && showDescription) || !(desc && desc.length !== 0) || (desc.length === 1 && desc[0].length < 30)) &&
-      <DescritionInputContainer onSubmit={(e) => handleAddDesc(e,index,inputValue)}>
-	<DescriptionInput placeholder="Description" value={inputValue}  onChange={(e) => setInputValue(e.target.value)} />
-      </DescritionInputContainer>
+      <DescriptionInputWrapp
+	handleAddDesc={handleAddDesc}
+	todoIndex={index} />
     }
     {  (desc && desc.length !== 0)  ? (desc.length !== 1 || desc[0].length > 30) && 
       <DescriptionButton onClick={handleShowDescription}>
@@ -145,6 +194,34 @@ function TodoItemDescription({desc,handleAddDesc,index,handleChangeDescription})
   )
 }
 
+const DescriptionInputWrapp = ({handleAddDesc,todoIndex}) => {
+  const [inputValue,setInputValue] = useState("")
+  return (
+      <DescritionInputContainer onSubmit={(e) => handleAddDesc(e,todoIndex,inputValue)}>
+	<DescriptionInput placeholder="Description" value={inputValue}  onChange={(e) => setInputValue(e.target.value)} />
+      </DescritionInputContainer>
+  )
+}
+
+const DescriptionTextArea = ({desc,descIndex,handleChangeDescription,todoIndex,handleRemoveDescription}) => {
+  const [textAreatValue,setTextAreaValue] = useState(desc)
+  return (
+	  <DescriptionContentContainer>
+	    <DescriptionContent value={textAreatValue} onChange={ e => setTextAreaValue(e.target.value)} />
+	    <DescriptionButtonContainer>
+	      <DescriptionDeleteButton onClick={e => handleRemoveDescription(e,todoIndex,descIndex) }>
+		X
+	      </DescriptionDeleteButton>
+	      { textAreatValue !== desc &&
+		<DescriptionSaveButton onClick={(e) => handleChangeDescription(e,todoIndex,textAreatValue,descIndex)}>
+		✔️
+	      </DescriptionSaveButton>
+	      }
+	    </DescriptionButtonContainer>
+	  </DescriptionContentContainer>
+
+  )
+}
 
 const StyledTodo = styled.div`
   width: 400px;
