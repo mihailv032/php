@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import {GitWrapp,GitHeader,GitRepoMain,GitRepoContainer,GitMain,RepoClone,GitRepoHeader,GitRepoTitle} from './styledComponents/github'
+import {GitWrapp,GitHeader,GitRepoMain,GitRepoContainer,GitMain,RepoClone,GitRepoHeader,GitRepoTitle,CommitMessage,CommitDate,RepoCreated,ToggleCommitsBtn,ToggleCommitsContainer,RepoCloneContainer,RepoCloneBtn} from './styledComponents/github'
 
 class GithubContainer extends React.Component {
   constructor(props) {
@@ -123,30 +123,46 @@ function GitRepo({details,commits,allCommits}){
     <GitRepoContainer>
       <GitRepoHeader>
 	<GitRepoTitle>
-	  {details.name}
+	  <a href={details.html_url}>{details.name}</a>
 	</GitRepoTitle>
-	Created: {created}
+	<RepoCreated>
+	  Created: {created}
+	</RepoCreated>
       </GitRepoHeader>
       <GitRepoMain>
 	{
 	  commits.map( commit => {
 	    let date = new Date(commit.commit.author.date)
 	    date = date.getDate() + '/' + (date.getMonth() + 1) + '/' +  date.getFullYear();
-	    return <h5 key={commit.sha}>{commit.commit.message} : {date}</h5>
+	    return (
+	      <CommitMessage key={commit.sha}>
+		<CommitDate>Commit Date: {date}</CommitDate>
+		{commit.commit.message}
+	      </CommitMessage>
+	    )
 	  })
 	}
 	{
 	  showAllCommits ?
 	  allCommits.map( commit => {
 	    let date = new Date(commit.commit.author.date)
-	    date = date.getDate() + '/' + (date.getMonth() + 1) + '/' +  date.getFullYear();
-	    return <h6 key={commit.sha}>{commit.commit.message} : {date}</h6>
+	    return (
+	      <CommitMessage key={commit.sha}><CommitDate>Commit Date: {date}</CommitDate> {commit.commit.message} </CommitMessage>
+	    )
 	  }) : null
 	}
-	{ allCommits.length >= 1 && <button onClick={ () => setShowAllCommits(!showAllCommits) }>show {showAllCommits ? "Less" : "More"}</button>} 
+	{ allCommits.length >= 1 &&
+	  <ToggleCommitsContainer>
+	    <ToggleCommitsBtn onClick={ () => setShowAllCommits(!showAllCommits) }>
+	      show {showAllCommits ? "Less" : "More"}
+	    </ToggleCommitsBtn>
+	  </ToggleCommitsContainer>
+	}
+	<RepoCloneContainer>
+	  <RepoClone readOnly={true} value={cloneUrlSsh ? details.ssh_url : details.clone_url} />
+	  <RepoCloneBtn onClick={ () => setCloneUrl(!cloneUrlSsh) }>{cloneUrlSsh ? "SSH" : "HTTPS"}</RepoCloneBtn>
+	</RepoCloneContainer>
       </GitRepoMain>
-      <RepoClone readOnly={true} value={cloneUrlSsh ? details.ssh_url : details.clone_url} />
-      <button onClick={ () => setCloneUrl(!cloneUrlSsh) }>{cloneUrlSsh ? "SSH" : "HTTPS"}</button>
     </GitRepoContainer>
   )
 }
