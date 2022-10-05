@@ -121,7 +121,7 @@ export const DescriptionContentContainer = styled.div`
 export const DescriptionContent = styled.textarea`
   margin: 0;
   background: #71797E;
-  font-size: 15px;
+  font-size: 25px;
   padding-top: 10px;
   padding-bottom: 10px;
   padding-left: 20px;

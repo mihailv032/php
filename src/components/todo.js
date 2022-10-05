@@ -167,7 +167,7 @@ const TodoItemDescription = ({desc,handleAddDesc,index,handleChangeDescription,h
   }
   return (
     <DescriptionContainer>
-    { (showDescription || (desc.length === 1 && desc[0].length < 30) ) &&
+    { (showDescription || (desc.length === 1 && desc[0].length <= 35) ) &&
       desc.map( (description,descIndex) => {
 	return (<DescriptionTextArea
 		  desc={description}
@@ -179,12 +179,12 @@ const TodoItemDescription = ({desc,handleAddDesc,index,handleChangeDescription,h
 	)	
       })
     }
-    { ((desc && desc.length !== 0 && showDescription) || !(desc && desc.length !== 0) || (desc.length === 1 && desc[0].length < 30)) &&
+    { ((desc && desc.length !== 0 && showDescription) || !(desc && desc.length !== 0) || (desc.length === 1 && desc[0].length <= 35)) &&
       <DescriptionInputWrapp
 	handleAddDesc={handleAddDesc}
 	todoIndex={index} />
     }
-    {  (desc && desc.length !== 0)  ? (desc.length !== 1 || desc[0].length > 30) && 
+    {  (desc && desc.length !== 0)  ? (desc.length !== 1 || desc[0].length > 35) && 
       <DescriptionButton onClick={handleShowDescription}>
 	{showDescription ? "Hide Description" : "Show Description"}
       </DescriptionButton> : null
@@ -224,7 +224,7 @@ const DescriptionTextArea = ({desc,descIndex,handleChangeDescription,todoIndex,h
 }
 
 const StyledTodo = styled.div`
-  width: 400px;
+  width: 100%;
   height: 500px;
 `
 
