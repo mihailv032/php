@@ -1,19 +1,19 @@
 import './App.css'
 
-import TodoWrapper from './components/todo.js'
-import ChangeBgContainer from './components/changebg.js'
-import MailsContainer from './components/mails.js'
-import FeedContainer from './components/feed.js'
 import GithubContainer from './components/github'
+import TodoWrapper from './components/todo'
+import MailsContainer from './components/mails'
+import ChangeBgContainer from './components/changebg.js'
+import FeedContainer from './components/feed.js'
 import RecentApps from './components/recentApps'
 import SearchBar from './components/searchbar'
+import DoubleScreen from './components/doubleScreen'
 
 import styled from 'styled-components'
 import {useState, useRef} from 'react'
 
 function App() {
   const [currentBg,setCurrentBg] = useState(localStorage.getItem('bg') ? localStorage.getItem('bg') : 'default.png')
-  console.log(currentBg)
   return (
     <>
       <Head>
@@ -23,8 +23,8 @@ function App() {
       </Head>
       <Main bg={currentBg}>
 	<MainContainer>
-	  <GithubContainer/>
-	  <TodoWrapper/>
+	  <DoubleScreen title1="Github" Component1={<GithubContainer />} title2="Mails" Component2={MailsContainer} />
+	  <DoubleScreen title1="TODO" Component1={<TodoWrapper />} title2="Anime" Component2={MailsContainer} />
 	</MainContainer>
       </Main>
       <FeedSection>
