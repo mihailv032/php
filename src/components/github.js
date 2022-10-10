@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import {GitWrapp,GitHeader,GitRepoMain,GitRepoContainer,GitMain,RepoClone,GitRepoHeader,GitRepoTitle,CommitMessage,CommitDate,RepoCreated,ToggleCommitsBtn,ToggleCommitsContainer,RepoCloneContainer,RepoCloneBtn} from './styledComponents/github'
+import React, { useMemo, useState } from 'react';
+import {GitWrapp,GitHeader,GitRepoMain,GitRepoContainer,GitMain,RepoClone,GitRepoHeader,GitRepoTitle,CommitMessage,CommitDate,RepoCreated,ToggleCommitsBtn,ToggleCommitsContainer,RepoCloneContainer,RepoCloneBtn,GitAccTitle} from './styledComponents/github'
 
 class GithubContainer extends React.Component {
   constructor(props) {
@@ -9,6 +9,8 @@ class GithubContainer extends React.Component {
       data:{},
       err: false
     }
+    this.getAccountData = this.getAccountData.bind(this)
+    this.getReposData = this.getReposData.bind(this)
   }
   async componentDidMount(){
     try{
@@ -43,7 +45,12 @@ class GithubContainer extends React.Component {
     }
 
   }
+  async getAccountData(){
 
+  }
+  async getReposData(){
+
+  }
   render() {
     if(this.state.err){ return <h1>Something went wrong</h1>}
     if(!this.state.data[this.state.userName]){ return <h1>Something went wrong</h1> }
@@ -56,25 +63,34 @@ class GithubContainer extends React.Component {
 };
 
 function Github({account,repos,userName}) {
-  const [forked,setForked] = useState(false)
+  const [name,setName] = useState(userName)
+  const MainSectionMemoized = useMemo( () => GitMainSection({repos,userName}),[repos,userName])
   return (
     <GitWrapp>
       <GitHeader>
 	<img alt="" src={account.avatar_url} style={{width: "100px",height: "100px",borderRadius: "100%"}} />
-	<GitRepoTitle>{userName}</GitRepoTitle>
+	<GitAccTitle value={name} onChange={(e) => setName(e.target.value) } />
       </GitHeader>
       <GitMain>
-	{
-	  repos.map( repo => {
-	    return forked ? <GitReposContainer details={repo} key={repo.id} userName={userName} /> :
-		   repo.fork === false ? <GitReposContainer details={repo} userName={userName} key={repo.id} /> : null
-	  })
-	}
+	{MainSectionMemoized}
       </GitMain>
     </GitWrapp>
   )
 }
 
+function GitMainSection({repos,userName}) {
+  const [forked,setForked] = useState(false)
+  return (
+    <>
+      {
+	repos.map( repo => {
+	  return forked ? <GitReposContainer details={repo} key={repo.id} userName={userName} /> :
+		 repo.fork === false ? <GitReposContainer details={repo} userName={userName} key={repo.id} /> : null
+	})
+      }
+    </>
+  )
+}
 class GitReposContainer extends React.Component {
   constructor(props){
     super(props)
@@ -146,6 +162,7 @@ function GitRepo({details,commits,allCommits}){
 	  showAllCommits ?
 	  allCommits.map( commit => {
 	    let date = new Date(commit.commit.author.date)
+	    date = date.getDate() + '/' + (date.getMonth() + 1) + '/' +  date.getFullYear();
 	    return (
 	      <CommitMessage key={commit.sha}><CommitDate>Commit Date: {date}</CommitDate> {commit.commit.message} </CommitMessage>
 	    )
@@ -154,7 +171,7 @@ function GitRepo({details,commits,allCommits}){
 	{ allCommits.length >= 1 &&
 	  <ToggleCommitsContainer>
 	    <ToggleCommitsBtn onClick={ () => setShowAllCommits(!showAllCommits) }>
-	      show {showAllCommits ? "Less" : "More"}
+	      Show {showAllCommits ? "Less" : "More"}
 	    </ToggleCommitsBtn>
 	  </ToggleCommitsContainer>
 	}

@@ -49,6 +49,19 @@ export const GitRepoTitle = styled.h1`
   font-family: sans-serif;
   text-transform: capitalize;
 `
+export const GitAccTitle = styled.input`
+  font-family: sans-serif;
+  text-transform: capitalize;
+  background: transparent;
+  color: black;
+  font-weight: bold;
+  border: none;
+  text-align: center;
+  font-size: 32pt;
+  &:focus{
+  outline: none;
+  }
+`
 export const GitRepoMain = styled.main`
   width: 100%;
   padding-right: 20px;
@@ -80,6 +93,7 @@ export const RepoClone = styled.input`
 `
 export const RepoCloneBtn = styled.button`
   borders: none;
+  cursor: pointer;
   color: white;
   font-weight: bold;
   background: none;
@@ -109,6 +123,7 @@ export const ToggleCommitsContainer = styled.div`
   justify-content: center;
   align-items: center;
   margin-bottom: 10px;
+  cursor: pointer;
 `
 export const ToggleCommitsBtn = styled.button`
   border: none;
@@ -116,4 +131,5 @@ export const ToggleCommitsBtn = styled.button`
   color: #bab8ba;
   font-size: 20px;
   text-transform: capitalize;
+  cursor: pointer;
 `
