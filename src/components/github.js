@@ -1,75 +1,142 @@
 import React, { useMemo, useState } from 'react';
-import {GitWrapp,GitHeader,GitRepoMain,GitRepoContainer,GitMain,RepoClone,GitRepoHeader,GitRepoTitle,CommitMessage,CommitDate,RepoCreated,ToggleCommitsBtn,ToggleCommitsContainer,RepoCloneContainer,RepoCloneBtn,GitAccTitle} from './styledComponents/github'
+import {GitWrapp,
+	GitHeader,
+	GitRepoMain,
+	GitRepoContainer,
+	GitMain,
+	RepoClone,
+	GitRepoHeader,
+	GitRepoTitle,
+	CommitMessage,
+	CommitDate,
+	RepoCreated,
+	ToggleCommitsBtn,
+	ToggleCommitsContainer,
+	RepoCloneContainer,
+	RepoCloneBtn,
+	GitAccTitle,
+	GitAccTitleContainer} from './styledComponents/github'
 
 class GithubContainer extends React.Component {
   constructor(props) {
     super(props);
     this.state={
-      userName: "mishgun032",
+      userName: "",
       data:{},
+      rememberUser: false,
       err: false
     }
     this.getAccountData = this.getAccountData.bind(this)
     this.getReposData = this.getReposData.bind(this)
+    this.setAcc = this.setAcc.bind(this)
+    this.changeUser = this.changeUser.bind(this)
+    this.handleRememberUser = this.handleRememberUser.bind(this)
   }
   async componentDidMount(){
     try{
-      let userName = localStorage.getItem("userName") ? localStorage.getItem("userName") : "mishgun032"
+      let userName = localStorage.getItem("userName") ? localStorage.getItem("userName") : ""
+      console.log(userName.length)
+      if(userName.length === 0) return;
       let account = localStorage.getItem("gitAcc") ? JSON.parse(localStorage.getItem("gitAcc")) : false
       let repos = localStorage.getItem("gitRepos") ? JSON.parse(localStorage.getItem("gitRepos")) : false
-      if(!account){
-	console.log('fetching')
-	const accountReq = await fetch(`https://api.github.com/users/${userName}`)
-	account = await accountReq.json()
-      }
-      if(!repos){
-	console.log('fetching')
-	const reposReq = await fetch(`https://api.github.com/users/${userName}/repos`)
-	repos = await reposReq.json()
-      }
-      if (!Array.isArray(repos)){this.setState({err: true}); return};
-      if (!repos) { this.setState({err: true}); return};
-      this.setState( prevState => ({
-	data: Object.assign({},prevState.data,{[userName] : {
-	  account: account,
-	  repos : repos,
-	  userName: userName
-	}})
-      }))
-      localStorage.setItem("gitAcc", JSON.stringify(account))
-      localStorage.setItem("gitRepos", JSON.stringify(repos))
-      localStorage.setItem("userName", userName)
+      if(!account) account = await this.getAccountData(userName)
+      if(!repos) repos = await this.getReposData()
+      this.setAcc(userName,account,repos)
     }catch(err){
       console.log(err)
       this.setState({err: true})
     }
 
   }
-  async getAccountData(){
-
+  setAcc(userName,account,repos){
+    if (!Array.isArray(repos)){this.setState({err: true}); return};
+    if (!repos) { this.setState({err: true}); return};
+    console.log(userName)
+    this.setState( prevState => ({
+      data: Object.assign({},prevState.data,{[userName] : {
+	account: account,
+	repos : repos,
+	userName: userName
+      }}),
+      userName: userName
+    }))
+    if(this.state.err) this.setState({err: false})
+    if(this.state.rememberUser){
+      console.log('here')
+      localStorage.setItem("gitAcc", JSON.stringify(account))
+      localStorage.setItem("gitRepos", JSON.stringify(repos))
+      localStorage.setItem("userName", userName)
+    }
   }
-  async getReposData(){
+  async changeUser(e,userName){
+    e.preventDefault()
+    const acc = await this.getAccountData(userName)
+    const repos = await this.getReposData(userName)
+    this.setAcc(userName,acc,repos)
+  }
 
+  async getAccountData(userName){
+    try{
+      const accountReq = await fetch(`https://api.github.com/users/${userName}`)
+       const data = await accountReq.json()
+      return data;
+    }catch(err){
+      console.log(err)
+      return false;
+    }
+    
+  }
+  async getReposData(userName){
+    try{
+      const reposReq = await fetch(`https://api.github.com/users/${userName}/repos`)
+      const repos = await reposReq.json()
+      return repos;
+    }catch(err){
+      console.log(err)
+      return false;
+    }
+  }
+  handleRememberUser(){
+    this.setState( prevState => ({rememberUser: !prevState.rememberUser}))
   }
   render() {
-    if(this.state.err){ return <h1>Something went wrong</h1>}
-    if(!this.state.data[this.state.userName]){ return <h1>Something went wrong</h1> }
+    if(!this.state.data[this.state.userName] || this.state.err){
+      return (
+	<GitAccTitleContainer onSubmit={e => this.changeUser(e,this.state.userName) }>
+	  {this.state.err && <h1>Something went wrong try entering the user name</h1>}
+	  <GitAccTitle value={this.state.userName}
+	    onChange={(e) => this.setState({userName: e.target.value}) } />
+	  <h1>rembember user</h1>
+	  <input name="" type="checkbox" value="" onClick={this.handleRememberUser} />
+	</GitAccTitleContainer>
+      )
+    }
     return (
       <Github account={this.state.data[this.state.userName].account}
 	      repos={this.state.data[this.state.userName].repos }
-	      userName={this.state.userName} />
+	      userName={this.state.userName}
+	      changeUser={this.changeUser}
+	      handleRememberUser={this.handleRememberUser} />
     );
   }
 };
 
-function Github({account,repos,userName}) {
+function Github({account,repos,userName,handleRememberUser,changeUser}) {
   const [name,setName] = useState(userName)
-  const MainSectionMemoized = useMemo( () => GitMainSection({repos,userName}),[repos,userName])
+  const [forked,setForked] = useState(false)
+  const MainSectionMemoized = useMemo( () => GitMainSection({repos,userName,forked}),[repos,userName,forked])
+
   return (
     <GitWrapp>
       <GitHeader>
 	<img alt="" src={account.avatar_url} style={{width: "100px",height: "100px",borderRadius: "100%"}} />
-	<GitAccTitle value={name} onChange={(e) => setName(e.target.value) } />
+	<GitAccTitleContainer onSubmit={e => changeUser(e,name) }>
+	  <GitAccTitle value={name} onChange={(e) => setName(e.target.value) } />
+	  <h1>Rembember User</h1>
+	  <input name="" type="checkbox" value="" onClick={handleRememberUser} />
+	</GitAccTitleContainer>
+	<h1>{forked ? "Hidke" : "Show"} Forked</h1>
+	<input name="" type="checkbox" value="" onClick={ () => setForked(!forked)} />
       </GitHeader>
       <GitMain>
 	{MainSectionMemoized}
@@ -78,8 +145,7 @@ function Github({account,repos,userName}) {
   )
 }
 
-function GitMainSection({repos,userName}) {
-  const [forked,setForked] = useState(false)
+function GitMainSection({repos,userName,forked}) {
   return (
     <>
       {

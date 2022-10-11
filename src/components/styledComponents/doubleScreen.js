@@ -8,6 +8,7 @@ export const DoubleScreenContainer = styled.section`
   width: 500px;
   display: flex;
   justify-content: flex-start;
+  box-sizing: border-box;
   flex-direction: column;
 `
 

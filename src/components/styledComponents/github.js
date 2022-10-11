@@ -6,6 +6,7 @@ export const GitWrapp = styled.main`
   align-items: center;
   max-height: 1000px;
   overflow-y:scroll;
+  overflow-x: hidden;
   max-width: 500px;
   padding-right: 20px;
   box-sizing: border-box;
@@ -49,11 +50,19 @@ export const GitRepoTitle = styled.h1`
   font-family: sans-serif;
   text-transform: capitalize;
 `
+export const GitAccTitleContainer = styled.form`
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+`
+
 export const GitAccTitle = styled.input`
   font-family: sans-serif;
   text-transform: capitalize;
   background: transparent;
   color: black;
+  max-width: 500px;
+  box-sizing: border-box;
   font-weight: bold;
   border: none;
   text-align: center;
