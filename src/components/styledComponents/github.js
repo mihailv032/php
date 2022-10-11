@@ -34,6 +34,7 @@ export const GitRepoContainer = styled.section`
   margin-bottom: 20px;
   padding-bottom: 10px;
   box-sizing: border-box;
+  background: #110c12;
 `
 
 export const GitRepoHeader = styled.header`

@@ -1,134 +1,144 @@
-import React from 'react';
-import {ContainerFeed} from './styledComponents/feed'
+import React, {useMemo} from 'react';
+import * as Styled from './styledComponents/feed'
 
 class FeedContainer extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      //selection will be a tuple of component and api call t get data
       selection: "",
       data: {
 	anime: {},
 	nyt: {}
       },
-      api: {
-	anime: {
-	  url: {
-	    default:"https://api.myanimelist.net/v2/anime?q=one&limit=4",
-	  },
-	  header:{"Content-Type":"application/json",'X-MAL-CLIENT-ID': "97f19bb6ca11e00d2031a0258794dc52"}
-	},
-	nyt: {url: "https://api.nytimes.com/svc/mostpopular/v2/viewed/1.json?api-key=y9pg09oq37Vdf5NP9DesBC7KeT368izV",
-	      header:{}}
-      },
-      error: false
+      error: {}
     }
-    this.getData = this.getData.bind(this)
     this.handleSelection = this.handleSelection.bind(this)
   }
-  handleSelection() {
-
-  }
-  async getData(apiTarget,url='default'){
-    try{
-      const req = await fetch(this.state.api[apiTarget].url[url], {
-	method: 'GET',
-	mode: 'cors',
-	headers: this.state.api[apiTarget].header,
-      });
-      const data = await req.text()
-      console.log(data)
-      return data
-    }catch(err){
-      console.log(err)
-      this.setState({error: true})
-      return {};
-    }
+  handleSelection(newSelection) {
+    if(Object.keys(this.state.data).indexOf(newSelection) == -1) return;
+    this.setState({selection: newSelection})
+    localStorage.setItem("selection", newSelection)
   }
   async componentDidMount(){
     try{
-      let selection = localStorage.getItem("selection") ? localStorage.getItem("selection") : false
-      //if there is nothing in the local storage default to anime
-      if (!selection) { selection = localStorage.getItem("defaultFeed") ? localStorage.getItem("defaultFeed") : "anime"}
-      let data = localStorage.getItem(selection) ? localStorage.getItem(selection) : false
-      if (!data) { data = await this.getData(selection) }
-      else data = JSON.parse(data)
-      console.log(data)
-      localStorage.setItem("anime", JSON.stringify(data))
-      this.state.data.anime = data
-      this.setState( prevState => ({
-	selection: selection,
+      if(localStorage.getItem("selection")){
+	this.setState({selection: localStorage.getItem("selection") })
+      }
+      const seasonalAnime = await this.getData("http://54.89.153.221:8080/api/mal?season=summer&offset=0&limit=10&year=2022")
+      if(!seasonalAnime){
+	this.setState( prevState => ({error: Object.assign({},prevState.error,{anime: true})}))
+      }
+      this.setState(prevState => ({
+	data: Object.assign({},prevState.data,{anime: seasonalAnime})
       }))
     }catch(err){
       console.log(err)
       this.setState({error: true})
     }
   }
+  async getData(url){
+    try{
+      const req = await fetch(url)
+      const data = req.json()
+      return data
+    }catch(err){
+      console.log(err)
+      return false
+    }
+  }
+
   render() {
-    if(this.state.error){return <h1>something went wrong </h1>}
+    if(this.state.error[this.state.selection]){return <h1>something went wrong </h1>}
     return (
       <Feed data={this.state.data}
 	    handleSelection={this.handleSelection}
-	    selection={this.state.selection}
-      />
+	    selection={this.state.selection} />
     )
   }
 };
 
-function SelectionBar({handleSelection}){
+
+function Feed({data,selection,handleSelection}){
+  const MomoizedNav = useMemo( () => SelectionBar({handleSelection:handleSelection,items: Object.keys(data)}),[])
+  const FeedComponents = {
+    anime: AnimeContainer({data: data.anime}),
+    nyt: NytContainer({data: data.nyt})
+  }
   return (
-    <div>
-      <h1>anime</h1>
-    </div>
+    <Styled.ContainerFeed>
+      {MomoizedNav}
+      {FeedComponents[selection]}
+    </Styled.ContainerFeed>
+    
   )
 }
 
-
-function Feed({data,selection,handleSelection}){
-  const component = {
-    anime: <Anime data={data.anime} />,
-    nyt: <Nyt data={data.nyt} />
-  }
-  
+function SelectionBar({handleSelection,items}){
   return (
-    <ContainerFeed >
-      <SelectionBar handleSelection={handleSelection} />
-      {
-	component.anime
-      }
-    </ContainerFeed>
-
+    <Styled.FeedNav>
+      <Styled.NavWrapp>
+	{
+	  items.map( (item,index) => {
+	    return (
+	      <Styled.NavItems key={index} onClick={() => handleSelection(item) }>{item}</Styled.NavItems>
+	    )
+	  })
+	}
+      </Styled.NavWrapp>
+    </Styled.FeedNav>
   )
+}
+
+function FeedContent({selection}){
+
 }
 
 function AnimeContainer({data}){
-
   return <Anime data={data} />
 }
 
 function Anime({data}){
-  if(Object.keys(data).length === 0){ return <h1>no data</h1>}
-  console.log('here')
+  if(Object.keys(data).length === 0){ return <Styled.NoData>no data</Styled.NoData>}
   return (
-    <div>
-      {
-	data.data.map( anime => <AnimeCard key={anime.node.id} details={anime} />)
-      }
-    </div>
+    <Styled.AnimeWrap>
+      <Styled.AnimeNav>
+	<Styled.NavWrapp>
+	  <Styled.DropDown>
+	    <Styled.DropDownTitle>Type of anime</Styled.DropDownTitle>
+	    <Styled.DropDownItem>ff</Styled.DropDownItem>
+	    <Styled.DropDownItem>2</Styled.DropDownItem>
+	  </Styled.DropDown>
+	  <Styled.DropDown>Season</Styled.DropDown>
+	</Styled.NavWrapp>
+      </Styled.AnimeNav>
+      <Styled.AnimeContainerWeap>
+	<Styled.AnimeContainer>
+	  {
+	    data.data.map( anime => <AnimeCard key={anime.node.id} details={anime} />)
+	  }
+	  
+	</Styled.AnimeContainer>
+      </Styled.AnimeContainerWeap>
+    </Styled.AnimeWrap>
   )
 }
-
+  
 function AnimeCard({details}){
-  console.log('hale')
   return (
-    <div>
-      <h1>{details.node.title}</h1>
-      <img alt="" src={details.node.main_picture.large} />
-    </div>
+    <Styled.AnimeCardContainer>
+      <Styled.AnimeCardTitle>{details.node.title}</Styled.AnimeCardTitle>
+      <a href={`https://myanimelist.net/anime/${details.node.id}`}>
+	<Styled.AnimePreview alt="" src={details.node.main_picture.medium} />
+      </a>
+    </Styled.AnimeCardContainer>
   )
 }
 
-function Nyt(){
+function NytContainer({data}){
+  return <Nyt data={data} />
+
+}
+function Nyt({data}){
   return (
     <h1>new york times api</h1>
   )

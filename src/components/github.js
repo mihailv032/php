@@ -129,7 +129,9 @@ function Github({account,repos,userName,handleRememberUser,changeUser}) {
   return (
     <GitWrapp>
       <GitHeader>
-	<img alt="" src={account.avatar_url} style={{width: "100px",height: "100px",borderRadius: "100%"}} />
+	<a href={`https://github.com/${name}`}>
+	  <img alt="" src={account.avatar_url} style={{width: "100px",height: "100px",borderRadius: "100%"}} />
+	</a>
 	<GitAccTitleContainer onSubmit={e => changeUser(e,name) }>
 	  <GitAccTitle value={name} onChange={(e) => setName(e.target.value) } />
 	  <h1>Rembember User</h1>
