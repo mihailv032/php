@@ -3,14 +3,27 @@ import styled from 'styled-components'
 export const RecntAppsContainer = styled.div`
   min-width: 50vw;
   max-width: 50vw;
-  overflow: scroll;
 `
 
 export const RecentAppsWrapp = styled.main`
   display: flex;
   align-items: center;
   height: 100px;
-overflow: scroll;
+  overflow-x: auto;
+
+  &::-webkit-scrollbar {
+  height: 10px;
+  }
+  &::-webkit-scrollbar-thumb {
+  border-radius: 10px;
+
+  background: rgb(126,0,255);
+  background: linear-gradient(180deg, rgba(126,0,255,1) 9%, rgba(180,16,218,1) 100%, rgba(180,16,218,1) 100%);
+  }
+  &::-webkit-scrollbar-track {
+  box-shadow: inset 0 0 5px grey;
+  border-radius: 10px;
+  }
 `
 export const App = styled.div`
   display: flex;
