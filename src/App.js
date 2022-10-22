@@ -23,8 +23,8 @@ function App() {
       </Head>
       <Main bg={currentBg}>
 	<MainContainer>
-	  <DoubleScreen title1="Github" Component1={<GithubContainer />} title2="Mails" Component2={MailsContainer} />
-	  <DoubleScreen title1="TODO" Component1={<TodoWrapper />} title2="Anime" Component2={MailsContainer} />
+	  <DoubleScreen title1="Github" Component1={<GithubContainer />} title2="Mails" Component2={<MailsContainer />} />
+	  <DoubleScreen title1="TODO" Component1={<TodoWrapper />} title2="Anime" Component2={<MailsContainer />} />
 	</MainContainer>
       </Main>
       <FeedSection>
