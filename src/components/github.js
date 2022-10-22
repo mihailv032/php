@@ -22,6 +22,8 @@ class GithubContainer extends React.Component {
     super(props);
     this.state={
       userName: "",
+      inputValue: "",
+      forked: false,
       data:{},
       rememberUser: false,
       err: false
@@ -31,7 +33,10 @@ class GithubContainer extends React.Component {
     this.setAcc = this.setAcc.bind(this)
     this.changeUser = this.changeUser.bind(this)
     this.handleRememberUser = this.handleRememberUser.bind(this)
+    this.handleForked = this.handleForked.bind(this)
+    this.handleInput = this.handleInput.bind(this)
   }
+
   async componentDidMount(){
     try{
       let userName = localStorage.getItem("userName") ? localStorage.getItem("userName") : ""
@@ -56,9 +61,10 @@ class GithubContainer extends React.Component {
       data: Object.assign({},prevState.data,{[userName] : {
 	account: account,
 	repos : repos,
-	userName: userName
+	userName: userName,
       }}),
-      userName: userName
+      userName: userName,
+      inputValue: userName
     }))
     if(this.state.err) this.setState({err: false})
     if(this.state.rememberUser){
@@ -69,6 +75,7 @@ class GithubContainer extends React.Component {
     }
   }
   async changeUser(e,userName){
+    console.log('here')
     e.preventDefault()
     const acc = await this.getAccountData(userName)
     const repos = await this.getReposData(userName)
@@ -99,46 +106,50 @@ class GithubContainer extends React.Component {
   handleRememberUser(){
     this.setState( prevState => ({rememberUser: !prevState.rememberUser}))
   }
+  handleInput(userName){
+    this.setState({inputValue: userName})
+  }
+  handleForked(){
+    this.setState( prevState => ({forked: !prevState.forked}))
+  }
   render() {
     if(!this.state.data[this.state.userName] || this.state.err){
       return (
-	<GitAccTitleContainer onSubmit={e => this.changeUser(e,this.state.userName) }>
-	  {this.state.err && <h1>Something went wrong try entering the user name</h1>}
-	  <GitAccTitle value={this.state.userName}
-	    onChange={(e) => this.setState({userName: e.target.value}) } />
-	  <h1>rembember user</h1>
-	  <input name="" type="checkbox" value="" onClick={this.handleRememberUser} />
-	</GitAccTitleContainer>
+	<GitTtitleContainer err={this.state.err}
+			    inputValue={this.state.inputValue}
+			    changeUser={this.changeUser}
+			    handleInputValue={this.handleInput}
+			    handleRememberUser={this.handleRememberUser} />
       )
     }
     return (
       <Github account={this.state.data[this.state.userName].account}
 	      repos={this.state.data[this.state.userName].repos }
 	      userName={this.state.userName}
+              inputValue={this.state.inputValue}
 	      changeUser={this.changeUser}
-	      handleRememberUser={this.handleRememberUser} />
+              handleInput={this.handleInput}
+	      handleRememberUser={this.handleRememberUser}
+	      forked={this.state.forked} handleForked={this.handleForked} />
     );
   }
 };
 
-function Github({account,repos,userName,handleRememberUser,changeUser}) {
-  const [name,setName] = useState(userName)
-  const [forked,setForked] = useState(false)
+function Github({account,repos,userName,inputValue,handleInputValue,handleRememberUser,changeUser,forked,handlehandleForked}) {
   const MainSectionMemoized = useMemo( () => GitMainSection({repos,userName,forked}),[repos,userName,forked])
 
   return (
     <GitWrapp>
       <GitHeader>
-	<a href={`https://github.com/${name}`}>
+	<a href={`https://github.com/${userName}`}>
 	  <img alt="" src={account.avatar_url} style={{width: "100px",height: "100px",borderRadius: "100%"}} />
 	</a>
-	<GitAccTitleContainer onSubmit={e => changeUser(e,name) }>
-	  <GitAccTitle value={name} onChange={(e) => setName(e.target.value) } />
-	  <h1>Rembember User</h1>
-	  <input name="" type="checkbox" value="" onClick={handleRememberUser} />
-	</GitAccTitleContainer>
+	<GitTtitleContainer inputValue={inputValue}
+			    handleInputValue={handleInputValue}
+			    handleRembemberUser={handleRememberUser}
+			    changeUser={changeUser} />
 	<h1>{forked ? "Hidke" : "Show"} Forked</h1>
-	<input name="" type="checkbox" value="" onClick={ () => setForked(!forked)} />
+	<input name="" type="checkbox" value="" defaultChecked={forked} onClick={handlehandleForked} />
       </GitHeader>
       <GitMain>
 	{MainSectionMemoized}
@@ -147,6 +158,19 @@ function Github({account,repos,userName,handleRememberUser,changeUser}) {
   )
 }
 
+function GitTtitleContainer({err=false,inputValue,handleInputValue,changeUser,handleRememberUser}){
+
+  return (
+    <GitAccTitleContainer onSubmit={e => changeUser(e,inputValue) }>
+      {err && <h1>Something went wrong try entering the user name</h1>}
+      <GitAccTitle value={inputValue}
+		   onChange={(e) => handleInputValue(e.target.value) } placeholder="enter your user name" />
+      <h1>Rembember User</h1>
+      <input name="" type="checkbox" onClick={handleRememberUser} />
+    </GitAccTitleContainer>
+    
+  )
+}
 function GitMainSection({repos,userName,forked}) {
   return (
     <>
