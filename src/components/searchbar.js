@@ -6,7 +6,6 @@ function SearchBar(){
   return (
     <form action="https://www.google.com/search"
 	  method="get"
-	  target="_blank"
 	  id="search-form" >
       <Input name="q" type="text" placeholder="search..." autocomplete="off" autofocus
       value={input}
