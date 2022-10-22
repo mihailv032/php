@@ -28,33 +28,72 @@ export const NavWrapp = styled.ul`
 export const DropDownTitle = styled.li`
   position: relative;
   display: block;
+  color: white;
   background: #61002d;
+  font-weight: bold;
+  text-transform: capitalize;
+  font-size: 24px;
   width: 100%;
   z-index: 100;
 `
 export const DropDownItem = styled.li`
   display: block;
-  background: white;
+  color: white;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  padding-right: 10px;
+  padding-left: 10px;
+  box-sizing: border-box;
   position: absolute;
+  background: ${ props => props.selected ? "#2e51a2" : "#4165BA"};
   top: 0;
-  width: 90%;
+  width: 100%;
   transition: transform 0.5s;
   z-index: 1;
+  &:hover {
+  background: #193880;
+  }
 `
 
+
+
 export const DropDown = styled.ul`
+  margin-left: 10px;
+  margin-right: 10px;
   position: relative;
+  width: 180px;
   padding: 0;
   margin-left: 10px;
   margin-right: 10px;
   z-index: 100;
   list-style: none;
-  &: hover:nth-child(2)  {
-  transform: translate(0,20px);
+  cursor: pointer;
+  
+  &: hover ${DropDownItem}:nth-child(2) {
+  transform: translate(0,25px);
   }
-  &:nth-child(2){
+  &: hover ${DropDownItem}:nth-child(3) {
+  transform: translate(0,55px);
+  }
+  &: hover ${DropDownItem}:nth-child(4) {
+  transform: translate(0,85px);
+  }
+  &: hover ${DropDownItem}:nth-child(5) {
+  transform: translate(0,115px);
+  }
+`
+
+export const NavInput = styled.input`
   color: white;
-  transition-delay: 3s;
+  width: 55px;
+  background: #61002d;
+  font-weight: bold;
+  text-transform: capitalize;
+  font-size: 24px;
+  border: none;
+
+  &:focus {
+  outline: none;
   }
 `
 
@@ -89,6 +128,7 @@ export const AnimeWrap = styled.div`
   flex-direction: column;
   width: 100vw;
   justify-content: center;
+  background: white;
 `
 
 export const AnimeContainerWeap = styled.div`
@@ -126,4 +166,16 @@ export const AnimeCardTitle = styled.h1`
 export const AnimePreview = styled.img`
   width: 400px;
   height: 600px;
+`
+
+export const Input = styled.input`
+  font-size: 20px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  padding-left: 10px;
+  padding-right: 10px;
+  width: 500px;
+  &:focus {
+  outline: none;
+  }
 `
