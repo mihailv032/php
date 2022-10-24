@@ -1,12 +1,15 @@
 import React, {useState,useMemo} from 'react';
 import * as Styled from './styledComponents/recentApps'
-
+import Popup from './popup'
 
 function RecentApps(){
   const addMore = (event,name,url) => {
-    alert('f')
     event.preventDefault()
+    if(url){
+      
+    }
     setApps([{name:name,url:url},...apps])
+    setShowPopup(false)
   }
 
   const [apps, setApps] = useState(localStorage.getItem("apps") ? JSON.parse(localStorage.getItem("apps")) : [] )
@@ -16,14 +19,15 @@ function RecentApps(){
       <Styled.RecentAppsWrapp>
 	<AppContainer apps={apps}></AppContainer>
 	<Styled.App onClick={ () =>  setShowPopup(!showPopup)}>+</Styled.App>
-	{showPopup && <Popup submit={addMore} />}
+	<Popup opened={showPopup} onClose={() => setShowPopup(false) }>
+	  <PopupContent submit={addMore} />
+	</Popup>
       </Styled.RecentAppsWrapp>
     </Styled.RecntAppsContainer>
   )
 }
 
 function AppContainer({apps}) {
-  console.log(apps)
   return (
     <>
     {
@@ -46,7 +50,7 @@ function App({name,url}){
   )
 }
 
-function Popup({submit}){
+function PopupContent({submit}){
   const [name,setName] = useState("")
   const [url,setUrl] = useState("")
   return (
@@ -56,7 +60,7 @@ function Popup({submit}){
 	<Styled.Input value={name} onChange={(e) => setName(e.target.value)}/>
 	<Styled.AddAppTitle>Url</Styled.AddAppTitle>
 	<Styled.Input value={url} onChange={(e) => setUrl(e.target.value)}/>
-	<button onSubmit={submit}>click me</button>
+	<Styled.Btn onSubmit={submit}>click me</Styled.Btn>
       </Styled.AddApp>
     </Styled.PopupWrapp>
   )

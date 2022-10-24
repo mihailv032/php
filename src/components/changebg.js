@@ -1,23 +1,23 @@
 import {useState,React} from 'react'
 import styled from 'styled-components'
+import Popup from './popup'
 const images = require('../images.json').images
-console.log(images)
 
 function ChangeBg({toglePopup,showPopup,handlBgChange}){
 //  const [value,Input] = useInput()
   return (
     <>
       { !showPopup && <BgBtn onClick={toglePopup}>Change BG</BgBtn> }
-      { showPopup &&
-      <Popup>
-	<button style={xButton}  onClick={toglePopup}>x</button>
-	{
-	  images.map( (image,index) => {
-	    return (<img alt="" src={`./images/${image}`}  key={index} style={img} onClick={ () => handlBgChange(image)} /> )
-	  })
-	}
+      <Popup  opened={showPopup} onClose={toglePopup}>
+	<PopupWrapp>
+	  <button style={xButton}  onClick={toglePopup}>x</button>
+	  {
+	    images.map( (image,index) => {
+	      return (<img alt="" src={`./images/${image}`}  key={index} style={img} onClick={ () => handlBgChange(image)} /> )
+	    })
+	  }
+	</PopupWrapp>
       </Popup>
-      }
     </>
   )
   
@@ -42,7 +42,9 @@ const xButton = {
   "backgroud": "white",
   "top": "10px",
   "right": "10px",
-  "cursort": "pointer"
+  "cursort": "pointer",
+  "width": "25px",
+  "height": "25px",
 }
 
 const BgBtn = styled.button`
@@ -55,25 +57,24 @@ const BgBtn = styled.button`
   color: white;
 `
 
-const Popup = styled.div`
-  padding: 20px;
-  padding-top: 100px;
+const PopupWrapp = styled.div`
   display: flex;
-  justify-content: flex-start;
+  padding: 25px;
+  padding: 25px;
   flex-wrap: wrap;
   position: absolute;
-  top: 20%;
-  min-width: 200px;
-  max-width: 80%;
   height: 80vh;
-  background-color: grey;
+  max-width: 1087px;
+  background-color: #f8f8f8;
   z-index: 4;
   overflow:scroll;
+  box-sizing: border-box;
 `
 const img={
-  "width":"300px",
+  "width":"340px",
   "height":"300px",
   "padding": "20px",
+  "boxSizing": "border-box"
 }
 
 export default ChangeBgContainer

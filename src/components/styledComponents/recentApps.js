@@ -42,24 +42,38 @@ export const PopupWrapp = styled.main`
   position: absolute;
   display: flex;
   justify-content: center;
-  padding-top: 100px;
   box-sizing: border-box;
-  top: 100px;
-  left: 0;
-  width: 100vw;
-  height: 70vh;
-  background: black;
+
+  background: white;
+  width: 300px;
+  height: 500px;
+
+  border-radius: 3px;
+  padding-top: 30px;
+  border: 1px solid rgba(0,0,0,0.8);
+  box-shadow: 0 10px 40px rgba(0,0,0,0.1);
 `
 
 export const AddApp = styled.form`
   display: flex;
   flex-direction: column;
+  align-items: center;
 `
 
 export const AddAppTitle = styled.label`
-
+  
 `
 
 export const Input = styled.input`
 
+`
+
+export const Btn = styled.button`
+  margin-top: 20px;
+  background: blue;
+  border: none;
+  color: white;
+  width: 100px;
+  border-radius: 5px;%;
+  text-transform: capitalize;
 `
