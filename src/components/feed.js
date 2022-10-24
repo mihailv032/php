@@ -98,23 +98,27 @@ function AnimeContainer(){
   }
   useLayoutEffect( () => {
     const getSeasonalAnime = async () => {
-      const seasonalAnime = await getData(`http://54.89.153.221:8080/api/mal?season=${season}&offset=0&limit=100&year=${year}`)
-      if(!seasonalAnime){
-	console.log('no animes')
+      try{
+	const seasonalAnime = await getData(`http://54.89.153.221:8080/api/mal?season=${season}&offset=0&limit=100&year=${year}`)
+	if(!seasonalAnime){
+	  console.log('no animes')
+	}
+	console.log('setting year')
+	let updatedData = Object.assign({},data)
+	console.log()
+	console.log(typeof(year))
+	if(Object.keys(updatedData.seasonal).indexOf(year) === -1){ updatedData =
+	  Object.assign({},updatedData,
+			{seasonal: Object.assign({},updatedData.seasonal,{
+			  year: Object.assign({})
+			}
+	  )}) }
+	console.log(Object.keys(updatedData))
+	updatedData.seasonal[year][season] = seasonalAnime
+	setData(updatedData)
+      }catch(err){
+	console.log('err')
       }
-      console.log('setting year')
-      let updatedData = Object.assign({},data)
-      console.log()
-      console.log(typeof(year))
-      if(Object.keys(updatedData.seasonal).indexOf(year) === -1){ updatedData =
-	Object.assign({},updatedData,
-		      {seasonal: Object.assign({},updatedData.seasonal,{
-			year: Object.assign({})
-      }
-      )}) }
-      console.log(Object.keys(updatedData))
-      updatedData.seasonal[year][season] = seasonalAnime
-      setData(updatedData)
     }
     
     getSeasonalAnime()
