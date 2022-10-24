@@ -49,10 +49,10 @@ export const StyledTodoItem = styled.input`
 export const TodoContainer = styled.div`
   position: relative;
   z-index: 0;
-  overflow: scroll;
+  overflow-y: auto;
+  max-width: 500px;
   max-height: 700px;
   box-sizing: border-box;
-  padding-right: 50px;
 
 `
 
@@ -65,7 +65,7 @@ export const TodoItemContainer = styled.div`
   flex-direction: column;
   margin-bottom: 15px;
   align-items: center;
-
+  box-sizing: border-box;
 `
 
 export const DeleteBtn = styled.button`

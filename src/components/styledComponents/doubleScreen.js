@@ -1,7 +1,6 @@
 import styled from 'styled-components'
 
 export const DoubleScreenContainer = styled.section`
-  overflow: scroll;
   max-height: 700px;
   height: 700px;
   max-width: 500px;
