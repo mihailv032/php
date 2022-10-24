@@ -5,13 +5,12 @@ import Popup from './popup'
 function RecentApps(){
   const addMore = (event,name,url) => {
     event.preventDefault()
-    if(url){
-      
-    }
-    setApps([{name:name,url:url},...apps])
+    const favicon = `https://s2.googleusercontent.com/s2/favicons?domain=${url}`
+    
+    setApps([{name:name,url:url,icon:favicon},...apps])
     setShowPopup(false)
   }
-
+  
   const [apps, setApps] = useState(localStorage.getItem("apps") ? JSON.parse(localStorage.getItem("apps")) : [] )
   const [showPopup,setShowPopup] = useState(false)
   return (
@@ -30,23 +29,27 @@ function RecentApps(){
 function AppContainer({apps}) {
   return (
     <>
-    {
-      apps.map( (app,index) => {
-	return (
-	  <App name={app.name} url={app.url} />
-	)
-      })
-    }
+      {
+	apps.map( (app,index) => {
+	  return (
+	    <App name={app.name} url={app.url} icon={app.icon} />
+	  )
+	})
+      }
     </>
   )
 }
 
-function App({name,url}){
+function App({name,url,icon}){
   console.log(name)
   return (
-    <Styled.App>
-      <a href={url} method="get" target="_blank">{name}</a>
-    </Styled.App>
+    <a href={url}>
+      <Styled.App>
+	<img alt="" src={icon} />
+	<Styled.AppTitle>{name}</Styled.AppTitle>
+      </Styled.App>
+      
+    </a>
   )
 }
 

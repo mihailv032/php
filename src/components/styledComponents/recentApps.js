@@ -27,6 +27,7 @@ export const RecentAppsWrapp = styled.main`
 `
 export const App = styled.div`
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   text-align: center;
@@ -36,6 +37,11 @@ export const App = styled.div`
   margin-right: 10px;
   cursor: pointer;
   font-size: 20px;
+`
+
+export const AppTitle = styled.span`
+  font-size: 10px;
+  border-bottom: 2px solid white;
 `
 
 export const PopupWrapp = styled.main`
