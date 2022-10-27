@@ -7,8 +7,8 @@ function ChangeBg({toglePopup,showPopup,handlBgChange}){
 //  const [value,Input] = useInput()
   return (
     <>
-      { !showPopup && <BgBtn onClick={toglePopup}>Change BG</BgBtn> }
-      <Popup  opened={showPopup} onClose={toglePopup}>
+      <BgBtn onClick={toglePopup}>Change BG</BgBtn>
+      <Popup  opened={showPopup} onClose={toglePopup} width="1087px" height="80vh">
 	<PopupWrapp>
 	  <button style={xButton}  onClick={toglePopup}>x</button>
 	  {

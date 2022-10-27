@@ -26,3 +26,8 @@ export const Container = styled.div`
   justify-content: center;
   align-items: center;
 `
+
+export const PopupContentWrapp = styled.div`
+  min-width: ${ props => props.width ? props.width : "300px"};
+  min-height: ${ props => props.height ? props.height : "500px"};
+`
