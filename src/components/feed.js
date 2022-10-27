@@ -1,5 +1,6 @@
 import React, {useEffect,useLayoutEffect, useMemo, useState} from 'react';
 import * as Styled from './styledComponents/feed'
+import {URL} from '../consts'
 
 class FeedContainer extends React.Component {
   constructor(props) {
@@ -99,7 +100,9 @@ function AnimeContainer(){
   useLayoutEffect( () => {
     const getSeasonalAnime = async () => {
       try{
-	const seasonalAnime = await getData(`http://54.89.153.221:8080/api/mal?season=${season}&offset=0&limit=100&year=${year}`)
+	const url = URL + `/api/mal?season=${season}&offset=0&limit=100&year=${year}`
+	console.log(url)
+	const seasonalAnime = await getData(url)
 	if(!seasonalAnime){
 	  console.log('no animes')
 	}
@@ -107,16 +110,19 @@ function AnimeContainer(){
 	let updatedData = Object.assign({},data)
 	console.log()
 	console.log(typeof(year))
-	if(Object.keys(updatedData.seasonal).indexOf(year) === -1){ updatedData =
+	if(Object.keys(updatedData.seasonal).indexOf(year) === -1){
+	  updatedData =
 	  Object.assign({},updatedData,
 			{seasonal: Object.assign({},updatedData.seasonal,{
 			  year: Object.assign({})
 			}
-	  )}) }
+	  )})
+	}
 	console.log(Object.keys(updatedData))
 	updatedData.seasonal[year][season] = seasonalAnime
 	setData(updatedData)
       }catch(err){
+	console.log(err)
 	console.log('err')
       }
     }
@@ -185,9 +191,12 @@ function AnimeNav({type,setType,season,setSeason,year,setYear}){
 
 function Anime({data,err,type,setType,year,setYear,season,setSeason}){
   const MemoizedNav = useMemo( () => AnimeNav({type,setType,year,setYear,season,setSeason}),[type,year,season])
-  console.log(err)
-  console.log(data)
-  if (err || !data) return <h1>NO anime</h1>
+  if (err || !data){ return (
+    <>
+      {MemoizedNav}
+      <h1>NO anime</h1>
+    </>
+  )}
   return (
     <Styled.AnimeWrap>
       {MemoizedNav}

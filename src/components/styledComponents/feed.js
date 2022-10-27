@@ -20,6 +20,8 @@ export const FeedNav = styled.nav`
   justify-content: center;
 `
 export const NavWrapp = styled.ul`
+  list-style-type: none;
+  box-sizing: border-box;
   display: flex;
   justify-content: space-between;
   list-style: none;
@@ -37,6 +39,7 @@ export const DropDownTitle = styled.li`
   z-index: 100;
 `
 export const DropDownItem = styled.li`
+  box-sizing: border-box;
   display: block;
   color: white;
   padding-top: 5px;
@@ -44,6 +47,7 @@ export const DropDownItem = styled.li`
   padding-right: 10px;
   padding-left: 10px;
   box-sizing: border-box;
+  border: none;
   position: absolute;
   background: ${ props => props.selected ? "#2e51a2" : "#4165BA"};
   top: 0;
@@ -58,6 +62,7 @@ export const DropDownItem = styled.li`
 
 
 export const DropDown = styled.ul`
+  list-style-type: none;
   margin-left: 10px;
   margin-right: 10px;
   position: relative;
@@ -68,18 +73,18 @@ export const DropDown = styled.ul`
   z-index: 100;
   list-style: none;
   cursor: pointer;
-  
+  box-sizing: border-box;
   &: hover ${DropDownItem}:nth-child(2) {
   transform: translate(0,25px);
   }
   &: hover ${DropDownItem}:nth-child(3) {
-  transform: translate(0,55px);
+  transform: translate(0,53px);
   }
   &: hover ${DropDownItem}:nth-child(4) {
-  transform: translate(0,85px);
+  transform: translate(0,81px);
   }
   &: hover ${DropDownItem}:nth-child(5) {
-  transform: translate(0,115px);
+  transform: translate(0,110px);
   }
 `
 
