@@ -1,6 +1,7 @@
 import React, {useEffect,useLayoutEffect, useMemo, useState} from 'react';
 import * as Styled from './styledComponents/feed'
 import {URL} from '../consts'
+import {Overlay} from './styledComponents/popup'
 
 class FeedContainer extends React.Component {
   constructor(props) {
@@ -101,26 +102,22 @@ function AnimeContainer(){
     const getSeasonalAnime = async () => {
       try{
 	const url = URL + `/api/mal?season=${season}&offset=0&limit=100&year=${year}`
-	console.log(url)
 	const seasonalAnime = await getData(url)
+	console.log(seasonalAnime)
 	if(!seasonalAnime){
 	  console.log('no animes')
 	}
-	console.log('setting year')
-	let updatedData = Object.assign({},data)
-	console.log()
-	console.log(typeof(year))
-	if(Object.keys(updatedData.seasonal).indexOf(year) === -1){
-	  updatedData =
-	  Object.assign({},updatedData,
-			{seasonal: Object.assign({},updatedData.seasonal,{
-			  year: Object.assign({})
-			}
-	  )})
-	}
-	console.log(Object.keys(updatedData))
-	updatedData.seasonal[year][season] = seasonalAnime
-	setData(updatedData)
+	let updateData = Object.assign({},data,{
+	  seasonal: Object.assign({},data.seasonal,{
+	    [year]: {[season]: seasonalAnime.data }
+	  })})
+//Object.assign({},data,{seasonalObject.assign({},data.seasonal,seasonalAnime.data))
+//	if(Object.keys(updatedData.seasonal).indexOf(year) === -1){
+//	  updatedData(
+//////////////////	}
+//	console.log(Object.keys(updatedData))
+//	updatedData.seasonal[year][season] = seasonalAnime
+	setData(updateData)
       }catch(err){
 	console.log(err)
 	console.log('err')
@@ -130,12 +127,11 @@ function AnimeContainer(){
     getSeasonalAnime()
   },[])
   useEffect( () => {
-      console.log(data[type])
-      console.log(Object.keys(data.seasonal))
-      console.log(data[type][year])
-    if(data[type]){
+    if(type === "seasonal"){
       if(data[type][year]){
 	if(data[type][year][season]){
+	  console.log('hre')
+	  setErr(false)
 	  setCurrentData(data[type][year][season]);
 	}else{ setErr(true); console.log("data")};
       }else{ setErr(true); console.log('year')};
@@ -203,7 +199,7 @@ function Anime({data,err,type,setType,year,setYear,season,setSeason}){
       <Styled.AnimeContainerWeap>
 	<Styled.AnimeContainer>
 	  {
-	    data.data.map( anime => <AnimeCard key={anime.node.id} details={anime} />)
+	    data.map( anime => <AnimeCard key={anime.node.id} details={anime.node} />)
 	  }
 	</Styled.AnimeContainer>
       </Styled.AnimeContainerWeap>
@@ -212,11 +208,48 @@ function Anime({data,err,type,setType,year,setYear,season,setSeason}){
 }
   
 function AnimeCard({details}){
+  const [cropTitle,setCropTitle] = useState(true)
+  const [showOverlay,setShowOverlay] = useState(false)
+  const MemoizedContent = useMemo( () => {
+    return (
+      <>
+	<Styled.AnimePreview alt="" src={details.main_picture.large} />
+	<h1>{details.mean}</h1>
+      </>
+    )
+  },[])
+  const MemoizedOverlay = useMemo( () => {
+    return (
+      <Overlay onMouseLeave={() => setShowOverlay(false)}>
+	<Styled.AnimeCardOverlayContent>
+	  <h5>episodes: {details.num_episodes}</h5>
+	  <div>
+	    <h3>studios</h3>
+	    {
+	      details.studios.map(studio => <h6 key={studio.id}>{studio.name}</h6>)
+	    }
+	  </div>
+	  <div>
+	    <h3>genres</h3>
+	  {
+	    details.genres.map(genre => <h6 key={genre.id}>{genre.name}</h6>)
+	  }
+	  </div>
+	  <Styled.AnimeCardOverlaySynopsis>
+	    {details.synopsis}
+	  </Styled.AnimeCardOverlaySynopsis>
+	</Styled.AnimeCardOverlayContent>
+      </Overlay>
+    )
+  },[])
   return (
     <Styled.AnimeCardContainer>
-      <Styled.AnimeCardTitle>{details.node.title}</Styled.AnimeCardTitle>
-      <a href={`https://myanimelist.net/anime/${details.node.id}`}>
-	<Styled.AnimePreview alt="" src={details.node.main_picture.large} />
+      <Styled.AnimeCardTitle onMouseEnter={ () => setCropTitle(false)} onMouseLeave={() => setCropTitle(true)}>
+	{details.title.length > 20 && cropTitle ? `${details.title.slice(0,20)}...` : details.title}
+      </Styled.AnimeCardTitle>
+      <a href={`https://myanimelist.net/anime/${details.id}`} onMouseEnter={ () => setShowOverlay(true)} >
+	 {MemoizedContent}
+	{showOverlay && MemoizedOverlay}
       </a>
     </Styled.AnimeCardContainer>
   )
