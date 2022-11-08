@@ -148,6 +148,7 @@ export const AnimeContainer = styled.main`
   align-items: center;
   justify-content: center;
   max-width: 80vw;
+  margin-top: 100px;
 `
 
 export const AnimeCardContainer = styled.section`
@@ -159,13 +160,31 @@ export const AnimeCardContainer = styled.section`
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
+  position: relative;
+`
+
+export const AnimeCardOverlayContent = styled.div`
+  background: rgba(0,0,0,0.2);
+  color: white;
+  height: 100%;
+  width: 100%;
+  padding: 20px;
+  box-sizing: border-box;
+`
+
+export const AnimeCardOverlaySynopsis = styled.section`
+  max-height: 25%;
+  overflow-y: auto;
 `
 
 export const AnimeCardTitle = styled.h1`
   font-weight: bold;
   font-size: 30px;
   text-align: center;
+  margin-top: 0;
   overflow-wrap: break-word;
+  height: 100%;
+  overflow-y: auto;
 `
 
 export const AnimePreview = styled.img`
