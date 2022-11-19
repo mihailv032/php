@@ -3,11 +3,11 @@ import styled from 'styled-components'
 import Popup from './popup'
 const images = require('../images.json').images
 
-function ChangeBg({toglePopup,showPopup,handlBgChange}){
+function ChangeBg({toglePopup,showPopup,handlBgChange,changeBgBtnRef}){
 //  const [value,Input] = useInput()
   return (
     <>
-      <BgBtn onClick={toglePopup}>Change BG</BgBtn>
+      <BgBtn onClick={toglePopup} ref={changeBgBtnRef}>Change BG</BgBtn>
       <Popup  opened={showPopup} onClose={toglePopup} width="1087px" height="80vh">
 	<PopupWrapp>
 	  <button style={xButton}  onClick={toglePopup}>x</button>
@@ -23,7 +23,7 @@ function ChangeBg({toglePopup,showPopup,handlBgChange}){
   
 }
 
-function ChangeBgContainer({updateBg}){
+function ChangeBgContainer({updateBg,changeBgBtnRef}){
   const [showPopup,setShowPopup] = useState(false)
 
   const toglePopup = () => showPopup ? setShowPopup(false) : setShowPopup(true)
@@ -33,6 +33,7 @@ function ChangeBgContainer({updateBg}){
     <ChangeBg toglePopup={ toglePopup }
 	      showPopup={showPopup}
 	      handlBgChange={handlBgChange}
+	      changeBgBtnRef={changeBgBtnRef}
     />
   )
 }

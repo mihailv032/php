@@ -1,13 +1,13 @@
 import {useState} from 'react'
 import styled from 'styled-components'
 
-function SearchBar(){
+function SearchBar({searchBarRef}){
   const [input,setInput] = useState("")
   return (
     <form action="https://www.google.com/search"
 	  method="get"
 	  id="search-form" >
-      <Input name="q" type="text" placeholder="search..." autocomplete="off" autofocus
+      <Input name="q" type="text" ref={searchBarRef} placeholder="search..." autocomplete="off" autofocus
       value={input}
       onChange={ (e) => setInput(e.target.value)}
       />

@@ -2,11 +2,10 @@ import React, {useState,useMemo} from 'react';
 import * as Styled from './styledComponents/recentApps'
 import Popup from './popup'
 
-function RecentApps(){
+function RecentApps({addAppRef}){
   const addMore = (event,name,url) => {
     event.preventDefault()
     const favicon = `https://s2.googleusercontent.com/s2/favicons?domain=${url}`
-    
     setApps([{name:name,url:url,icon:favicon},...apps])
     setShowPopup(false)
   }
@@ -17,7 +16,7 @@ function RecentApps(){
     <Styled.RecntAppsContainer>
       <Styled.RecentAppsWrapp>
 	<AppContainer apps={apps}></AppContainer>
-	<Styled.App onClick={ () =>  setShowPopup(!showPopup)}>+</Styled.App>
+	<button onClick={ () => setShowPopup(!showPopup)} ref={addAppRef}>+</button>
 	<Popup opened={showPopup} onClose={() => setShowPopup(false) } width="300px" height="500px">
 	  <PopupContent submit={addMore} />
 	</Popup>

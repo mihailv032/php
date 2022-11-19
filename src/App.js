@@ -1,5 +1,4 @@
 import './App.css'
-
 import GithubContainer from './components/github'
 import TodoWrapper from './components/todo'
 import MailsContainer from './components/mails'
@@ -10,16 +9,33 @@ import SearchBar from './components/searchbar'
 import DoubleScreen from './components/doubleScreen'
 
 import styled from 'styled-components'
-import {useState, useRef} from 'react'
+import { useState,useRef,useEffect} from 'react'
 
 function App() {
   const [currentBg,setCurrentBg] = useState(localStorage.getItem('bg') ? localStorage.getItem('bg') : 'default.png')
+  const searchBarRef = useRef()
+  const changeBgBtnRef = useRef()
+  const addAppRef = useRef()
+  useEffect( () => {
+    if(searchBarRef.current === null) return;
+    if(changeBgBtnRef.current === null) return;
+    document.body.addEventListener('keydown', e => {
+      if(e.ctrlKey && e.key === "Enter"){
+	searchBarRef.current.focus()
+      }else if(e.key === "c"){
+	changeBgBtnRef.current.click()//for some reason current.click() doesnt work
+      }else if(e.key === "a") {
+	addAppRef.current.click()
+      }
+    })
+  },[searchBarRef,changeBgBtnRef])
+
   return (
     <>
       <Head>
-	<SearchBar />
-	<RecentApps />
-	<ChangeBgContainer updateBg={ (newBg) => {setCurrentBg(newBg);localStorage.setItem('bg',newBg)}  } />
+	<SearchBar searchBarRef={searchBarRef} />
+	<RecentApps addAppRef={addAppRef} />
+	<ChangeBgContainer updateBg={ (newBg) => {setCurrentBg(newBg);localStorage.setItem('bg',newBg)}  } changeBgBtnRef={changeBgBtnRef} />
       </Head>
       <Main bg={currentBg}>
 	<MainContainer>
