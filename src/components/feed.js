@@ -14,7 +14,7 @@ class FeedContainer extends React.Component {
     this.handleSelection = this.handleSelection.bind(this)
   }
   handleSelection(newSelection) {
-    if(Object.keys(this.state.data).indexOf(newSelection) == -1) return;
+    if(Object.keys(this.state.data).indexOf(newSelection) === -1) return;
     this.setState({selection: newSelection})
     localStorage.setItem("selection", newSelection)
   }
@@ -27,18 +27,23 @@ class FeedContainer extends React.Component {
       this.setState({error: true})
     }
   }
+  async fetchAnime(){
+    
+  }
+  async fetchNyt(){
+
+  }
   render() {
     return (
-      <Feed handleSelection={this.handleSelection}
-	    selection={this.state.selection}
-	    selectionOptions={this.state.selectionOptions} />
+      <Feed parentThis={this} 
+      />
     )
   }
 };
 
 
-function Feed({selection,selectionOptions,handleSelection}){
-  const MomoizedNav = useMemo( () => SelectionBar({handleSelection:handleSelection,items: selectionOptions}),[])
+function Feed({parentThis}){
+  const MomoizedNav = useMemo( () => SelectionBar({handleSelection:parentThis.handleSelection,items: parentThis.state.selectionOptions}),[])
   const FeedComponents = {
     anime: AnimeContainer(),
     nyt: NytContainer()
@@ -46,7 +51,7 @@ function Feed({selection,selectionOptions,handleSelection}){
   return (
     <Styled.ContainerFeed>
       {MomoizedNav}
-      {selection && <AnimeContainer/>}
+      {parentThis.state.selection && <AnimeContainer/>}
     </Styled.ContainerFeed>
     
   )
@@ -68,14 +73,10 @@ function SelectionBar({handleSelection,items}){
   )
 }
 
-function FeedContent({selection}){
-
-}
-
 function AnimeContainer(){
   const seasons = ["winter","spring","summer","fall"]
-  const [err,setErr] = useState(false)
-  const [type,setType] = useState("seasonal")
+  const [err,setErr] = useState({seasonal:false,top:false,suggested:false})
+  const [type, setType] = useState("animeType" in localStorage ? localStorage.getItem("animeType") : "seasonal")
   const [season,setSeason] = useState(
     "animeSeason" in localStorage ? JSON.parse(localStorage.getItem("animeSeason")) : seasons[Math.round((new Date().getMonth()+1)/4)]
   )
@@ -107,23 +108,15 @@ function AnimeContainer(){
 	if(!seasonalAnime){
 	  console.log('no animes')
 	}
-	let updateData = Object.assign({},data,{
-	  seasonal: Object.assign({},data.seasonal,{
-	    [year]: {[season]: seasonalAnime.data }
-	  })})
-//Object.assign({},data,{seasonalObject.assign({},data.seasonal,seasonalAnime.data))
-//	if(Object.keys(updatedData.seasonal).indexOf(year) === -1){
-//	  updatedData(
-//////////////////	}
-//	console.log(Object.keys(updatedData))
-//	updatedData.seasonal[year][season] = seasonalAnime
-	setData(updateData)
+	let updatedData = Object.assign({},data)
+	if(Object.keys(updatedData.seasonal).indexOf(year) === -1) updatedData.seasonal[year] = {};
+	updatedData.seasonal[year][season] = seasonalAnime
+	setData(updatedData)
       }catch(err){
 	console.log(err)
 	console.log('err')
       }
     }
-    
     getSeasonalAnime()
   },[])
   useEffect( () => {
@@ -187,7 +180,7 @@ function AnimeNav({type,setType,season,setSeason,year,setYear}){
 
 function Anime({data,err,type,setType,year,setYear,season,setSeason}){
   const MemoizedNav = useMemo( () => AnimeNav({type,setType,year,setYear,season,setSeason}),[type,year,season])
-  if (err || !data){ return (
+  if (err[type] || !data){ return (
     <>
       {MemoizedNav}
       <h1>NO anime</h1>
