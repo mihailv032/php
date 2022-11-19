@@ -5,7 +5,7 @@
 }
 
 .overlayAnimationEnterActive {
-    transition: opacity 300ms ease-out;
+    transition: opacity 300ms ease-out, transform 100ms ease-out 200ms;
     opacity: 1;
     transform: scale(1);
 

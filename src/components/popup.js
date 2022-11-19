@@ -16,15 +16,17 @@ const overlayAnimation = {
   enterActive: styles.overlayAnimationEnterActive
 }
 
-const useMount = ({opened}) => {
+export const useMount = ({opened}) => {
   const [mounted,setMounted] = useState(false)
-
+  const timerRef = useRef()
   useEffect( () => {
     if(opened && !mounted) {
       setMounted(true);
+      timerRef.current = null
     } else if(!opened && mounted) {
-      setTimeout( () => {
+      timerRef.current = setTimeout( () => {
 	setMounted(false)
+	timerRef.current = null
       },300)
     }
   },[opened])

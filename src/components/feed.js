@@ -1,7 +1,10 @@
-import React, {useEffect,useLayoutEffect, useMemo, useState} from 'react';
+import React, {memo,useEffect,useLayoutEffect,useRef, useMemo, useState} from 'react';
+import {CSSTransition} from 'react-transition-group'
 import * as Styled from './styledComponents/feed'
 import {URL} from '../consts'
+import {useMount} from './popup'
 import {Overlay} from './styledComponents/popup'
+import styles from './feed.module.css';
 
 class FeedContainer extends React.Component {
   constructor(props) {
@@ -106,11 +109,13 @@ function AnimeContainer(){
 	const seasonalAnime = await getData(url)
 	console.log(seasonalAnime)
 	if(!seasonalAnime){
+	  setErr(Object.assign({},err,{seasonal:true}))
 	  console.log('no animes')
+	  return;
 	}
 	let updatedData = Object.assign({},data)
 	if(Object.keys(updatedData.seasonal).indexOf(year) === -1) updatedData.seasonal[year] = {};
-	updatedData.seasonal[year][season] = seasonalAnime
+	updatedData.seasonal[year][season] = seasonalAnime.data
 	setData(updatedData)
       }catch(err){
 	console.log(err)
@@ -118,9 +123,10 @@ function AnimeContainer(){
       }
     }
     getSeasonalAnime()
-  },[])
-  useEffect( () => {
+  },[year,season])
+  useEffect( () => {//only for setting data
     if(type === "seasonal"){
+      if(err[type]) return;
       if(data[type][year]){
 	if(data[type][year][season]){
 	  console.log('hre')
@@ -129,7 +135,7 @@ function AnimeContainer(){
 	}else{ setErr(true); console.log("data")};
       }else{ setErr(true); console.log('year')};
     }else{ setErr(true); console.log('season') };
-  },[type,data,year,season]);
+  },[data]);
   console.log(Object.keys(data[type]))
   return (
     <Anime data={currentData}
@@ -140,7 +146,15 @@ function AnimeContainer(){
   )
 }
 
-function AnimeNav({type,setType,season,setSeason,year,setYear}){
+const MemoizedAnimeNav = memo(function AnimeNav({type,setType,season,setSeason,year,setYear}){
+  console.log('adsf')
+  const [displayYear,setDisplayYear] = useState(year)
+  const handleYear = e => {
+    if (isNaN(e.target.value)) return;
+    const year = new Date().getFullYear()
+    if (+year < +e.target.value) return;
+    setDisplayYear(e.target.value)
+  }
 
   return (
       <Styled.AnimeNav>
@@ -172,23 +186,21 @@ function AnimeNav({type,setType,season,setSeason,year,setYear}){
 	      Winter
 	    </Styled.DropDownItem>
 	  </Styled.DropDown>}
-	  { type === "seasonal" && <Styled.NavInput placeholder="year" value={year} />}
+	  { type === "seasonal" &&
+	    <form onSubmit={ e => {e.preventDefault();setYear(displayYear)}}>
+	      <Styled.NavInput placeholder="year" value={displayYear} onChange={handleYear} />
+	      <button style={{ display: "none"}} onSubmit={ e => {e.preventDefault();setYear(displayYear)}}></button>
+	    </form>
+	  }
 	</Styled.NavWrapp>
       </Styled.AnimeNav>
-)
-}
+  )
+})
 
 function Anime({data,err,type,setType,year,setYear,season,setSeason}){
-  const MemoizedNav = useMemo( () => AnimeNav({type,setType,year,setYear,season,setSeason}),[type,year,season])
-  if (err[type] || !data){ return (
-    <>
-      {MemoizedNav}
-      <h1>NO anime</h1>
-    </>
-  )}
-  return (
-    <Styled.AnimeWrap>
-      {MemoizedNav}
+  const MemoizedAnimeCards = useMemo( () => {
+    if (err[type] || !data) return 
+    return (
       <Styled.AnimeContainerWeap>
 	<Styled.AnimeContainer>
 	  {
@@ -196,6 +208,23 @@ function Anime({data,err,type,setType,year,setYear,season,setSeason}){
 	  }
 	</Styled.AnimeContainer>
       </Styled.AnimeContainerWeap>
+      
+    )
+  },[data])
+  if (err[type] || !data){ return (
+    <>
+      <MemoizedAnimeNav type={type} setType={setType}
+	   season={season} setSeason={setSeason}
+	   year={year} setYear={setYear}/>
+      <h1>NO anime</h1>
+    </>
+  )}
+  return (
+    <Styled.AnimeWrap>
+      <MemoizedAnimeNav type={type} setType={setType}
+	   season={season} setSeason={setSeason}
+	   year={year} setYear={setYear}/>
+      {MemoizedAnimeCards}
     </Styled.AnimeWrap>
   )
 }
@@ -206,14 +235,16 @@ function AnimeCard({details}){
   const MemoizedContent = useMemo( () => {
     return (
       <>
-	<Styled.AnimePreview alt="" src={details.main_picture.large} />
+	<a href={`https://myanimelist.net/anime/${details.id}`}  >
+	  <Styled.AnimePreview alt="" src={details.main_picture.large} />
+	</a>
 	<h1>{details.mean}</h1>
       </>
     )
-  },[])
-  const MemoizedOverlay = useMemo( () => {
+  },[details])
+  const MemoizedOverlayContent = useMemo( () => {
+    if (!Array.isArray(details.genres)) return;
     return (
-      <Overlay onMouseLeave={() => setShowOverlay(false)}>
 	<Styled.AnimeCardOverlayContent>
 	  <h5>episodes: {details.num_episodes}</h5>
 	  <div>
@@ -232,19 +263,55 @@ function AnimeCard({details}){
 	    {details.synopsis}
 	  </Styled.AnimeCardOverlaySynopsis>
 	</Styled.AnimeCardOverlayContent>
-      </Overlay>
     )
-  },[])
+  },[details,showOverlay])
   return (
     <Styled.AnimeCardContainer>
       <Styled.AnimeCardTitle onMouseEnter={ () => setCropTitle(false)} onMouseLeave={() => setCropTitle(true)}>
-	{details.title.length > 20 && cropTitle ? `${details.title.slice(0,20)}...` : details.title}
+	{details.title.length > 24 && cropTitle ? `${details.title.slice(0,24)}...` : details.title}
       </Styled.AnimeCardTitle>
-      <a href={`https://myanimelist.net/anime/${details.id}`} onMouseEnter={ () => setShowOverlay(true)} >
-	 {MemoizedContent}
-	{showOverlay && MemoizedOverlay}
-      </a>
+      <span onMouseLeave={() => setShowOverlay(false)} onMouseEnter={() => setShowOverlay(true)}>
+	<AnimeCardOverlay opened={showOverlay}>
+	  {MemoizedOverlayContent}
+	</AnimeCardOverlay>
+	  {MemoizedContent}
+      </span>
     </Styled.AnimeCardContainer>
+  )
+}
+
+const overlayAnimation = {
+  enter: styles.overlayEnter,
+  enterActive: styles.overlayEnterActive,
+  exit: styles.overlayExit,
+  exitActive: styles.overlayExitActive,
+}
+
+function AnimeCardOverlay({opened,children}){
+  const {mounted} = useMount({opened})
+  if(!mounted) return;
+  return (
+    <OverlayLayout opened={opened}>
+      {children}
+    </OverlayLayout>
+  )
+}
+
+function OverlayLayout({opened,children}){
+  const overlayRef = useRef()
+  const [animationIn,setAnimationIn] = useState(false)
+  useEffect( () => {
+    setAnimationIn(opened)
+  },[opened])
+
+  return (
+    <CSSTransition nodeRef={overlayRef} timeout={300} mountOnEnter unmountOnExit in={animationIn} classNames={overlayAnimation}>
+    <Overlay ref={overlayRef}>
+      <div>
+	{children}
+      </div>
+    </Overlay>
+    </CSSTransition>
   )
 }
 

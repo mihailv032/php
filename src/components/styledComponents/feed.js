@@ -173,7 +173,7 @@ export const AnimeCardOverlayContent = styled.div`
 `
 
 export const AnimeCardOverlaySynopsis = styled.section`
-  max-height: 25%;
+  max-height: 300px;
   overflow-y: auto;
 `
 
