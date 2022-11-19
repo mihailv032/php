@@ -167,7 +167,7 @@ const TodoItemDescription = ({desc,handleAddDesc,index,handleChangeDescription,h
   }
   return (
     <DescriptionContainer>
-    { (showDescription || (desc.length === 1 && desc[0].length <= 35) ) &&
+    { (Array.isArray(desc)) && (showDescription || (desc.length === 1 && desc[0].length <= 35) ) &&
       desc.map( (description,descIndex) => {
 	return (<DescriptionTextArea
 		  desc={description}
