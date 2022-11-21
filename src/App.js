@@ -16,16 +16,24 @@ function App() {
   const searchBarRef = useRef()
   const changeBgBtnRef = useRef()
   const addAppRef = useRef()
+  const recntAppsRef = useRef()
+  const todoRef = useRef()
+
   useEffect( () => {
     if(searchBarRef.current === null) return;
     if(changeBgBtnRef.current === null) return;
     document.body.addEventListener('keydown', e => {
+      console.log(`${e.code} ${e.key}`)
       if(e.ctrlKey && e.key === "Enter"){
 	searchBarRef.current.focus()
-      }else if(e.key === "c"){
+      }else if(e.ctrlKey && e.key === ")"){
 	changeBgBtnRef.current.click()//for some reason current.click() doesnt work
-      }else if(e.key === "a") {
+      }else if(e.ctrlKey && e.key === "Y") {
 	addAppRef.current.click()
+      }else if(e.key === "Enter") {
+	recntAppsRef.current.focus()
+      }else if(e.ctrlKey && e.shiftKey && e.key === "U") {
+	todoRef.current.focus()
       }
     })
   },[searchBarRef,changeBgBtnRef])
@@ -34,13 +42,13 @@ function App() {
     <>
       <Head>
 	<SearchBar searchBarRef={searchBarRef} />
-	<RecentApps addAppRef={addAppRef} />
+	<RecentApps addAppRef={addAppRef} recntAppsRef={recntAppsRef} />
 	<ChangeBgContainer updateBg={ (newBg) => {setCurrentBg(newBg);localStorage.setItem('bg',newBg)}  } changeBgBtnRef={changeBgBtnRef} />
       </Head>
       <Main bg={currentBg}>
 	<MainContainer>
 	  <DoubleScreen title1="Github" Component1={<GithubContainer />} title2="Mails" Component2={<MailsContainer />} />
-	  <DoubleScreen title1="TODO" Component1={<TodoWrapper />} title2="Anime" Component2={<MailsContainer />} />
+	  <DoubleScreen title1="TODO" Component1={<TodoWrapper todoRef={todoRef} />} title2="Anime" Component2={<MailsContainer />} />
 	</MainContainer>
       </Main>
       <FeedSection>

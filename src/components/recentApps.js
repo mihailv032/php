@@ -2,25 +2,28 @@ import React, {useState,useMemo} from 'react';
 import * as Styled from './styledComponents/recentApps'
 import Popup from './popup'
 
-function RecentApps({addAppRef}){
+function RecentApps({addAppRef,recntAppsRef}){
+  const [apps, setApps] = useState(localStorage.getItem("apps") ? JSON.parse(localStorage.getItem("apps")) : [] )
+  const [showPopup,setShowPopup] = useState(false)
+
   const addMore = (event,name,url) => {
     event.preventDefault()
     const favicon = `https://s2.googleusercontent.com/s2/favicons?domain=${url}`
-    setApps([{name:name,url:url,icon:favicon},...apps])
+    const newApps = [{name:name,url:url,icon:favicon},...apps]
+    setApps(newApps)
     setShowPopup(false)
+    localStorage.setItem("apps", JSON.stringify(newApps))
   }
   
-  const [apps, setApps] = useState(localStorage.getItem("apps") ? JSON.parse(localStorage.getItem("apps")) : [] )
-  const [showPopup,setShowPopup] = useState(false)
-  return (
+   return (
     <Styled.RecntAppsContainer>
-      <Styled.RecentAppsWrapp>
-	<AppContainer apps={apps}></AppContainer>
+      <Styled.RecentAppsWrapp ref={recntAppsRef}>
+	<AppContainer apps={apps}/>
 	<Styled.App onClick={ () => setShowPopup(!showPopup)} ref={addAppRef}>+</Styled.App>
+      </Styled.RecentAppsWrapp>
 	<Popup opened={showPopup} onClose={() => setShowPopup(false) } width="300px" height="500px">
 	  <PopupContent submit={addMore} />
 	</Popup>
-      </Styled.RecentAppsWrapp>
     </Styled.RecntAppsContainer>
   )
 }
@@ -31,7 +34,7 @@ function AppContainer({apps}) {
       {
 	apps.map( (app,index) => {
 	  return (
-	    <App name={app.name} url={app.url} icon={app.icon} />
+	    <App name={app.name} url={app.url} icon={app.icon} tabIndex={index} />
 	  )
 	})
       }

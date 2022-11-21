@@ -94,16 +94,16 @@ class TodoWrapper extends React.PureComponent {
 	     handleAddDescription={this.handleAddDescription}
 	     handleChangeDescription={this.handleChangeDescription}
 	     handleRemoveDescription={this.handleRemoveDescription}
-	     handleChangeTitle={this.handleChangeTitle} />
+	     handleChangeTitle={this.handleChangeTitle} todoRef={this.props.todoRef} />
   }
 };
 
-function Todo({todoItems,inputValue,handleSubmitItem,handleInput,handlDeleteItem,handleAddDescription,handleChangeDescription,handleRemoveDescription,handleChangeTitle}){
+function Todo({todoItems,inputValue,handleSubmitItem,handleInput,handlDeleteItem,handleAddDescription,handleChangeDescription,handleRemoveDescription,handleChangeTitle,todoRef}){
   const TodoItemsContainerWrapp = useMemo( () => TodoItemsContainer({todoItems:todoItems,handlDeleteItem,handleAddDescription,handleChangeDescription,handleRemoveDescription,handleChangeTitle}),[todoItems])
   return (
     <StyledTodo>
       <InputContainer onSubmit={handleSubmitItem}>
-	<StyledInput name="" type="text" onChange={handleInput} value={inputValue} />
+	<StyledInput name="" type="text" onChange={handleInput} value={inputValue} ref={todoRef} />
       </InputContainer>
       {TodoItemsContainerWrapp}
 {/*      <TodoItemsContainer

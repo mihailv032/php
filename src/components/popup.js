@@ -73,7 +73,7 @@ function PopupLayout({opened,onClose,children,width,height}){
   return (
     <Container>
       <CSSTransition nodeRef={overlayRef} timeout={300} mountOnEnter unmountOnExit in={animationIn} classNames={overlayAnimation}>
-	<Overlay ref={overlayRef} onClick={onClose}  role="button" tabIndex='0' />
+	<Overlay ref={overlayRef} onClick={onClose}  role="button" tabindex="1" />
       </CSSTransition>
       <CSSTransition nodeRef={popupContenRef}
 		     timeout={300}
