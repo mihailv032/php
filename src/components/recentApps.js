@@ -16,7 +16,7 @@ function RecentApps({addAppRef}){
     <Styled.RecntAppsContainer>
       <Styled.RecentAppsWrapp>
 	<AppContainer apps={apps}></AppContainer>
-	<button onClick={ () => setShowPopup(!showPopup)} ref={addAppRef}>+</button>
+	<Styled.App onClick={ () => setShowPopup(!showPopup)} ref={addAppRef}>+</Styled.App>
 	<Popup opened={showPopup} onClose={() => setShowPopup(false) } width="300px" height="500px">
 	  <PopupContent submit={addMore} />
 	</Popup>

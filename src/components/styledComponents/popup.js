@@ -15,7 +15,7 @@ export const Container = styled.div`
   box-sizing: border-box;
 
   padding: 36px;
-  z-index: 1;
+  z-index: 100;
 
   top: 0px;
   bottom: 0px;
