@@ -1,22 +1,28 @@
-import {useState,React} from 'react'
+import React, {useState,useMemo} from 'react'
 import styled from 'styled-components'
 import Popup from './popup'
 const images = require('../images.json').images
 
 function ChangeBg({toglePopup,showPopup,handlBgChange,changeBgBtnRef}){
 //  const [value,Input] = useInput()
+  const MemoizedIMgs = useMemo( () => {
+    return (
+      <PopupWrapp>
+	<button style={xButton}  onClick={toglePopup}>x</button>
+	{
+	  images.map( (image,index) => {
+	    return (<img alt="" src={`./images/${image}`}  key={index} style={img} onClick={ () => handlBgChange(image)} /> )
+	  })
+	}
+      </PopupWrapp>
+      
+    )
+  },[])
   return (
     <>
       <BgBtn onClick={toglePopup} ref={changeBgBtnRef}>Change BG</BgBtn>
       <Popup  opened={showPopup} onClose={toglePopup} width="1087px" height="80vh">
-	<PopupWrapp>
-	  <button style={xButton}  onClick={toglePopup}>x</button>
-	  {
-	    images.map( (image,index) => {
-	      return (<img alt="" src={`./images/${image}`}  key={index} style={img} onClick={ () => handlBgChange(image)} /> )
-	    })
-	  }
-	</PopupWrapp>
+	{MemoizedIMgs}
       </Popup>
     </>
   )
