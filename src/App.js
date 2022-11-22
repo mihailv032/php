@@ -7,6 +7,7 @@ import FeedContainer from './components/feed.js'
 import RecentApps from './components/recentApps'
 import SearchBar from './components/searchbar'
 import DoubleScreen from './components/doubleScreen'
+import Weather from './components/wather'
 
 import styled from 'styled-components'
 import { useState,useRef,useEffect} from 'react'
@@ -46,6 +47,9 @@ function App() {
 	<ChangeBgContainer updateBg={ (newBg) => {setCurrentBg(newBg);localStorage.setItem('bg',newBg)}  } changeBgBtnRef={changeBgBtnRef} />
       </Head>
       <Main bg={currentBg}>
+	<div>
+	  <Weather/>
+	</div>
 	<MainContainer>
 	  <DoubleScreen title1="Github" Component1={<GithubContainer />} title2="Mails" Component2={<MailsContainer />} />
 	  <DoubleScreen title1="TODO" Component1={<TodoWrapper todoRef={todoRef} />} title2="Anime" Component2={<MailsContainer />} />
@@ -86,6 +90,7 @@ const Main = styled.main`
   width: 100wh;
   background-size: cover;
   display: flex;
+  flex-direction: column;
  box-sizing: border-box; 
  
 `
