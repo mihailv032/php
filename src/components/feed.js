@@ -102,7 +102,18 @@ function AnimeContainer(){
       return false;
     }
   }
-  useLayoutEffect( () => {
+  useEffect( () => {//only for setting data
+    function setCurrData(){//returns true if succeded and false otherwise
+      if(type === "seasonal"){
+	if(err[type]) return false;
+	if(data[type][year]){
+	  if(data[type][year][season]){
+	    setCurrentData(data[type][year][season])
+	    return true;
+	  }else return false;
+	}else return false;
+      }else return false;
+    }
     const getSeasonalAnime = async () => {
       try{
 	const url = URL + `/api/mal?season=${season}&offset=0&limit=100&year=${year}`
@@ -111,7 +122,7 @@ function AnimeContainer(){
 	if(!seasonalAnime){
 	  setErr(Object.assign({},err,{seasonal:true}))
 	  console.log('no animes')
-	  return;
+	  return new Error("could not get seasonal anime");
 	}
 	let updatedData = Object.assign({},data)
 	if(Object.keys(updatedData.seasonal).indexOf(year) === -1) updatedData.seasonal[year] = {};
@@ -120,22 +131,15 @@ function AnimeContainer(){
       }catch(err){
 	console.log(err)
 	console.log('err')
+	return err
       }
     }
-    getSeasonalAnime()
-  },[year,season])
-  useEffect( () => {//only for setting data
-    if(type === "seasonal"){
-      if(err[type]) return;
-      if(data[type][year]){
-	if(data[type][year][season]){
-	  console.log('hre')
-	  setErr(false)
-	  setCurrentData(data[type][year][season]);
-	}else{ setErr(true); console.log("data")};
-      }else{ setErr(true); console.log('year')};
-    }else{ setErr(true); console.log('season') };
-  },[data]);
+    if(!setCurrData()){
+      getSeasonalAnime()
+      .then( (res) => setCurrData())
+      .catch( (err) => {setErr(Object.assign({},err,{[type]:true}));console.log(err)})
+    }
+  },[year,season]);
   console.log(Object.keys(data[type]))
   return (
     <Anime data={currentData}
@@ -147,7 +151,6 @@ function AnimeContainer(){
 }
 
 const MemoizedAnimeNav = memo(function AnimeNav({type,setType,season,setSeason,year,setYear}){
-  console.log('adsf')
   const [displayYear,setDisplayYear] = useState(year)
   const handleYear = e => {
     if (isNaN(e.target.value)) return;
