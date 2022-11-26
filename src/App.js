@@ -89,7 +89,7 @@ const Head = styled.header`
 
 const Main = styled.main`
   padding: 100px;
-  padding-top: 350px;
+  padding-top: 200px;
   background-image: ${ props => `url('./images/${props.bg}')`};
   min-height: 90vh;
   height: 1220px;

@@ -7,7 +7,7 @@ function SearchBar({searchBarRef}){
     <form action="https://www.google.com/search"
 	  method="get"
 	  id="search-form" >
-      <Input name="q" type="text" ref={searchBarRef} placeholder="search..." autocomplete="off" autofocus
+      <Input name="q" type="text" ref={searchBarRef} placeholder="search..." autocomplete="off" autoFocus
       value={input}
       onChange={ (e) => setInput(e.target.value)}
       />

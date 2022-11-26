@@ -37,7 +37,9 @@ function AppContainer({apps,setHotkey}) {
       {
 	apps.map( (app,index) => {
 	  return (
-	    <App name={app.name} url={app.url} icon={app.icon} tabIndex={index} hotkey={app.hotkey} setHotkey={setHotkey} />
+	    <span key={app.url}>
+	      <App name={app.name} url={app.url} icon={app.icon} tabIndex={index} hotkey={app.hotkey} setHotkey={setHotkey} />
+	    </span>
 	  )
 	})
       }
@@ -49,7 +51,7 @@ function App({name,url,icon,hotkey,setHotkey}){
   const ref = useRef()
   useEffect( () =>{if(hotkey){setHotkey(hotkey, () => ref.current.click())}},[])
   return (
-    <a href={url} ref={ref} title={hotkey}>
+    <a href={url} ref={ref} title={hotkey ? hotkey : "not hotkey was added for this app"}>
       <Styled.App>
 	<img alt="" src={icon} />
 	<Styled.AppTitle>{name}</Styled.AppTitle>
