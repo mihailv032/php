@@ -36,13 +36,15 @@ export default function ChangeBg({updateBg,setHotkey}){
 
 const xButton = {
   "position": "absolute",
-  "color": "black",
-  "backgroud": "white",
+  "color": "white",
+  "background": "#933939",
+  "borderRadius": "30px",
   "top": "10px",
   "right": "10px",
-  "cursort": "pointer",
+  "cursor": "pointer",
   "width": "25px",
   "height": "25px",
+  "border": "none"
 }
 
 const BgBtn = styled.button`
@@ -53,6 +55,8 @@ const BgBtn = styled.button`
   font-size: 20px;
   font-family: sans-serif;
   color: white;
+
+  border: 1px solid white;
 `
 
 const PopupWrapp = styled.div`
