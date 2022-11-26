@@ -82,4 +82,13 @@ export const Btn = styled.button`
   width: 100px;
   border-radius: 5px;%;
   text-transform: capitalize;
+  cursor: pointer;
+
+  &:focus{
+  border:none;
+  }
+`
+
+export const ErrorLabel = styled.label`
+  color: red;
 `
