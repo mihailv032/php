@@ -170,6 +170,18 @@ export const AnimeCardOverlayContent = styled.div`
   width: 100%;
   padding: 20px;
   box-sizing: border-box;
+
+  text-transform: capitalize;
+  & > div {
+  position: relative;
+  max-height: 150px;
+  overflow-y: auto;
+  border-bottom: 2px solid white;
+  }
+
+  & > div > h6 {
+  margin: 0px;
+  }
 `
 
 export const AnimeCardOverlaySynopsis = styled.section`

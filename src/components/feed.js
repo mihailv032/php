@@ -274,9 +274,9 @@ function AnimeCard({details}){
 	{details.title.length > 24 && cropTitle ? `${details.title.slice(0,24)}...` : details.title}
       </Styled.AnimeCardTitle>
       <span onMouseLeave={() => setShowOverlay(false)} onMouseEnter={() => setShowOverlay(true)}>
-	<AnimeCardOverlay opened={showOverlay}>
+	<CardOverlay opened={showOverlay}>
 	  {MemoizedOverlayContent}
-	</AnimeCardOverlay>
+	</CardOverlay>
 	  {MemoizedContent}
       </span>
     </Styled.AnimeCardContainer>
@@ -290,7 +290,7 @@ const overlayAnimation = {
   exitActive: styles.overlayExitActive,
 }
 
-function AnimeCardOverlay({opened,children}){
+function CardOverlay({opened,children}){
   const {mounted} = useMount({opened})
   if(!mounted) return;
   return (
