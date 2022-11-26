@@ -64,27 +64,38 @@ function Popup({opened,onClose,children,width,height}){
 function PopupLayout({opened,onClose,children,width,height}){
   const overlayRef = useRef()
   const popupContenRef = useRef()
-  
+  const containerRef = useRef()
   const [animationIn,setAnimationIn] = useState(false)
+  function handleFocus(e){
+    e.preventDefault()
+    containerRef.current.focus()
+  }
   useEffect( () => {
+    if (opened){
+      containerRef.current.focus()
+      document.body.style.overflowY = "hidden"
+    }
     setAnimationIn(opened)
+    return () => document.body.style.overflowY = "auto"
   },[opened])
-
   return (
-    <Container>
-      <CSSTransition nodeRef={overlayRef} timeout={300} mountOnEnter unmountOnExit in={animationIn} classNames={overlayAnimation}>
-	<Overlay ref={overlayRef} onClick={onClose}  role="button" tabindex="1" />
-      </CSSTransition>
-      <CSSTransition nodeRef={popupContenRef}
-		     timeout={300}
-		     mountOnEnter
-		     unmountOnExit
-		     classNames={contentAnimation}
-		     in={animationIn}>
-	<PopupContentWrapp width={width} height={height} ref={popupContenRef} role="dialog" className={styles.content}>{children}</PopupContentWrapp>
-      </CSSTransition>
-    </Container>
-    
+    <div tabIndex="2" >
+      <a href="#" onFocus={handleFocus} className={styles.focusKeeper} />
+      <div  tabIndex="0" className={styles.container} ref={containerRef}>
+	<CSSTransition nodeRef={overlayRef} timeout={300} mountOnEnter unmountOnExit in={animationIn} classNames={overlayAnimation}>
+	  <Overlay ref={overlayRef} onClick={onClose}  role="button" tabIndex="1" />
+	</CSSTransition>
+	<CSSTransition nodeRef={popupContenRef}
+		       timeout={300}
+		       mountOnEnter
+		       unmountOnExit
+		       classNames={contentAnimation}
+		       in={animationIn}>
+	  <PopupContentWrapp width={width} height={height} ref={popupContenRef} role="dialog" className={styles.content}>{children}</PopupContentWrapp>
+	</CSSTransition>
+</div>
+      <a href="#" onFocus={handleFocus} className={styles.focusKeeper}/>
+    </div>
   )
 }
 
