@@ -25,6 +25,8 @@ class TodoWrapper extends React.PureComponent {
       todoItems: [],
       inputValue: ""
     }
+    this.todoInputRef = React.createRef();
+
     this.handlDeleteItem = this.handlDeleteItem.bind(this)
     this.handleSubmitItem = this.handleSubmitItem.bind(this)
     this.handleInput = this.handleInput.bind(this)
@@ -36,12 +38,12 @@ class TodoWrapper extends React.PureComponent {
   componentDidMount(){
     const storedTodoItems = localStorage.getItem("todoItems") ? JSON.parse(localStorage.getItem("todoItems")) : []
     this.setState({todoItems: storedTodoItems})
+    this.props.setHotkey("U",() => this.todoInputRef.current.focus())
   }
   componentDidUpdate(prevProps,prevState){
     if( !(prevState.todoItems != this.state.todoItems)) return;
     localStorage.setItem("todoItems",JSON.stringify(this.state.todoItems))
   }
-
   handleSubmitItem(e){
     e.preventDefault()
     this.setState( prevState => ({
@@ -94,16 +96,16 @@ class TodoWrapper extends React.PureComponent {
 	     handleAddDescription={this.handleAddDescription}
 	     handleChangeDescription={this.handleChangeDescription}
 	     handleRemoveDescription={this.handleRemoveDescription}
-	     handleChangeTitle={this.handleChangeTitle} todoRef={this.props.todoRef} />
+	     handleChangeTitle={this.handleChangeTitle} todoInputRef={this.todoInputRef} />
   }
 };
 
-function Todo({todoItems,inputValue,handleSubmitItem,handleInput,handlDeleteItem,handleAddDescription,handleChangeDescription,handleRemoveDescription,handleChangeTitle,todoRef}){
+function Todo({todoItems,inputValue,handleSubmitItem,handleInput,handlDeleteItem,handleAddDescription,handleChangeDescription,handleRemoveDescription,handleChangeTitle,todoInputRef}){
   const TodoItemsContainerWrapp = useMemo( () => TodoItemsContainer({todoItems:todoItems,handlDeleteItem,handleAddDescription,handleChangeDescription,handleRemoveDescription,handleChangeTitle}),[todoItems])
   return (
     <StyledTodo>
       <InputContainer onSubmit={handleSubmitItem}>
-	<StyledInput name="" type="text" onChange={handleInput} value={inputValue} ref={todoRef} />
+	<StyledInput name="" type="text" onChange={handleInput} value={inputValue} ref={todoInputRef} />
       </InputContainer>
       {TodoItemsContainerWrapp}
 {/*      <TodoItemsContainer

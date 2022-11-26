@@ -1,10 +1,15 @@
-import React, {useState,useMemo} from 'react'
+import React, {useState,useMemo,useEffect,useRef} from 'react'
 import styled from 'styled-components'
 import Popup from './popup'
 const images = require('../images.json').images
 
-function ChangeBg({toglePopup,showPopup,handlBgChange,changeBgBtnRef}){
-//  const [value,Input] = useInput()
+export default function ChangeBg({updateBg,setHotkey}){
+  const [showPopup,setShowPopup] = useState(false)
+  const changeBgBtnRef = useRef()
+
+  const toglePopup = () => showPopup ? setShowPopup(false) : setShowPopup(true)
+  const handlBgChange = (bg) => {updateBg(bg);toglePopup()}
+  useEffect( () => setHotkey(")", () => changeBgBtnRef.current.click()),[])
   const MemoizedIMgs = useMemo( () => {
     return (
       <PopupWrapp>
@@ -29,20 +34,6 @@ function ChangeBg({toglePopup,showPopup,handlBgChange,changeBgBtnRef}){
   
 }
 
-function ChangeBgContainer({updateBg,changeBgBtnRef}){
-  const [showPopup,setShowPopup] = useState(false)
-
-  const toglePopup = () => showPopup ? setShowPopup(false) : setShowPopup(true)
-  const handlBgChange = (bg) => {updateBg(bg);toglePopup()}
-
-  return (
-    <ChangeBg toglePopup={ toglePopup }
-	      showPopup={showPopup}
-	      handlBgChange={handlBgChange}
-	      changeBgBtnRef={changeBgBtnRef}
-    />
-  )
-}
 const xButton = {
   "position": "absolute",
   "color": "black",
@@ -83,5 +74,3 @@ const img={
   "padding": "20px",
   "boxSizing": "border-box"
 }
-
-export default ChangeBgContainer
