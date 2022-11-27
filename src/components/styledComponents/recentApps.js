@@ -100,6 +100,8 @@ export const ContexMenutWrapp = styled.ul`
   padding-bottom: 10px;
   padding-left: 20px;
   padding-right: 20px;
+
+  border-radius: 5px;
 `
 
 export const ContextMenuItem = styled.li`

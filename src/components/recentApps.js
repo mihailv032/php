@@ -7,6 +7,7 @@ import ContextMenu from './dropdown'
 function RecentApps({setHotkey,deleteHotkey}){
   const [apps, setApps] = useState(localStorage.getItem("apps") ? JSON.parse(localStorage.getItem("apps")) : [] )
   const [showPopup,setShowPopup] = useState(false)
+
   const addAppRef = useRef()
   const recntAppsRef = useRef()
   const addMore = (name,url,hotkey) => {
@@ -15,14 +16,18 @@ function RecentApps({setHotkey,deleteHotkey}){
     setApps(newApps)
     setShowPopup(false)
   }
-  const changeAppDetails = (name,url,hotkey) => {
-    
+  const changeAppDetails = (index,name,url,hotkey) => {
+//    alert('here')
+    const appArr = [...apps]
+    const favicon = `https://s2.googleusercontent.com/s2/favicons?domain=${url}`
+    appArr[index] = {name:name,url:url,icon:favicon,hotkey: hotkey}
+    setApps(appArr)
   }
   const deleteApp = index =>{
     const appsArr = [...apps]
     const deletedApp = appsArr.splice(index,1)
     setApps(appsArr)
-    if(deletedApp.hotkey) deleteHotkey("Q")
+    if(deletedApp.hotkey) deleteHotkey(deletedApp.hotkey)
   }
   //cannot use the setShowPopup because the callback does not have access the latest showPopup value
   useEffect( () => setHotkey("Y", () => addAppRef.current.click()),[])
@@ -36,6 +41,7 @@ function RecentApps({setHotkey,deleteHotkey}){
       <Popup opened={showPopup} onClose={() => setShowPopup(false) } width="300px" height="500px">
 	<PopupContent submit={addMore} />
       </Popup>
+
     </Styled.RecntAppsContainer>
   )
 }
@@ -47,7 +53,11 @@ function AppContainer({apps,setHotkey,changeAppDetails,deleteApp}) {
 	apps.map( (app,index) => {
 	  return (
 	    <span key={app.url}>
-	      <App name={app.name} url={app.url} icon={app.icon} tabIndex={index} hotkey={app.hotkey} setHotkey={setHotkey} changeAppDetails={changeAppDetails} deleteApp={ () => deleteApp(index)} />
+	      <App name={app.name} url={app.url} icon={app.icon}
+		   tabIndex={index}
+		   hotkey={app.hotkey} setHotkey={setHotkey}
+		   changeAppDetails={ (name,url,hotkey) => changeAppDetails(index,name,url,hotkey)}
+		   deleteApp={ () => deleteApp(index)} />
 	    </span>
 	  )
 	})
@@ -59,6 +69,8 @@ function AppContainer({apps,setHotkey,changeAppDetails,deleteApp}) {
 function App({name,url,icon,hotkey,setHotkey,changeAppDetails,deleteApp}){
   const ref = useRef()
   const [showContext,setShowContext] = useState(false)
+  const [showChangeDetails,setShowDetails] = useState(false)
+
   useEffect( () => {
     if(hotkey){setHotkey(hotkey, () => ref.current.click())}
     
@@ -75,17 +87,21 @@ function App({name,url,icon,hotkey,setHotkey,changeAppDetails,deleteApp}){
 	  <Styled.AppTitle>{name}</Styled.AppTitle>
 	</Styled.App>
       </a>
-      <RightClickMenu opened={showContext} handleClose={() => setShowContext(false) } deleteApp={deleteApp} changeAppDetails={changeAppDetails} />
+      <RightClickMenu opened={showContext} handleClose={() => setShowContext(false) } deleteApp={deleteApp} changeAppDetails={() => setShowDetails(true) } />
+      <Popup opened={showChangeDetails} onClose={ () => setShowDetails(false)}>
+	<PopupContent submit={ (name,url,hotkey) =>{setShowDetails(false);changeAppDetails(name,url,hotkey);}} nameProp={name} urlProp={url} hotkeyProp={hotkey ? hotkey : ""} />
+      </Popup>
     </div>
   )
 }
 
-function PopupContent({submit}){
-  const [name,setName] = useState("")
-  const [url,setUrl] = useState("")
-  const [addHotkey,setAddHotkey] = useState(true)
-  const [hotKey,setHotKey] = useState("")
+function PopupContent({submit,nameProp="",urlProp="",hotkeyProp=""}){
+  const [name,setName] = useState(nameProp)
+  const [url,setUrl] = useState(urlProp)
+  const [addHotkey,setAddHotkey] = useState(false)
+  const [hotKey,setHotKey] = useState(hotkeyProp)
   const [err,setErr] = useState({hotkey: false,url:false})
+
   const handleHotKey = e => {
     const key = e.target.value.length <= 1 ? e.target.value : e.target.value[e.target.value.length-1]
     if(!(key in keyCodes)) return;
@@ -122,9 +138,7 @@ function RightClickMenu({opened,handleClose,changeAppDetails,deleteApp}){
   return (
     <ContextMenu opened={opened} onClose={handleClose}>
       <Styled.ContexMenutWrapp>
-	<Styled.ContextMenuItem onClick={changeAppDetails}>change name</Styled.ContextMenuItem>
-	<Styled.ContextMenuItem onClick={changeAppDetails}>change hotkey</Styled.ContextMenuItem>
-	<Styled.ContextMenuItem onClick={changeAppDetails}>change url</Styled.ContextMenuItem>
+	<Styled.ContextMenuItem onClick={changeAppDetails}>change details</Styled.ContextMenuItem>
 	<Styled.ContextMenuItem onClick={deleteApp}>Delete</Styled.ContextMenuItem>
       </Styled.ContexMenutWrapp>
     </ContextMenu>
