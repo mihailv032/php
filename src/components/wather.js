@@ -10,7 +10,7 @@ export default function Weather(){
   useEffect( () => {
     const getData = async () => {
       try{
-	if((weatherData !== null) && (weatherData.timestamp - Date.now()) < 72000000) return;
+	if((weatherData !== null) && (weatherData.timestamp - Date.now()) > 7200000) return;
 	const url = `https://api.openweathermap.org/data/2.5/weather?lat=${coordinates.lat}&units=metric&lon=${coordinates.lon}&appid=${WEATHER_API_KEY}`
 	const req = await fetch(url)
 	const data = await req.json()
