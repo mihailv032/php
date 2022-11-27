@@ -1,13 +1,12 @@
 .overlayEnter{
     opacity: 0;
-    transform: translateY(100%) scale(1,0.1);
+    transform: translate(0,-50%) scale(1,-0.01);
 }
 
 .overlayEnterActive{
     transition: opacity 300ms ease-out,transform 300ms;
     opacity: 1;
-    transform: scale(1,1);
-    transform: translateY(0);
+    transform: translate(0) scale(1);
 }
 
 .overlayExit {
