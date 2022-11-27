@@ -75,7 +75,7 @@ function PopupLayout({opened,onClose,children,width,height}){
   }
   useEffect( () => {
     if (opened){
-      containerRef.current.focus()
+      setTimeout( () => containerRef.current.focus(),ANIMATION_TIME)
       document.body.style.overflowY = "hidden"
     }
     setAnimationIn(opened)
@@ -94,9 +94,11 @@ function PopupLayout({opened,onClose,children,width,height}){
 		       unmountOnExit
 		       classNames={contentAnimation}
 		       in={animationIn}>
-	  <PopupContentWrapp width={width} height={height} ref={popupContenRef} role="dialog" className={styles.content}>{children}</PopupContentWrapp>
+	  <PopupContentWrapp width={width} height={height} ref={popupContenRef} role="dialog" className={styles.content}>
+	    {children}
+	  </PopupContentWrapp>
 	</CSSTransition>
-</div>
+      </div>
       <a href="#" onFocus={handleFocus} className={styles.focusKeeper}/>
     </div>
   )
