@@ -1,9 +1,10 @@
 import React, { useState, useMemo, useEffect,useRef} from 'react';
 import * as Styled from './styledComponents/recentApps'
 import Popup from './popup'
-import {keyCodes} from '../App'
+import {keyCodes,hotkeys} from '../App'
+import ContextMenu from './dropdown'
 
-function RecentApps({setHotkey}){
+function RecentApps({setHotkey,deleteHotkey}){
   const [apps, setApps] = useState(localStorage.getItem("apps") ? JSON.parse(localStorage.getItem("apps")) : [] )
   const [showPopup,setShowPopup] = useState(false)
   const addAppRef = useRef()
@@ -13,32 +14,40 @@ function RecentApps({setHotkey}){
     const newApps = [{name:name,url:url,icon:favicon,hotkey: hotkey},...apps]
     setApps(newApps)
     setShowPopup(false)
-    localStorage.setItem("apps", JSON.stringify(newApps))
   }
-  useEffect( () => {
-    setHotkey("Y", () => addAppRef.current.click())
-  },[])
-   return (
+  const changeAppDetails = (name,url,hotkey) => {
+    
+  }
+  const deleteApp = index =>{
+    const appsArr = [...apps]
+    const deletedApp = appsArr.splice(index,1)
+    setApps(appsArr)
+    if(deletedApp.hotkey) deleteHotkey("Q")
+  }
+  //cannot use the setShowPopup because the callback does not have access the latest showPopup value
+  useEffect( () => setHotkey("Y", () => addAppRef.current.click()),[])
+  useEffect( () => localStorage.setItem("apps", JSON.stringify(apps)),[apps])
+  return (
     <Styled.RecntAppsContainer>
       <Styled.RecentAppsWrapp ref={recntAppsRef}>
-	<AppContainer apps={apps} setHotkey={setHotkey} />
+	<AppContainer apps={apps} setHotkey={setHotkey} changeAppDetails={changeAppDetails} deleteApp={deleteApp} />
 	<Styled.App onClick={ () => setShowPopup(!showPopup)} ref={addAppRef}>+</Styled.App>
       </Styled.RecentAppsWrapp>
-	<Popup opened={showPopup} onClose={() => setShowPopup(false) } width="300px" height="500px">
-	  <PopupContent submit={addMore} />
-	</Popup>
+      <Popup opened={showPopup} onClose={() => setShowPopup(false) } width="300px" height="500px">
+	<PopupContent submit={addMore} />
+      </Popup>
     </Styled.RecntAppsContainer>
   )
 }
 
-function AppContainer({apps,setHotkey}) {
+function AppContainer({apps,setHotkey,changeAppDetails,deleteApp}) {
   return (
     <>
       {
 	apps.map( (app,index) => {
 	  return (
 	    <span key={app.url}>
-	      <App name={app.name} url={app.url} icon={app.icon} tabIndex={index} hotkey={app.hotkey} setHotkey={setHotkey} />
+	      <App name={app.name} url={app.url} icon={app.icon} tabIndex={index} hotkey={app.hotkey} setHotkey={setHotkey} changeAppDetails={changeAppDetails} deleteApp={ () => deleteApp(index)} />
 	    </span>
 	  )
 	})
@@ -47,17 +56,27 @@ function AppContainer({apps,setHotkey}) {
   )
 }
 
-function App({name,url,icon,hotkey,setHotkey}){
+function App({name,url,icon,hotkey,setHotkey,changeAppDetails,deleteApp}){
   const ref = useRef()
-  useEffect( () =>{if(hotkey){setHotkey(hotkey, () => ref.current.click())}},[])
+  const [showContext,setShowContext] = useState(false)
+  useEffect( () => {
+    if(hotkey){setHotkey(hotkey, () => ref.current.click())}
+    
+  },[])
+  const handleContext = e => {
+    e.preventDefault()
+    setShowContext(!showContext)
+  }
   return (
-    <a href={url} ref={ref} title={hotkey ? hotkey : "not hotkey was added for this app"}>
-      <Styled.App>
-	<img alt="" src={icon} />
-	<Styled.AppTitle>{name}</Styled.AppTitle>
-      </Styled.App>
-      
-    </a>
+    <div onContextMenu={handleContext}>
+      <a href={url} ref={ref} title={hotkey ? hotkey : "not hotkey was added for this app"} >
+	<Styled.App>
+	  <img alt="" src={icon} />
+	  <Styled.AppTitle>{name}</Styled.AppTitle>
+	</Styled.App>
+      </a>
+      <RightClickMenu opened={showContext} handleClose={() => setShowContext(false) } deleteApp={deleteApp} changeAppDetails={changeAppDetails} />
+    </div>
   )
 }
 
@@ -90,12 +109,25 @@ function PopupContent({submit}){
 	<Styled.ErrorLabel>{err.url}</Styled.ErrorLabel>
 	<Styled.Input value={url} onChange={(e) => setUrl(e.target.value)}/>
 	<label>add custom hotkey</label>
-	<input name="" type="checkbox" checked={addHotkey} onChange={ () => setAddHotkey(!addHotkey)} />
+	<input name="" type="checkbox" checked={addHotkey} onChange={ () => setAddHotkey(!addHotkey)} tabIndex={0}/>
 	<Styled.ErrorLabel>{err.hotkey}</Styled.ErrorLabel>
-	{addHotkey && <Styled.Input name="" type="text" value={hotKey} onChange={handleHotKey} />}
+	{addHotkey && <Styled.Input name="" type="text" value={hotKey} onChange={handleHotKey} tabIndex={1} />}
 	<Styled.Btn onSubmit={handleSubmit}>click me</Styled.Btn>
       </Styled.AddApp>
     </Styled.PopupWrapp>
+  )
+}
+
+function RightClickMenu({opened,handleClose,changeAppDetails,deleteApp}){
+  return (
+    <ContextMenu opened={opened} onClose={handleClose}>
+      <Styled.ContexMenutWrapp>
+	<Styled.ContextMenuItem onClick={changeAppDetails}>change name</Styled.ContextMenuItem>
+	<Styled.ContextMenuItem onClick={changeAppDetails}>change hotkey</Styled.ContextMenuItem>
+	<Styled.ContextMenuItem onClick={changeAppDetails}>change url</Styled.ContextMenuItem>
+	<Styled.ContextMenuItem onClick={deleteApp}>Delete</Styled.ContextMenuItem>
+      </Styled.ContexMenutWrapp>
+    </ContextMenu>
   )
 }
 

@@ -1,0 +1,21 @@
+.contentAnimationEnter {
+    transform: translate(0,-50%) scale(1,-0.01);
+}
+
+.contentAnimationEnterActive {
+    transition: transform 300ms;
+    transform: translate(0) scale(1);
+}
+
+.contentAnimationExit{
+
+}
+
+.contentAnimationExitActive {
+    transform: translate(0,-50%) scale(1,-0.01);
+    transition: transform 300ms;
+}
+
+.container {
+    position: absolute;
+}

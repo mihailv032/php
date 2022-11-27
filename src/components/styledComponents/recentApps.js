@@ -92,3 +92,23 @@ export const Btn = styled.button`
 export const ErrorLabel = styled.label`
   color: red;
 `
+
+export const ContexMenutWrapp = styled.ul`
+  list-style: none;
+  background: #1A0F1C;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  padding-left: 20px;
+  padding-right: 20px;
+`
+
+export const ContextMenuItem = styled.li`
+  padding-top: 5px;
+  color: #dfdfdf;
+  text-transform: capitalize;
+  padding-bottom: 5px;
+  cursor: pointer;
+  &:nth-child(n):hover{
+  color: white;
+  }
+`
