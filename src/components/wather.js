@@ -10,7 +10,7 @@ export default function Weather(){
   useEffect( () => {
     const getData = async () => {
       try{
-	if((weatherData.timestamp - Date.now()) < 72000000) return;
+	if((weatherData !== null) && (weatherData.timestamp - Date.now()) < 72000000) return;
 	const url = `https://api.openweathermap.org/data/2.5/weather?lat=${coordinates.lat}&units=metric&lon=${coordinates.lon}&appid=${WEATHER_API_KEY}`
 	const req = await fetch(url)
 	const data = await req.json()
@@ -29,6 +29,7 @@ export default function Weather(){
     <div className={styles.container}>
       <img alt="" className={styles.img} src={`http://openweathermap.org/img/wn/${weatherData.weather[0].icon}@2x.png`} />
       <div className={styles.data}>{weatherData.main.temp} {weatherData.weather[0].description} {weatherData.main.description}</div>
+      <div className={styles.data}>{Math.round(((Date.now() -weatherData.timestamp)/3600000)*100)/100}h ago</div>
       <button className={styles.toogleBtn} onClick={() => setShowCoords(!showGetCoords) }>{showGetCoords ? "Hide" : "Get Coordinates"}</button>
       {showGetCoords && <GetCoordinates setCoordinates={setCoordinates}/>}
     </div>
@@ -50,7 +51,7 @@ function GetCoordinates({setCoordinates}){
 	localStorage.setItem("coordinates", JSON.stringify({lat:coordinates.lat,lon:coordinates.lon}))
       }
     }catch(err){
-      console.log('f')
+      console.log('could not get the coordinates')
     }
   }
   return (

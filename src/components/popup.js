@@ -3,6 +3,7 @@ import {useState,useEffect, useRef} from 'react'
 import {Overlay,Container,PopupContentWrapp} from './styledComponents/popup'
 import {CSSTransition} from 'react-transition-group'
 import styles from './popup.module.css';
+import {ANIMATION_TIME} from '../consts'
 
 const contentAnimation = {
   enter: styles.contentAnimationEnter,
@@ -27,13 +28,14 @@ export const useMount = ({opened}) => {
       timerRef.current = setTimeout( () => {
 	setMounted(false)
 	timerRef.current = null
-      },300)
+      },ANIMATION_TIME)
     }
   },[opened])
   return {
     mounted,
   }
 }
+
 function Portal({children}){
   const [container] = useState( () => document.createElement('div'));
   useEffect( () => {
@@ -68,6 +70,7 @@ function PopupLayout({opened,onClose,children,width,height}){
   const [animationIn,setAnimationIn] = useState(false)
   function handleFocus(e){
     e.preventDefault()
+    e.stopPropagation()
     containerRef.current.focus()
   }
   useEffect( () => {
@@ -79,14 +82,14 @@ function PopupLayout({opened,onClose,children,width,height}){
     return () => document.body.style.overflowY = "auto"
   },[opened])
   return (
-    <div tabIndex="2" >
+    <div tabIndex={2} >
       <a href="#" onFocus={handleFocus} className={styles.focusKeeper} />
-      <div  tabIndex="0" className={styles.container} ref={containerRef}>
-	<CSSTransition nodeRef={overlayRef} timeout={300} mountOnEnter unmountOnExit in={animationIn} classNames={overlayAnimation}>
-	  <Overlay ref={overlayRef} onClick={onClose}  role="button" tabIndex="1" />
+      <div  tabIndex={0} className={styles.container} ref={containerRef}>
+	<CSSTransition nodeRef={overlayRef} timeout={ANIMATION_TIME} mountOnEnter unmountOnExit in={animationIn} classNames={overlayAnimation}>
+	  <Overlay ref={overlayRef} onClick={onClose}  role="button" tabIndex={1} />
 	</CSSTransition>
 	<CSSTransition nodeRef={popupContenRef}
-		       timeout={300}
+		       timeout={ANIMATION_TIME}
 		       mountOnEnter
 		       unmountOnExit
 		       classNames={contentAnimation}

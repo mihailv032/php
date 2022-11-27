@@ -49,7 +49,6 @@ export const GitRepoHeader = styled.header`
 
 export const GitRepoTitle = styled.h1`
   font-family: sans-serif;
-  text-transform: capitalize;
 `
 export const GitAccTitleContainer = styled.form`
   display: flex;
@@ -59,7 +58,6 @@ export const GitAccTitleContainer = styled.form`
 
 export const GitAccTitle = styled.input`
   font-family: sans-serif;
-  text-transform: capitalize;
   background: transparent;
   color: black;
   max-width: 500px;
