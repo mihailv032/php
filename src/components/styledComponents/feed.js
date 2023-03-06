@@ -191,12 +191,9 @@ export const AnimeCardOverlaySynopsis = styled.section`
 
 export const AnimeCardTitle = styled.h1`
   font-weight: bold;
-  font-size: 30px;
+  font-size: 1.5vw;
   text-align: center;
-  margin-top: 0;
-  overflow-wrap: break-word;
-  height: 100%;
-  overflow-y: auto;
+  margin-bottom: 30px;
 `
 
 export const AnimePreview = styled.img`

@@ -233,7 +233,6 @@ function Anime({data,err,type,setType,year,setYear,season,setSeason}){
 }
   
 function AnimeCard({details}){
-  const [cropTitle,setCropTitle] = useState(true)
   const [showOverlay,setShowOverlay] = useState(false)
   const MemoizedContent = useMemo( () => {
     return (
@@ -270,8 +269,8 @@ function AnimeCard({details}){
   },[details,showOverlay])
   return (
     <Styled.AnimeCardContainer>
-      <Styled.AnimeCardTitle onMouseEnter={ () => setCropTitle(false)} onMouseLeave={() => setCropTitle(true)}>
-	{details.title.length > 24 && cropTitle ? `${details.title.slice(0,24)}...` : details.title}
+      <Styled.AnimeCardTitle title={details.title}>
+	{details.title.length > 20 ? `${details.title.slice(0,24)}...` : details.title}
       </Styled.AnimeCardTitle>
       <span onMouseLeave={() => setShowOverlay(false)} onMouseEnter={() => setShowOverlay(true)}>
 	<CardOverlay opened={showOverlay}>

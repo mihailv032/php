@@ -51,9 +51,8 @@ export const TodoContainer = styled.div`
   z-index: 0;
   overflow-y: auto;
   max-width: 500px;
-  max-height: 700px;
+  max-height: 60vh;
   box-sizing: border-box;
-
 `
 
 export const TodoItemContainer = styled.div`
@@ -126,7 +125,6 @@ export const DescriptionContent = styled.textarea`
   padding-bottom: 10px;
   padding-left: 20px;
   padding-right: 20px;
-  height: 50px;
   box-sizing: border-box;
   border: none;
   border-bottom: 2px solid black;
