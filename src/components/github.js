@@ -191,11 +191,6 @@ class GitReposContainer extends React.Component {
     let created = new Date(this.state.details.created_at);
     created = created.getDate() + '/' + (created.getMonth() + 1) + '/' +  created.getFullYear();
 
-    const commits = this.getCommitsFromLocalStorage()
-    if(commits){
-      if((Date.now() - commits.timestamp) > 108000000) { await this.getCommits() }
-      else{this.setCommits(commits.commits);}
-    }
     this.setState({created: created})
   }
   getCommitsFromLocalStorage(){
@@ -224,9 +219,14 @@ class GitReposContainer extends React.Component {
     else{commits = [...this.state.commits,...this.state.restCommits]}
     this.setState( prevState => ({showAllCommits: !prevState.showAllCommits,commits:commits}))
   }
-  toggleShowCommits(){
-    if(this.state.commits.length > 0){this.setState({commits: []})}
-    else{this.setCommits(this.getCommitsFromLocalStorage().commits)}
+  //the main work with commits happens here
+  async toggleShowCommits(){
+    if(this.state.commits.length > 0){this.setState({commits: []}); return;};
+    const commits = this.getCommitsFromLocalStorage()
+    if(commits){
+      if((Date.now() - commits.timestamp) > 108000000) { await this.getCommits() }
+      else{this.setCommits(commits.commits);}
+    }else{ await this.getCommits()}
   }
   render(){
     return (<GitRepo details={this.state.details}
