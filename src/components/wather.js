@@ -1,5 +1,6 @@
 import {useState,useEffect} from 'react'
 import styles from './weather.module.css'
+import ContextMenu from '../components/dropdown'
 
 export default function Weather(){
   const WEATHER_API_KEY="c9f0a3624c0ce183678090945e46f304"
@@ -31,12 +32,12 @@ export default function Weather(){
       <div className={styles.data}>{weatherData.main.temp} {weatherData.weather[0].description} {weatherData.main.description}</div>
       <div className={styles.data}>{Math.round(((Date.now() -weatherData.timestamp)/3600000)*100)/100}h ago</div>
       <button className={styles.toogleBtn} onClick={() => setShowCoords(!showGetCoords) }>{showGetCoords ? "Hide" : "Get Coordinates"}</button>
-      {showGetCoords && <GetCoordinates setCoordinates={setCoordinates}/>}
+      <GetCoordinates setCoordinates={setCoordinates} opened={showGetCoords} />
     </div>
   )
 }
 
-function GetCoordinates({setCoordinates}){
+function GetCoordinates({setCoordinates,opened}){
   const [city,setCity] = useState( "watherCity" in localStorage ? localStorage.getItem("watherCity") : "wolverhampton")
   const [remember,setRemember] = useState(false)
 
@@ -55,13 +56,15 @@ function GetCoordinates({setCoordinates}){
     }
   }
   return (
-    <form onSubmit={handleSubmit} className={styles.searchForm}>
-      <input name="" type="text" value={city} onChange={e => setCity(e.target.value) } />
-      <span className={styles.rem}>rembember</span>
-      <input name="" type="checkbox" checked={remember} onChange={ () => setRemember(!remember)} />
-      <div>
-	<button onSubmit={handleSubmit} className={styles.btn}>Search</button>
-      </div>
-    </form>
+    <ContextMenu opened={opened}>
+      <form onSubmit={handleSubmit} className={styles.searchForm}>
+        <input name="" type="text" value={city} onChange={e => setCity(e.target.value) } />
+        <span className={styles.rem}>rembember</span>
+        <input name="" type="checkbox" checked={remember} onChange={ () => setRemember(!remember)} />
+        <div>
+	  <button onSubmit={handleSubmit} className={styles.btn}>Search</button>
+        </div>
+      </form>
+    </ContextMenu>
   )
 }
