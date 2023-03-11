@@ -3,6 +3,7 @@ import styled from 'styled-components'
 import { v4 as uuidv4 } from 'uuid';
 import {StyledInput,
 	TodoContainer,
+	TodoSideBtuttons,
 	TodoItemContainer,
 	StyledTodoItem,
 	DeleteBtn,
@@ -156,7 +157,12 @@ function TodoItem({text,deleteItem,handleAddDesc,index,handleChangeDescription,h
 	<StyledTodoItem value={title} onChange={(e) => setTitle(e.target.value)} type="input" />
 	<TitleSubmitButton onSubmit={e =>{ handleChangeTitle(e,index,title)}}></TitleSubmitButton>
       </TodoItemInputContainer>
-      <DeleteBtn onClick={deleteItem}>X</DeleteBtn>
+      <div>
+	<TodoSideBtuttons>
+	  <DeleteBtn onClick={deleteItem}>X</DeleteBtn>
+	  <h5>ctg</h5>
+	</TodoSideBtuttons>
+      </div>
       {MemoizedTodoDescription}
     </TodoItemContainer>
   )

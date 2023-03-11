@@ -67,13 +67,17 @@ export const TodoItemContainer = styled.div`
   box-sizing: border-box;
 `
 
+export const TodoSideBtuttons = styled.div`
+   position: absolute;
+  top: 0;
+  right: 0; 
+`
+
 export const DeleteBtn = styled.button`
   display: flex;
   align-items: center;
   justify-content: center;
-  position: absolute;
-  top: 0;
-  right: 0;
+
   background: transparent;
   font-weight: bold;
   width : 20px;
@@ -118,17 +122,21 @@ export const DescriptionContentContainer = styled.div`
 `
 
 export const DescriptionContent = styled.textarea`
+
   margin: 0;
   background: #71797E;
   font-size: 25px;
   padding-top: 10px;
   padding-bottom: 10px;
   padding-left: 20px;
+
   padding-right: 20px;
   box-sizing: border-box;
   border: none;
   border-bottom: 2px solid black;
   width: 100%;
+  overflow:hidden;
+  display:block;
   font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,
     Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
   color: white;
