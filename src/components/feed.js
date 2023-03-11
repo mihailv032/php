@@ -17,7 +17,7 @@ class FeedContainer extends React.Component {
     this.handleSelection = this.handleSelection.bind(this)
   }
   handleSelection(newSelection) {
-    if(Object.keys(this.state.data).indexOf(newSelection) === -1) return;
+    if(this.state.selectionOptions.indexOf(newSelection) === -1) return;
     this.setState({selection: newSelection})
     localStorage.setItem("selection", newSelection)
   }
@@ -54,7 +54,7 @@ function Feed({parentThis}){
   return (
     <Styled.ContainerFeed>
       {MomoizedNav}
-      {parentThis.state.selection && <AnimeContainer/>}
+      {FeedComponents[parentThis.state.selection]}
     </Styled.ContainerFeed>
     
   )
@@ -116,7 +116,7 @@ function AnimeContainer(){
     }
     const getSeasonalAnime = async () => {
       try{
-	const url = URL + `/api/mal?season=${season}&offset=0&limit=100&year=${year}`
+	const url = URL + `/api/mal/seasonal?season=${season}&offset=0&limit=100&year=${year}`
 	const seasonalAnime = await getData(url)
 	console.log(seasonalAnime)
 	if(!seasonalAnime){
@@ -139,7 +139,7 @@ function AnimeContainer(){
       .then( (res) => setCurrData())
       .catch( (err) => {setErr(Object.assign({},err,{[type]:true}));console.log(err)})
     }
-  },[year,season]);
+  },[type,year,season]);
   console.log(Object.keys(data[type]))
   return (
     <Anime data={currentData}
