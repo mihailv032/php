@@ -1,3 +1,6 @@
+//TODO remove getAccountData
+
+
 import React, { useMemo, useState } from 'react';
 import {GitWrapp,
 	GitHeader,
@@ -34,7 +37,6 @@ class GithubContainer extends React.Component {
     this.changeUser = this.changeUser.bind(this)
     this.handleRememberUser = this.handleRememberUser.bind(this)
     this.handleForked = this.handleForked.bind(this)
-    this.handleInput = this.handleInput.bind(this)
   }
 
   async componentDidMount(){
@@ -64,7 +66,6 @@ class GithubContainer extends React.Component {
 	userName: userName,
       }}),
       userName: userName,
-      inputValue: userName
     }))
     if(this.state.err) this.setState({err: false})
     if(this.state.rememberUser){
@@ -106,65 +107,48 @@ class GithubContainer extends React.Component {
   handleRememberUser(){
     this.setState( prevState => ({rememberUser: !prevState.rememberUser}))
   }
-  handleInput(userName){
-    this.setState({inputValue: userName})
-  }
   handleForked(){
     this.setState( prevState => ({forked: !prevState.forked}))
   }
   render() {
-    if(!this.state.data[this.state.userName] || this.state.err){
-      return (
-	<GitTtitleContainer err={this.state.err}
-			    inputValue={this.state.inputValue}
-			    changeUser={this.changeUser}
-			    handleInputValue={this.handleInput}
-			    handleRememberUser={this.handleRememberUser} />
-      )
-    }
     return (
-      <Github account={this.state.data[this.state.userName].account}
-	      repos={this.state.data[this.state.userName].repos }
+      <Github account={this.state.data[this.state.userName]?.account}
+	      repos={this.state.data[this.state.userName]?.repos }
 	      userName={this.state.userName}
-              inputValue={this.state.inputValue}
 	      changeUser={this.changeUser}
-              handleInput={this.handleInput}
 	      handleRememberUser={this.handleRememberUser}
 	      forked={this.state.forked} handleForked={this.handleForked} />
     );
   }
 };
 
-function Github({account,repos,userName,inputValue,handleInputValue,handleRememberUser,changeUser,forked,handlehandleForked}) {
+function Github({account,repos,userName,handleRememberUser,changeUser,forked,handlehandleForked}) {
   const MainSectionMemoized = useMemo( () => GitMainSection({repos,userName,forked}),[repos,userName,forked])
 
   return (
     <GitWrapp>
       <GitHeader>
-	<a href={`https://github.com/${userName}`}>
-	  <img alt="" src={account.avatar_url} style={{width: "100px",height: "100px",borderRadius: "100%"}} />
+	<a href={`https://github.com/${account ? userName  : ""}`}>
+	  <img alt="" src={account ? account.avatar_url : "https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/Octicons-mark-github.svg/2048px-Octicons-mark-github.svg.png"} style={{width: "100px",height: "100px",borderRadius: "100%"}} />
 	</a>
-	<GitTtitleContainer inputValue={inputValue}
-			    handleInputValue={handleInputValue}
-			    handleRembemberUser={handleRememberUser}
-			    changeUser={changeUser} />
-	<h1>{forked ? "Hidke" : "Show"} Forked</h1>
-	<input name="" type="checkbox" value="" defaultChecked={forked} onClick={handlehandleForked} />
+	<GitTtitleContainer handleRememberUser={handleRememberUser} changeUser={changeUser} />
+	{repos && <> <h1>{forked ? "Hidke" : "Show"} Forked</h1>
+	<input name="" type="checkbox" value="" defaultChecked={forked} onClick={handlehandleForked} /> </>}
       </GitHeader>
-      <GitMain>
+      {repos && <GitMain>
 	{MainSectionMemoized}
-      </GitMain>
+      </GitMain>}
     </GitWrapp>
   )
 }
 
-function GitTtitleContainer({err=false,inputValue,handleInputValue,changeUser,handleRememberUser}){
-
+function GitTtitleContainer({err=false,changeUser,handleRememberUser}){
+  const [user_name,setUserName] = useState("")
   return (
-    <GitAccTitleContainer onSubmit={e => changeUser(e,inputValue) }>
+    <GitAccTitleContainer onSubmit={e => changeUser(e,user_name) }>
       {err && <h1>Something went wrong try entering the user name</h1>}
-      <GitAccTitle value={inputValue}
-		   onChange={(e) => handleInputValue(e.target.value) } placeholder="enter your user name" />
+      <GitAccTitle value={user_name}
+		   onChange={(e) => setUserName(e.target.value) } placeholder="enter your user name" />
       <h1>Rembember User</h1>
       <input name="" type="checkbox" onClick={handleRememberUser} />
     </GitAccTitleContainer>
@@ -172,6 +156,7 @@ function GitTtitleContainer({err=false,inputValue,handleInputValue,changeUser,ha
   )
 }
 function GitMainSection({repos,userName,forked}) {
+  if(!repos) return;
   return (
     <>
       {
@@ -190,43 +175,74 @@ class GitReposContainer extends React.Component {
       details : props.details,
       userName : props.userName,
       commits: [],
-      restCommits: []
+      restCommits: [],
+      created: "",
+      showAllCommits: false,
+      loading: false
     }
+    this.previewCommitsLength = 5
+    this.toggleShowCommits = this.toggleShowCommits.bind(this)
+    this.toggleShowAllCommits = this.toggleShowAllCommits.bind(this)
+    this.getCommits = this.getCommits.bind(this)
   }
   async componentDidMount(){
     if(!this.state.userName) return;
     if(!this.state.details) return;
-    const isCommits = localStorage.getItem(`commits${this.state.details.id}`) ?
-		  JSON.parse(localStorage.getItem(`commits${this.state.details.id}`)) : false
-    let commits; 
-    if(!isCommits){
-      console.log('fetching')
-      const req = await fetch(`https://api.github.com/repos/${this.state.userName}/${this.state.details.name}/commits`)
-      commits = await req.json()
-    }else {//check if commits are outdated
-      console.log(isCommits.commits)
-      commits = isCommits.commits
+    let created = new Date(this.state.details.created_at);
+    created = created.getDate() + '/' + (created.getMonth() + 1) + '/' +  created.getFullYear();
+
+    const commits = this.getCommitsFromLocalStorage()
+    if(commits){
+      if((Date.now() - commits.timestamp) > 108000000) { await this.getCommits() }
+      else{this.setCommits(commits.commits);}
     }
-    if(!commits) return;
-    const recentCommits = commits.splice(0,5)
+    this.setState({created: created})
+  }
+  getCommitsFromLocalStorage(){
+    return localStorage.getItem(`commits${this.state.details.id}`) ?
+		  JSON.parse(localStorage.getItem(`commits${this.state.details.id}`)) : false
+  }
+  async getCommits(){
+    alert('hre')
+    this.setState({loading: true})
+    const req = await fetch(`https://api.github.com/repos/${this.state.userName}/${this.state.details.name}/commits`)
+    const commits = await req.json()
+    const today = Date.now()
+    localStorage.setItem(`commits${this.state.details.id}`, JSON.stringify({timestamp:today,commits: commits}))
+    this.setCommits(commits)
+    this.setState({loading: false})
+  }
+  setCommits(commits){
+    console.log(commits)
+    const recentCommits = commits.splice(0,this.previewCommitsLength)
     const restCommits = commits
     this.setState({commits: recentCommits,restCommits:restCommits})
-    if(!isCommits){
-      const today = new Date().toString()
-      localStorage.setItem(`commits${this.state.details.id}`, JSON.stringify({date:today,commits: commits}))
-    }
   }
-  
+  toggleShowAllCommits(){
+    let commits;
+    if(this.state.commits.length > this.previewCommitsLength){commits = [...this.state.commits].splice(0,this.previewCommitsLength)}
+    else{commits = [...this.state.commits,...this.state.restCommits]}
+    this.setState( prevState => ({showAllCommits: !prevState.showAllCommits,commits:commits}))
+  }
+  toggleShowCommits(){
+    if(this.state.commits.length > 0){this.setState({commits: []})}
+    else{this.setCommits(this.getCommitsFromLocalStorage().commits)}
+  }
   render(){
-    return <GitRepo details={this.state.details} commits={this.state.commits} allCommits={this.state.restCommits} />
+    return (<GitRepo details={this.state.details}
+                     commits={this.state.commits}
+                     created={this.state.created}
+                     showAllCommits={this.state.showAllCommits}
+                     toggleShowCommits={this.toggleShowCommits}
+                     toggleShowAllCommits={this.toggleShowAllCommits}
+                     loading={this.state.loading}
+                     getCommits={this.getCommits} />
+    )
   }
 }
 
-function GitRepo({details,commits,allCommits}){
+function GitRepo({details,commits,created,showAllCommits,toggleShowAllCommits,loading,toggleShowCommits}){
   const [cloneUrlSsh, setCloneUrl] = useState(true)
-  const [showAllCommits,setShowAllCommits] = useState(false)
-  let created = new Date(details.created_at);
-  created = created.getDate() + '/' + (created.getMonth() + 1) + '/' +  created.getFullYear();
   return (
     <GitRepoContainer>
       <GitRepoHeader>
@@ -236,9 +252,12 @@ function GitRepo({details,commits,allCommits}){
 	<RepoCreated>
 	  Created: {created}
 	</RepoCreated>
+        {<button onClick={toggleShowCommits}>{commits.length > 0 ? "hide" : "show"} commits</button>}
       </GitRepoHeader>
       <GitRepoMain>
+        {loading && <h1>Loading</h1>}
 	{
+          commits && 
 	  commits.map( commit => {
 	    let date = new Date(commit.commit.author.date)
 	    date = date.getDate() + '/' + (date.getMonth() + 1) + '/' +  date.getFullYear();
@@ -248,25 +267,13 @@ function GitRepo({details,commits,allCommits}){
 		{commit.commit.message}
 	      </CommitMessage>
 	    )
-	  })
-	}
-	{
-	  showAllCommits ?
-	  allCommits.map( commit => {
-	    let date = new Date(commit.commit.author.date)
-	    date = date.getDate() + '/' + (date.getMonth() + 1) + '/' +  date.getFullYear();
-	    return (
-	      <CommitMessage key={commit.sha}><CommitDate>Commit Date: {date}</CommitDate> {commit.commit.message} </CommitMessage>
-	    )
-	  }) : null
-	}
-	{ allCommits.length >= 1 &&
-	  <ToggleCommitsContainer>
-	    <ToggleCommitsBtn onClick={ () => setShowAllCommits(!showAllCommits) }>
-	      Show {showAllCommits ? "Less" : "More"}
-	    </ToggleCommitsBtn>
-	  </ToggleCommitsContainer>
-	}
+	  })}
+	{ commits.length >= 5 && <ToggleCommitsContainer>
+	<ToggleCommitsBtn onClick={ toggleShowAllCommits }>
+	  Show {showAllCommits ? "Less" : "More"}
+	</ToggleCommitsBtn>
+	</ToggleCommitsContainer>}
+
 	<RepoCloneContainer>
 	  <RepoClone readOnly={true} value={cloneUrlSsh ? details.ssh_url : details.clone_url} />
 	  <RepoCloneBtn onClick={ () => setCloneUrl(!cloneUrlSsh) }>{cloneUrlSsh ? "SSH" : "HTTPS"}</RepoCloneBtn>
