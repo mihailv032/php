@@ -9,7 +9,7 @@ export default function ChangeBg({updateBg,setHotkey}){
 
   const toglePopup = () => showPopup ? setShowPopup(false) : setShowPopup(true)
   const handlBgChange = (bg) => {updateBg(bg);toglePopup()}
-  useEffect( () => setHotkey(")", () => changeBgBtnRef.current.click()),[])
+  useEffect( () =>{setHotkey(")", () => changeBgBtnRef.current.click())},[])
   const MemoizedIMgs = useMemo( () => {
     return (
       <PopupWrapp>
