@@ -9,6 +9,7 @@ import SearchBar from './components/searchbar'
 import DoubleScreen from './components/doubleScreen'
 import Weather from './components/wather'
 import Popup from './components/popup'
+import Login from './components/login.js'
 
 import styled from 'styled-components'
 
@@ -96,6 +97,7 @@ function App() {
       <FeedSection>
 	<FeedContainer/>
       </FeedSection>
+      <Login setWord={setWord} />
     </>
   );
 }
