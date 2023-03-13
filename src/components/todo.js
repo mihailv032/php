@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useContext} from 'react';
+import React, { useState, useMemo, useEffect, useContext, createContext } from 'react';
 import { AppContext } from '../App';
 import styled from 'styled-components'
 import { v4 as uuidv4 } from 'uuid';
@@ -29,6 +29,7 @@ import {StyledInput,
 	TodoItemInputContainer,
 	TitleSubmitButton} from './styledComponents/todo'
 
+const TodoWrapperContext = createContext({})
 class TodoWrapper extends React.PureComponent {
   constructor(props) {
     super(props);
@@ -48,27 +49,24 @@ class TodoWrapper extends React.PureComponent {
   componentDidMount(){
     console.log(this.context)
     const storedTodoItems = localStorage.getItem("todoItems") ? JSON.parse(localStorage.getItem("todoItems")) : []
+    this.props.setHotkey("U",() => this.todoInputRef.current.focus())
     console.log(storedTodoItems)
     this.setState({todoItems: storedTodoItems})
   }
   componentDidUpdate(prevProps,prevState){
-//    if( !(prevState.todoItems != this.state.todoItems)) return;
-    if((prevProps.loggedIn != this.props.loggedIn) && this.props.loggedIn) this.migration()
-    this.props.setHotkey("U",() => this.todoInputRef.current.focus())
     localStorage.setItem("todoItems",JSON.stringify(this.state.todoItems))
   }
   handleSubmitItem(e,title){
     e.preventDefault()
-    
     this.setState( prevState => ({
       todoItems: [{title: title,description: "",id:uuidv4()},...prevState.todoItems]
     }))
   }
   async handleChangeTitle(e,todoIndex,newTitle){
     e.preventDefault()
-    let todoItems = this.state.todoItems
-    todoItems[todoIndex].title = newTitle
-    this.setState({todoItems: todoItems})
+    this.state.todoItems[todoIndex].title = newTitle
+    //this will not triger the componentWill update to avoid unneccessary re-render so we just save it manually
+    localStorage.setItem("todoItems",JSON.stringify(this.state.todoItems))
   }
   async handlDeleteItem(index){
     const todoItemsArr = [...this.state.todoItems]
@@ -85,9 +83,9 @@ class TodoWrapper extends React.PureComponent {
   }
   async handleChangeDescription(e,TodoIndex,desc,descIndex){
     e.preventDefault()
-    let todoItems = this.state.todoItems
-    todoItems[TodoIndex].description[descIndex] = desc
-    this.setState({todoItems: todoItems})
+    this.state.todoItems[TodoIndex].description[descIndex] = desc
+    //this will not triger the componentWill update to avoid unneccessary re-render so we just save it manually
+    localStorage.setItem("todoItems",JSON.stringify(this.state.todoItems))
   }
   async handleRemoveDescription(e,todoIndex,descIndex){
     e.preventDefault()
@@ -136,51 +134,49 @@ class TodoWrapper extends React.PureComponent {
   }
   render() {
     return (
-      <>
         <Categories render={ ({categories,addCategory,deleteCategory}) => { 
           return (
-            <Todo
-	      todoItems={this.state.todoItems}
-	      handleSubmitItem={this.handleSubmitItem}
-	      handlDeleteItem={this.handlDeleteItem}
-	      handleAddDescription={this.handleAddDescription}
-	      handleChangeDescription={this.handleChangeDescription}
-	      handleRemoveDescription={this.handleRemoveDescription}
-	      handleChangeTitle={this.handleChangeTitle}
-              todoInputRef={this.todoInputRef}
-              categories={categories}
-              addCategory={addCategory}
-              deleteCategory={deleteCategory} />
+            <TodoWrapperContext.Provider
+              value={{
+	        todoItems: this.state.todoItems,
+	        handleSubmitItem:this.handleSubmitItem,
+	        handlDeleteItem:this.handlDeleteItem,
+	        handleAddDescription:this.handleAddDescription,
+	        handleChangeDescription:this.handleChangeDescription,
+	        handleRemoveDescription:this.handleRemoveDescription,
+	        handleChangeTitle:this.handleChangeTitle,
+                todoInputRef:this.todoInputRef,
+                categories:categories,
+                addCategory:addCategory,
+                deleteCategory:deleteCategory,
+              }}
+            >
+              <Todo/>
+            </TodoWrapperContext.Provider>
           )
         }}/>
-      </>
+      
     )
   }
 };
 
 
-function Todo({todoItems,handleSubmitItem,handlDeleteItem,handleAddDescription,handleChangeDescription,handleRemoveDescription,handleChangeTitle,todoInputRef,categories,addCategory,deleteCategory}){
-  const TodoItemsContainerWrapp = useMemo( () => TodoItemsContainer({todoItems:todoItems,handlDeleteItem,handleAddDescription,handleChangeDescription,handleRemoveDescription,handleChangeTitle,categories:categories}),[todoItems,categories])
+function Todo(){
+  const {todoItems,categories} = useContext(TodoWrapperContext)
+  const TodoItemsContainerWrapp = useMemo( () => TodoItemsContainer({todoItems,categories}),[todoItems,categories])
   console.log('re-rendered')
   return (
     <StyledTodo>
-      <TodoHeader handleSubmitItem={handleSubmitItem}
-                  todoInputRef={todoInputRef} categories={categories} addCategory={addCategory} deleteCategory={deleteCategory} />
+      <TodoHeader/>
       {TodoItemsContainerWrapp}
-{/*      <TodoItemsContainer
-	todoItems={todoItems}
-	handlDeleteItem={handlDeleteItem}
-	handleAddDescription={handleAddDescription}
-	handleChangeDescription={handleChangeDescription}
-      />*/}
     </StyledTodo>
   );
 }
       
-function TodoHeader({todoInputRef,handleSubmitItem,categories,addCategory,deleteCategory}){
+function TodoHeader(){
   const [input,setInput] = useState("")
   const [showDD,setShowDD] = useState(false)
-
+  const {todoInputRef,handleSubmitItem,categories,addCategory,deleteCategory} = useContext(TodoWrapperContext)
   return (
     <TodoHeaderWrapp>
       <InputContainer onSubmit={e =>{handleSubmitItem(e,input);setInput("")}}>
@@ -197,22 +193,18 @@ function TodoHeader({todoInputRef,handleSubmitItem,categories,addCategory,delete
   )
 }
 
-function TodoItemsContainer({todoItems,handlDeleteItem,handleAddDescription,handleChangeDescription,handleRemoveDescription,handleChangeTitle,categories}) {
+function TodoItemsContainer({todoItems,categories}) {
   return (
     <TodoContainer>
       {
 	todoItems.map( (todoItem,index) => {
 //          if(isNaN(todoItem.id)) 
-	  return (< TodoItem text={todoItem}
-	    deleteItem={() => handlDeleteItem(index)}
+	  return (
+            < TodoItem text={todoItem}
 	    key={todoItem.id}
-	    handleAddDesc={handleAddDescription} 
             id={todoItem.id}
 	    index={index}
-            categories={categories}
-	    handleChangeDescription={handleChangeDescription}
-	    handleRemoveDescription={handleRemoveDescription}
-	    handleChangeTitle={handleChangeTitle}/>
+            categories={categories}/>
 	  )
 	})
       }
@@ -220,31 +212,37 @@ function TodoItemsContainer({todoItems,handlDeleteItem,handleAddDescription,hand
   )
 }
 
-function TodoItem({text,categories,deleteItem,handleAddDesc,index,handleChangeDescription,handleRemoveDescription,handleChangeTitle,id}) {
-  const [title,setTitle] = useState(text.title)
-  const [showSlidingMenu,setShowSlidingMenu] = useState(false)
-  const MemoizedTodoDescription = useMemo( () => {
-    return (
-      <TodoItemDescription desc={text.description}
-			   handleAddDesc={handleAddDesc}
-			   index={index}
-			   handleChangeDescription={handleChangeDescription}
-			   handleRemoveDescription={handleRemoveDescription} />
-      
-    )
-  },[text,index])
+function TodoItem({text,categories,index,id}) {
   return (
     <TodoItemContainer>
-      <TodoItemInputContainer onSubmit={e =>{ handleChangeTitle(e,index,title)}}>
-	<StyledTodoItem value={title} onChange={(e) => setTitle(e.target.value)} type="input" />
-	<TitleSubmitButton onSubmit={e =>{ handleChangeTitle(e,index,title)}}></TitleSubmitButton>
-      </TodoItemInputContainer>
-      <div>
-        <h3>{}</h3>
-	<TodoSideBtuttons>
-	  <DeleteBtn onClick={deleteItem}>X</DeleteBtn>
+      <TodoTitle originalTitle={text.title} index={index} />
+      <TodoCategories index={index} />
+      <TodoItemDescription desc={text.description} index={index} />
+    </TodoItemContainer>
+  )
+}
 
-          <ItemCategoriesContainer>
+function TodoTitle({originalTitle,index}){
+  const [title,setTitle] = useState(originalTitle)
+  const {handleChangeTitle} = useContext(TodoWrapperContext)
+  return (
+    <TodoItemInputContainer onSubmit={e => { e.preventDefault(); handleChangeTitle(e,index,title)}}>
+      <StyledTodoItem value={title} onChange={(e) => setTitle(e.target.value)} type="input" />
+      <TitleSubmitButton onSubmit={e =>{ handleChangeTitle(e,index,title)}}></TitleSubmitButton>
+    </TodoItemInputContainer>
+    
+  )
+}
+
+function TodoCategories({index}){
+  const [showSlidingMenu,setShowSlidingMenu] = useState(false)
+  const {deleteItem,categories} = useContext(TodoWrapperContext)
+  return (
+    <div>
+      <TodoSideBtuttons>
+        <DeleteBtn onClick={deleteItem}>X</DeleteBtn>
+        
+        <ItemCategoriesContainer>
           <CategorySvg alt="" src="./category-icon.svg" onClick={() => setShowSlidingMenu(!showSlidingMenu) } />
           {showSlidingMenu && <ItemCategoriesWrapper>
             <SlidingMenu opened={showSlidingMenu}>
@@ -255,68 +253,61 @@ function TodoItem({text,categories,deleteItem,handleAddDesc,index,handleChangeDe
               }
             </SlidingMenu>
           </ItemCategoriesWrapper>}
-          </ItemCategoriesContainer>
-	</TodoSideBtuttons>
-      </div>
-      {MemoizedTodoDescription}
-    </TodoItemContainer>
+        </ItemCategoriesContainer>
+      </TodoSideBtuttons>
+    </div>
   )
 }
 
-const TodoItemDescription = ({desc,handleAddDesc,index,handleChangeDescription,handleRemoveDescription}) => {
+const TodoItemDescription = ({desc,index}) => {
   const [showDescription,setShowDescription] = useState(false)
-  function handleShowDescription(){
-    setShowDescription(!showDescription)
-  }
   return (
     <DescriptionContainer>
-    { (Array.isArray(desc)) && (showDescription || (desc.length === 1 && desc[0].length <= 35) ) &&
+    { (Array.isArray(desc) && showDescription) &&
       desc.map( (description,descIndex) => {
 	return (<DescriptionTextArea
 		  desc={description}
 		  descIndex={descIndex}
-		  handleChangeDescription={handleChangeDescription}
-		  handleRemoveDescription={handleRemoveDescription}
 		  todoIndex={index}
 		  key={uuidv4()} />
 	)	
       })
     }
-    { ((desc && desc.length !== 0 && showDescription) || !(desc && desc.length !== 0) || (desc.length === 1 && desc[0].length <= 35)) &&
-      <DescriptionInputWrapp
-	handleAddDesc={handleAddDesc}
-	todoIndex={index} />
-    }
-    {  (desc && desc.length !== 0)  ? (desc.length !== 1 || desc[0].length > 35) && 
-      <DescriptionButton onClick={handleShowDescription}>
+      {showDescription && <TodoDescriptionFooter todoIndex={index} desc={desc}/>}
+      { desc.length > 0 && 
+      <DescriptionButton onClick={ () =>{setShowDescription(!showDescription)}}>
 	{showDescription ? "Hide Description" : "Show Description"}
-      </DescriptionButton> : null
-      
-    }
+      </DescriptionButton>
+      }
     </DescriptionContainer>
   )
 }
 
-const DescriptionInputWrapp = ({handleAddDesc,todoIndex}) => {
+const TodoDescriptionFooter = ({todoIndex,desc}) => {
   const [inputValue,setInputValue] = useState("")
+  const {handleAddDescription} = useContext(TodoWrapperContext)
   return (
-      <DescritionInputContainer onSubmit={(e) => handleAddDesc(e,todoIndex,inputValue)}>
+    <>
+      <DescritionInputContainer onSubmit={(e) =>{setInputValue("");handleAddDescription(e,todoIndex,inputValue)}}>
 	<DescriptionInput placeholder="Description" value={inputValue}  onChange={(e) => setInputValue(e.target.value)} />
       </DescritionInputContainer>
+    </>
   )
 }
 
-const DescriptionTextArea = ({desc,descIndex,handleChangeDescription,todoIndex,handleRemoveDescription}) => {
+const DescriptionTextArea = ({desc,descIndex,todoIndex}) => {
   const [textAreatValue,setTextAreaValue] = useState(desc)
+  const [changed,setChanged] = useState(false)
+  const {handleChangeDescription,handleRemoveDescription} = useContext(TodoWrapperContext)
   return (
 	  <DescriptionContentContainer>
-	    <DescriptionContent value={textAreatValue} onChange={ e => setTextAreaValue(e.target.value)} />
+	    <DescriptionContent value={textAreatValue} onChange={ e =>{if(!changed){setChanged(true)};setTextAreaValue(e.target.value)}} />
 	    <DescriptionButtonContainer>
 	      <DescriptionDeleteButton onClick={e => handleRemoveDescription(e,todoIndex,descIndex) }>
 		X
 	      </DescriptionDeleteButton>
-	      { textAreatValue !== desc &&
-		<DescriptionSaveButton onClick={(e) => handleChangeDescription(e,todoIndex,textAreatValue,descIndex)}>
+	      { changed &&
+		<DescriptionSaveButton onClick={(e) =>{setChanged(false);handleChangeDescription(e,todoIndex,textAreatValue,descIndex)}}>
 		✔️
 	      </DescriptionSaveButton>
 	      }
