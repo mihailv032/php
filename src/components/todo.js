@@ -96,6 +96,44 @@ class TodoWrapper extends React.PureComponent {
     console.log(todoItems[todoIndex].description)
     this.setState({todoItems: todoItems})
   }
+  migration(){
+    const newItems = []
+    
+    try{
+      this.state.todoItems.forEach( ({title,id,description,categories}) => {
+        //if the item was only stored locally then the id would be uuid which is nan
+        if(!isNaN(id)){return newItems.push({title,id,description,categories})};
+        fetch(URL+"/addtodoitem",{
+	  mode: 'cors',
+	  method: "POST",
+	  headers: {"Content-Type": "application/json",token: localStorage.getItem("token")},
+	  body: JSON.stringify({title: title, description: description, categories: categories})
+        })
+      }) 
+    }catch(err){
+      console.log(err)
+    }
+  }
+  async syncItem(item_index){
+    const todoitems = [...this.state.todoItems]
+    if(!todoitems[item_index]) return;
+    const req = await fetch(URL+"/addtodoitem",{
+      mode: 'cors',
+      method: "POST",
+      headers: {"Content-Type": "application/json",token: localStorage.getItem("token")},
+      body: JSON.stringify(todoitems[item_index])
+    })
+    const res = await req.json()
+    if(!res.message) return;
+    todoitems[item_index].id=res.todo_item.id
+      this.setState({todoItems: todoitems})
+  }
+  async addCategoryToItem(itemIndex,category_id){
+    
+  }
+  async removeCategoryFromItem(itemIndex,cateogry_id){
+
+  }
   render() {
     return (
       <>
