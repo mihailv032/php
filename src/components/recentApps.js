@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect,useRef, useContext} from 'react';
+import React, { useState, useLayoutEffect, useEffect,useRef, useContext} from 'react';
 import {AppContext} from '../App'
 import * as Styled from './styledComponents/recentApps'
 import Popup from './popup'
@@ -15,11 +15,11 @@ function RecentApps(){
   const addMore = (name,url,hotkey) => {
     const favicon = `https://s2.googleusercontent.com/s2/favicons?domain=${url}`
     const newApps = [{name:name,url:url,icon:favicon,hotkey: hotkey},...apps]
+
     setApps(newApps)
     setShowPopup(false)
   }
   const changeAppDetails = (index,name,url,hotkey) => {
-//    alert('here')
     const appArr = [...apps]
     const favicon = `https://s2.googleusercontent.com/s2/favicons?domain=${url}`
     appArr[index] = {name:name,url:url,icon:favicon,hotkey: hotkey}
@@ -29,15 +29,15 @@ function RecentApps(){
     const appsArr = [...apps]
     const deletedApp = appsArr.splice(index,1)
     setApps(appsArr)
-    if(deletedApp.hotkey) deleteHotkey(deletedApp.hotkey)
+    if(deletedApp[0].hotkey) deleteHotkey(deletedApp[0].hotkey)
   }
   //cannot use the setShowPopup because the callback does not have access the latest showPopup value
-  useEffect( () =>{setHotkey("Y", () => addAppRef.current.click())},[])
+  useLayoutEffect( () =>{setHotkey("Y", () => addAppRef.current.click())},[])
   useEffect( () => localStorage.setItem("apps", JSON.stringify(apps)),[apps])
   return (
     <Styled.RecntAppsContainer>
       <Styled.RecentAppsWrapp ref={recntAppsRef}>
-	<AppContainer apps={apps} setHotkey={setHotkey} changeAppDetails={changeAppDetails} deleteApp={deleteApp} />
+	<AppContainer apps={apps} changeAppDetails={changeAppDetails} deleteApp={deleteApp} />
 	<Styled.App onClick={ () => setShowPopup(!showPopup)} ref={addAppRef}>+</Styled.App>
       </Styled.RecentAppsWrapp>
       <Popup opened={showPopup} onClose={() => setShowPopup(false) } width="300px" height="500px">
@@ -48,7 +48,7 @@ function RecentApps(){
   )
 }
 
-function AppContainer({apps,setHotkey,changeAppDetails,deleteApp}) {
+function AppContainer({apps,changeAppDetails,deleteApp}) {
   return (
     <>
       {
@@ -57,7 +57,7 @@ function AppContainer({apps,setHotkey,changeAppDetails,deleteApp}) {
 	    <span key={app.url}>
 	      <App name={app.name} url={app.url} icon={app.icon}
 		   tabIndex={index}
-		   hotkey={app.hotkey} setHotkey={setHotkey}
+		   hotkey={app.hotkey} 
 		   changeAppDetails={ (name,url,hotkey) => changeAppDetails(index,name,url,hotkey)}
 		   deleteApp={ () => deleteApp(index)} />
 	    </span>
@@ -68,15 +68,15 @@ function AppContainer({apps,setHotkey,changeAppDetails,deleteApp}) {
   )
 }
 
-function App({name,url,icon,hotkey,setHotkey,changeAppDetails,deleteApp}){
+function App({name,url,icon,hotkey,changeAppDetails,deleteApp}){
   const ref = useRef()
   const [showContext,setShowContext] = useState(false)
   const [showChangeDetails,setShowDetails] = useState(false)
-
+  const {setHotkey,deleteHotkey} = useContext(AppContext)
   useEffect( () => {
-    if(hotkey){setHotkey(hotkey, () => ref.current.click())}
+    if(hotkey && ref.current){if(!setHotkey(hotkey, () => ref.current.click())){changeAppDetails(name,url,false)}}
     
-  },[])
+  },[ref,hotkey])
   const handleContext = e => {
     e.preventDefault()
     setShowContext(!showContext)
@@ -100,14 +100,14 @@ function App({name,url,icon,hotkey,setHotkey,changeAppDetails,deleteApp}){
 function PopupContent({submit,nameProp="",urlProp="",hotkeyProp=""}){
   const [name,setName] = useState(nameProp)
   const [url,setUrl] = useState(urlProp)
-  const [addHotkey,setAddHotkey] = useState(false)
+  const [addHotkey,setAddHotkey] = useState(hotkeyProp ? true : false)
   const [hotKey,setHotKey] = useState(hotkeyProp)
   const [err,setErr] = useState({hotkey: false,url:false})
 
   const handleHotKey = e => {
     const key = e.target.value.length <= 1 ? e.target.value : e.target.value[e.target.value.length-1]
     if(!(key in keyCodes)) return;
-    setHotKey(key)
+    setHotKey(key.toUpperCase())
   }
   const handleSubmit = e => {
     e.preventDefault()
@@ -127,9 +127,12 @@ function PopupContent({submit,nameProp="",urlProp="",hotkeyProp=""}){
 	<Styled.ErrorLabel>{err.url}</Styled.ErrorLabel>
 	<Styled.Input value={url} onChange={(e) => setUrl(e.target.value)}/>
 	<label>add custom hotkey</label>
-	<input name="" type="checkbox" checked={addHotkey} onChange={ () => setAddHotkey(!addHotkey)} tabIndex={0}/>
+	<input name="" type="checkbox" checked={addHotkey} onChange={ () => setAddHotkey(!addHotkey)} />
 	<Styled.ErrorLabel>{err.hotkey}</Styled.ErrorLabel>
-	{addHotkey && <Styled.Input name="" type="text" value={hotKey} onChange={handleHotKey} tabIndex={1} />}
+	{addHotkey &&
+         <>
+         <span>ctrl+Shift+</span>
+         <Styled.Input name="" type="text" value={hotKey} onChange={handleHotKey} /> </>}
 	<Styled.Btn onSubmit={handleSubmit}>click me</Styled.Btn>
       </Styled.AddApp>
     </Styled.PopupWrapp>
