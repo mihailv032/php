@@ -1,12 +1,13 @@
-import React, {useState,useMemo,useEffect,useRef} from 'react'
+import React, { useState, useMemo, useEffect, useRef, useContext } from 'react'
+import {AppContext} from '../App'
 import styled from 'styled-components'
 import Popup from './popup'
 const images = require('../images.json').images
 
-export default function ChangeBg({updateBg,setHotkey}){
+export default function ChangeBg({updateBg}){
   const [showPopup,setShowPopup] = useState(false)
   const changeBgBtnRef = useRef()
-
+  const {setHotkey} = useContext(AppContext)
   const toglePopup = () => showPopup ? setShowPopup(false) : setShowPopup(true)
   const handlBgChange = (bg) => {updateBg(bg);toglePopup()}
   useEffect( () =>{setHotkey(")", () => changeBgBtnRef.current.click())},[])

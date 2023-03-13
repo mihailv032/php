@@ -1,12 +1,14 @@
-import React, { useState, useMemo, useEffect,useRef} from 'react';
+import React, { useState, useMemo, useEffect,useRef, useContext} from 'react';
+import {AppContext} from '../App'
 import * as Styled from './styledComponents/recentApps'
 import Popup from './popup'
-import {keyCodes,hotkeys} from '../App'
+import {keyCodes,hotkeys} from '../consts'
 import ContextMenu from './dropdown'
 
-function RecentApps({setHotkey,deleteHotkey}){
+function RecentApps(){
   const [apps, setApps] = useState(localStorage.getItem("apps") ? JSON.parse(localStorage.getItem("apps")) : [] )
   const [showPopup,setShowPopup] = useState(false)
+  const {setHotkey,deleteHotkey} = useContext(AppContext)
 
   const addAppRef = useRef()
   const recntAppsRef = useRef()

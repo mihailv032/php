@@ -1,6 +1,7 @@
 import Popup, {useMount} from './popup.js'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useContext } from 'react'
 import {URL} from '../consts'
+import {AppContext} from '../App'
 import {
   LoginForm,
   LoginBtn,
@@ -9,13 +10,16 @@ import {
   Err,
 }from './styledComponents/login'
 
-export default function Login({setWord}){
+export default function Login(){
   const [opened,setOpened] = useState(false)
   const [name,setName] = useState("")
   const [password,setPassword] = useState("")
   const [inputErr,setInputErr] = useState({})
   const [err,setErr] = useState(false)
-  useEffect( () => {setWord("login",() => setOpened(true))},[])
+  const {setWord,setHotkey,loggedIn,setLoggedIn} = useContext(AppContext)
+
+  useEffect( () => {setWord("login",() =>{setHotkey('Escape', () =>setOpened(false));setOpened(true);})},[])
+    
   async function handleSubmit(e){
     e.preventDefault()
     if(name.length === 0) return setInputErr(Object.assign({},inputErr,{name:"you must provide a valid usre name"}))
@@ -31,6 +35,7 @@ export default function Login({setWord}){
       if(!res.message){ return setErr(res.error ? res.error : "something went wrong")}
       localStorage.setItem("token", res.token)
       localStorage.setItem("refresh_token", res.refresh_token)
+      setLoggedIn(true)
       setOpened(false)
       return;
     }catch(err){
@@ -38,6 +43,7 @@ export default function Login({setWord}){
       return setErr("something went wrong")
     }
   }
+  if(loggedIn) return;
   return (
     <Popup opened={opened} onClose={() => setOpened(false) }>
       <LoginForm onSubmit={handleSubmit}>
@@ -48,7 +54,7 @@ export default function Login({setWord}){
         <label>password</label>
 	{inputErr.password && <Err>{inputErr.password}</Err>}
         <Input name="" type="password" value={password} onChange={ e =>{if(inputErr.password){setInputErr(Object.assign({},inputErr,{password:false}))};setPassword(e.target.value)}} />
-	<div style={{margin: "auto"}}><LoginBtn onSubmit={handleSubmit} role="button"><span class="text">Login</span></LoginBtn></div>
+	<div style={{margin: "auto"}}><LoginBtn onSubmit={handleSubmit} role="button"><span>Login</span></LoginBtn></div>
 	<RegisterBtn>create an account</RegisterBtn>
       </LoginForm>
     </Popup>
