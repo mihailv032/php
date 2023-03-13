@@ -50,6 +50,7 @@ export const TodoContainer = styled.div`
   position: relative;
   z-index: 0;
   overflow-y: auto;
+  overflow-x: hidden;
   max-width: 500px;
   max-height: 60vh;
   box-sizing: border-box;
@@ -192,10 +193,72 @@ export const DescriptionInput = styled.input`
 
 `
 
+export const TodoHeaderWrapp = styled.header`
+  margin-bottom: 30px;
+`
 export const InputContainer = styled.form`
   display: flex;
   width: 100%;
-  margin-bottom: 30px;
 
 `
 
+export const CategorySvg = styled.img`
+  margin-top: 10px;
+  fill: #94d31b; 
+  border: white;
+  background-color: white;
+  color: white;
+  max-width: 50px;
+  max-height: 50px;
+`
+
+export const CategoryBtn = styled.button`
+  background: #FF4742;
+  border: 1px solid #FF4742;
+  border-radius: 8px;
+  box-shadow: rgba(0, 0, 0, 0.1) 1px 2px 4px;
+  box-sizing: border-box;
+  color: #FFFFFF;
+  cursor: pointer;
+  display: inline-block;
+  font-family: "Haas Grot Text R Web", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  height: 40px;
+  line-height: 20px;
+  list-style: none;
+  margin: 10px;
+  outline: none;
+  padding: 2px 5px;
+  position: relative;
+  text-align: center;
+  text-decoration: none;
+  transition: color 100ms;
+  vertical-align: baseline;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+
+  &:hover{
+  background-color: initial;
+  background-position: 0 0;
+  color: #FF4742;
+
+  }
+`
+export const ItemCategoriesContainer = styled.div`
+  display: flex;
+  flex-direction: row-reverse;
+  position: relative;
+
+`
+
+export const ItemCategoriesWrapper = styled.div`
+  position: absolute;
+  right: 25px;
+  background: rgb(63,94,251);
+  background: linear-gradient(90deg, rgba(63,94,251,1) 0%, rgba(252,70,107,1) 100%);
+  border-radius: 5px;
+  padding: 10px;
+  display: flex;
+ `

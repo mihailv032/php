@@ -1,9 +1,18 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useContext} from 'react';
+import { AppContext } from '../App';
 import styled from 'styled-components'
 import { v4 as uuidv4 } from 'uuid';
+import {SlidingMenu} from '../components/dropdown'
+import Categories, {AddCategoryDD} from '../components/categories'
+import {URL} from '../consts'
 import {StyledInput,
 	TodoContainer,
+        ItemCategoriesWrapper,
+        ItemCategoriesContainer,
+        CategoryBtn,
 	TodoSideBtuttons,
+        TodoHeaderWrapp,
+        CategorySvg,
 	TodoItemContainer,
 	StyledTodoItem,
 	DeleteBtn,
@@ -19,54 +28,54 @@ import {StyledInput,
 	DescriptionButtonContainer,
 	TodoItemInputContainer,
 	TitleSubmitButton} from './styledComponents/todo'
+
 class TodoWrapper extends React.PureComponent {
   constructor(props) {
     super(props);
     this.state = {
       todoItems: [],
-      inputValue: ""
     }
     this.todoInputRef = React.createRef();
 
     this.handlDeleteItem = this.handlDeleteItem.bind(this)
     this.handleSubmitItem = this.handleSubmitItem.bind(this)
-    this.handleInput = this.handleInput.bind(this)
     this.handleAddDescription = this.handleAddDescription.bind(this)
     this.handleChangeDescription = this.handleChangeDescription.bind(this)
     this.handleRemoveDescription = this.handleRemoveDescription.bind(this)
     this.handleChangeTitle = this.handleChangeTitle.bind(this)
   }
+
   componentDidMount(){
+    console.log(this.context)
     const storedTodoItems = localStorage.getItem("todoItems") ? JSON.parse(localStorage.getItem("todoItems")) : []
+    console.log(storedTodoItems)
     this.setState({todoItems: storedTodoItems})
-    this.props.setHotkey("U",() => this.todoInputRef.current.focus())
   }
   componentDidUpdate(prevProps,prevState){
-    if( !(prevState.todoItems != this.state.todoItems)) return;
+//    if( !(prevState.todoItems != this.state.todoItems)) return;
+    if((prevProps.loggedIn != this.props.loggedIn) && this.props.loggedIn) this.migration()
+    this.props.setHotkey("U",() => this.todoInputRef.current.focus())
     localStorage.setItem("todoItems",JSON.stringify(this.state.todoItems))
   }
-  handleSubmitItem(e){
+  handleSubmitItem(e,title){
     e.preventDefault()
+    
     this.setState( prevState => ({
-      todoItems: [{title: prevState.inputValue,description: ""},...prevState.todoItems],
-      inputValue: ""
+      todoItems: [{title: title,description: "",id:uuidv4()},...prevState.todoItems]
     }))
   }
-  handleInput(e){
-    this.setState({ inputValue: e.target.value })
-  }
-  handleChangeTitle(e,todoIndex,newTitle){
+  async handleChangeTitle(e,todoIndex,newTitle){
     e.preventDefault()
-    let todoItems = [...this.state.todoItems]
+    let todoItems = this.state.todoItems
     todoItems[todoIndex].title = newTitle
     this.setState({todoItems: todoItems})
   }
-  handlDeleteItem(index){
+  async handlDeleteItem(index){
     const todoItemsArr = [...this.state.todoItems]
     todoItemsArr.splice(index,1)
     this.setState({todoItems:  todoItemsArr})
   }
-  handleAddDescription(e,index,desc){
+  async handleAddDescription(e,index,desc){
     e.preventDefault()
     let todoItems = [...this.state.todoItems]
     if(todoItems[index].description.length === 0){
@@ -74,13 +83,13 @@ class TodoWrapper extends React.PureComponent {
     }else todoItems[index].description = [desc,...todoItems[index].description]
     this.setState({todoItems: todoItems})
   }
-  handleChangeDescription(e,TodoIndex,desc,descIndex){
+  async handleChangeDescription(e,TodoIndex,desc,descIndex){
     e.preventDefault()
-    let todoItems = [...this.state.todoItems]
+    let todoItems = this.state.todoItems
     todoItems[TodoIndex].description[descIndex] = desc
     this.setState({todoItems: todoItems})
   }
-  handleRemoveDescription(e,todoIndex,descIndex){
+  async handleRemoveDescription(e,todoIndex,descIndex){
     e.preventDefault()
     let todoItems = [...this.state.todoItems]
     todoItems[todoIndex].description.splice(descIndex,1)
@@ -88,26 +97,37 @@ class TodoWrapper extends React.PureComponent {
     this.setState({todoItems: todoItems})
   }
   render() {
-    return <Todo
-	     todoItems={this.state.todoItems}
-	     inputValue={this.state.inputValue}
-	     handleSubmitItem={this.handleSubmitItem}
-	     handleInput={this.handleInput}
-	     handlDeleteItem={this.handlDeleteItem}
-	     handleAddDescription={this.handleAddDescription}
-	     handleChangeDescription={this.handleChangeDescription}
-	     handleRemoveDescription={this.handleRemoveDescription}
-	     handleChangeTitle={this.handleChangeTitle} todoInputRef={this.todoInputRef} />
+    return (
+      <>
+        <Categories render={ ({categories,addCategory,deleteCategory}) => { 
+          return (
+            <Todo
+	      todoItems={this.state.todoItems}
+	      handleSubmitItem={this.handleSubmitItem}
+	      handlDeleteItem={this.handlDeleteItem}
+	      handleAddDescription={this.handleAddDescription}
+	      handleChangeDescription={this.handleChangeDescription}
+	      handleRemoveDescription={this.handleRemoveDescription}
+	      handleChangeTitle={this.handleChangeTitle}
+              todoInputRef={this.todoInputRef}
+              categories={categories}
+              addCategory={addCategory}
+              deleteCategory={deleteCategory} />
+          )
+        }}/>
+      </>
+    )
   }
 };
 
-function Todo({todoItems,inputValue,handleSubmitItem,handleInput,handlDeleteItem,handleAddDescription,handleChangeDescription,handleRemoveDescription,handleChangeTitle,todoInputRef}){
-  const TodoItemsContainerWrapp = useMemo( () => TodoItemsContainer({todoItems:todoItems,handlDeleteItem,handleAddDescription,handleChangeDescription,handleRemoveDescription,handleChangeTitle}),[todoItems])
+
+function Todo({todoItems,handleSubmitItem,handlDeleteItem,handleAddDescription,handleChangeDescription,handleRemoveDescription,handleChangeTitle,todoInputRef,categories,addCategory,deleteCategory}){
+  const TodoItemsContainerWrapp = useMemo( () => TodoItemsContainer({todoItems:todoItems,handlDeleteItem,handleAddDescription,handleChangeDescription,handleRemoveDescription,handleChangeTitle,categories:categories}),[todoItems,categories])
+  console.log('re-rendered')
   return (
     <StyledTodo>
-      <InputContainer onSubmit={handleSubmitItem}>
-	<StyledInput name="" type="text" onChange={handleInput} value={inputValue} ref={todoInputRef} />
-      </InputContainer>
+      <TodoHeader handleSubmitItem={handleSubmitItem}
+                  todoInputRef={todoInputRef} categories={categories} addCategory={addCategory} deleteCategory={deleteCategory} />
       {TodoItemsContainerWrapp}
 {/*      <TodoItemsContainer
 	todoItems={todoItems}
@@ -119,16 +139,39 @@ function Todo({todoItems,inputValue,handleSubmitItem,handleInput,handlDeleteItem
   );
 }
       
-function TodoItemsContainer({todoItems,handlDeleteItem,handleAddDescription,handleChangeDescription,handleRemoveDescription,handleChangeTitle}) {
+function TodoHeader({todoInputRef,handleSubmitItem,categories,addCategory,deleteCategory}){
+  const [input,setInput] = useState("")
+  const [showDD,setShowDD] = useState(false)
+
+  return (
+    <TodoHeaderWrapp>
+      <InputContainer onSubmit={e =>{handleSubmitItem(e,input);setInput("")}}>
+        <StyledInput name="" type="text" onChange={e => setInput(e.target.value)} value={input} ref={todoInputRef} />
+      </InputContainer>
+      <CategoryBtn onClick={() => setShowDD(!showDD) }>Add New Category</CategoryBtn>
+      {
+        categories.map( ({category_id,name,description}) => {
+          return <CategoryBtn key={category_id} alt={description}>{name}</CategoryBtn>         
+        })
+      }
+      <AddCategoryDD opened={showDD} handleSubmit={addCategory} />
+    </TodoHeaderWrapp>
+  )
+}
+
+function TodoItemsContainer({todoItems,handlDeleteItem,handleAddDescription,handleChangeDescription,handleRemoveDescription,handleChangeTitle,categories}) {
   return (
     <TodoContainer>
       {
 	todoItems.map( (todoItem,index) => {
+//          if(isNaN(todoItem.id)) 
 	  return (< TodoItem text={todoItem}
 	    deleteItem={() => handlDeleteItem(index)}
-	    key={uuidv4()}
+	    key={todoItem.id}
 	    handleAddDesc={handleAddDescription} 
+            id={todoItem.id}
 	    index={index}
+            categories={categories}
 	    handleChangeDescription={handleChangeDescription}
 	    handleRemoveDescription={handleRemoveDescription}
 	    handleChangeTitle={handleChangeTitle}/>
@@ -139,8 +182,9 @@ function TodoItemsContainer({todoItems,handlDeleteItem,handleAddDescription,hand
   )
 }
 
-function TodoItem({text,deleteItem,handleAddDesc,index,handleChangeDescription,handleRemoveDescription,handleChangeTitle}) {
+function TodoItem({text,categories,deleteItem,handleAddDesc,index,handleChangeDescription,handleRemoveDescription,handleChangeTitle,id}) {
   const [title,setTitle] = useState(text.title)
+  const [showSlidingMenu,setShowSlidingMenu] = useState(false)
   const MemoizedTodoDescription = useMemo( () => {
     return (
       <TodoItemDescription desc={text.description}
@@ -158,9 +202,22 @@ function TodoItem({text,deleteItem,handleAddDesc,index,handleChangeDescription,h
 	<TitleSubmitButton onSubmit={e =>{ handleChangeTitle(e,index,title)}}></TitleSubmitButton>
       </TodoItemInputContainer>
       <div>
+        <h3>{}</h3>
 	<TodoSideBtuttons>
 	  <DeleteBtn onClick={deleteItem}>X</DeleteBtn>
-	  <h5>ctg</h5>
+
+          <ItemCategoriesContainer>
+          <CategorySvg alt="" src="./category-icon.svg" onClick={() => setShowSlidingMenu(!showSlidingMenu) } />
+          {showSlidingMenu && <ItemCategoriesWrapper>
+            <SlidingMenu opened={showSlidingMenu}>
+              {
+                categories.map( ({name}) => {
+                  return <button>{name}</button>
+                })
+              }
+            </SlidingMenu>
+          </ItemCategoriesWrapper>}
+          </ItemCategoriesContainer>
 	</TodoSideBtuttons>
       </div>
       {MemoizedTodoDescription}

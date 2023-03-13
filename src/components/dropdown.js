@@ -11,6 +11,13 @@ const contextAnimation = {
   exitActive: styles.contentAnimationExitActive,
 }
 
+const slidingMenuAnimation = {
+  enter: styles.slidingEnter,
+  enterActive: styles.slidingActive,
+  exit: styles.slidingAnimationExit,
+  exitActive: styles.slidingAnimationExitActive,
+
+}
 export default function ContextMenu({opened,onClose,children}){
   const {mounted} = useMount({opened})
   if (!mounted){
@@ -39,5 +46,35 @@ function ContextMenuContent({children,onClose,opened}){
 	</div>
       </CSSTransition>
     </div>
+  )
+}
+
+export function SlidingMenu({opened,onClose,children}){
+  const {mounted} = useMount({opened})
+  if (!mounted){
+    return null;
+  }
+
+
+  return (
+    <SlidingMenuContent opened={opened} onClose={onClose}>
+      {children}
+    </SlidingMenuContent>
+  )
+}
+
+function SlidingMenuContent({children,onClose,opened}){
+  const [animationIn,setAnimationIn] = useState(false)
+  const containerRef = useRef()
+  const contentRef = useRef()
+
+  useEffect( () => setAnimationIn(opened),[opened])
+
+  return (
+      <CSSTransition nodeRef={contentRef} timeout={ANIMATION_TIME} mountOnEnter unmountOnExit in={animationIn} classNames={slidingMenuAnimation}>
+	<div ref={contentRef} className={styles.slidingContainer}>
+          {children}
+        </div>
+      </CSSTransition>
   )
 }

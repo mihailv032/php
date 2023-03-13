@@ -19,3 +19,25 @@
 .container {
     position: absolute;
 }
+
+.slidingEnter {
+    transform: translate(100%,0) scale(0.01,1);
+}
+
+.slidingActive {
+    transition: transform 300ms;
+    transform: translate(0) scale(1);
+}
+
+.slidingAnimationExit {
+
+}
+
+.slidingAnimationExitActive {
+    transform: translate(80%,0) scale(0.01,1);
+    transition: transform 300ms;
+}
+
+.slidingContainer {
+    display: flex;
+}
