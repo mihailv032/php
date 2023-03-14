@@ -201,8 +201,8 @@ function TodoHeader(){
       </InputContainer>
       <CategoryBtn onClick={() => setShowDD(!showDD) }>Add New Category</CategoryBtn>
       {
-        categories.map( ({category_id,name,description}) => {
-          return <CategoryBtn key={category_id} alt={description}>{name}</CategoryBtn>         
+        categories.map( ({id,name,description}) => {
+          return <CategoryBtn key={id} alt={description}>{name}</CategoryBtn>         
         })
       }
       <AddCategoryDD opened={showDD} handleSubmit={addCategory} />
@@ -264,8 +264,8 @@ function TodoSideBtns({index}){
           {showSlidingMenu && <ItemCategoriesWrapper>
             <SlidingMenu opened={showSlidingMenu}>
               {
-                categories.map( ({name}) => {
-                  return <button>{name}</button>
+                categories.map( ({name,id}) => {
+                  return <button key={id}>{name}</button>
                 })
               }
             </SlidingMenu>
