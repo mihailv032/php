@@ -1,5 +1,6 @@
 import React, {useState} from 'react';
 import ContextMenu from '../components/dropdown'
+import { v4 as uuidv4 } from 'uuid';
 
 class Categories extends React.Component {
   constructor(props) {
@@ -17,9 +18,9 @@ class Categories extends React.Component {
   async componentDidUpdate(){
     localStorage.setItem("categories", JSON.stringify(this.state.categories))
   }
-  async addCategory(name,description="",priority=0){
+  addCategory(name,description="",priority=0){
     if(!name) return;
-    this.setState(prevState => ({categories: [{name:name,description:description,priority: priority},...prevState.categories]}))
+    this.setState(prevState => ({categories: [{name:name,description:description,priority: priority,id:uuidv4()},...prevState.categories]}))
   }
   async deleteCategory(index){
 
