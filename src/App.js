@@ -12,8 +12,8 @@ import DoubleScreen from './components/doubleScreen'
 import Weather from './components/wather'
 import Popup from './components/popup'
 import Login from './components/login.js'
-import {keyCodes} from './consts'
 import {keyCodes,URL} from './consts'
+import TicTacToe from './components/game'
 import styled from 'styled-components'
 
 export const AppContext = createContext(false);
@@ -59,11 +59,12 @@ const hotkeys = []
 function App() {
   console.log('updated app.js')
   const [currentBg,setCurrentBg] = useState(localStorage.getItem('bg') ? localStorage.getItem('bg') : 'default.png')
-  const [loggedIn,setLoggedIn] = useState(localStorage.getItem("token") ? true : false)//set true of fales explicitly just in case
-  const [err,setErr] = useState(false)
-  const [errMsg,setErrMsg] = useState("")
-  const searchBarRef = useRef()
-  const keywords = useRef()
+  const [loggedIn,setLoggedIn] = useState(false);
+  const [refresh_token] = useState(getCookie("refresh_token"))
+  const [err,setErr] = useState(false);
+  const [errMsg,setErrMsg] = useState("");
+  const searchBarRef = useRef();
+  const keywords = useRef();
     
   function setWord(word,fn){
     for(let i=0;i<keywords.current.length;i++){if(keywords.current[i].wordObject.word == word) return;};
@@ -93,11 +94,15 @@ function App() {
     delete hotkeys[key]
   }
   useLayoutEffect( () => {
+    //handle jwt 
+    const data = parseJwt(getCookie("access_token"))
+    if(data){
+      setInterval( () => refreshToken(),3600000)
+    }
     keywords.current= []
     document.body.addEventListener('keydown', e => {
       
       if(document.activeElement.tagName === "INPUT" || document.activeElement.tagName === "TEXTAREA") return
-      console.log(hotkeys)
       if(e.ctrlKey && e.shiftKey){
 	if (Object.keys(hotkeys).indexOf(e.key) !== -1){
           e.preventDefault();
@@ -142,6 +147,7 @@ function App() {
 	<FeedContainer/>
       </FeedSection>
       <Login />
+      <TicTacToe />
     </AppContext.Provider>
   );
 }
