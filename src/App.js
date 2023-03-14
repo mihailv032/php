@@ -18,7 +18,7 @@ import styled from 'styled-components'
 export const AppContext = createContext(false);
 
 
-
+const hotkeys = []
 function App() {
   console.log('updated app.js')
   const [currentBg,setCurrentBg] = useState(localStorage.getItem('bg') ? localStorage.getItem('bg') : 'default.png')
@@ -26,15 +26,18 @@ function App() {
   const [err,setErr] = useState(false)
   const [errMsg,setErrMsg] = useState("")
   const searchBarRef = useRef()
-  const hotkeys = useRef()
   const keywords = useRef()
     
   function setWord(word,fn){
     for(let i=0;i<keywords.current.length;i++){if(keywords.current[i].wordObject.word == word) return;};
     keywords.current.push({letter: word[0], wordObject: {word: Array.from(word),current_index: 0},onType: () => fn()})
   }
-  function setHotkey(key,fn){
-    if(Object.keys(hotkeys.current).indexOf(key) !== -1){
+  function setHotkey(key,fn,replace=false){
+    console.log('her')
+    if(!replace && (Object.keys(hotkeys).indexOf(key) !== -1)){
+      console.log('heafd')
+        console.log(key)
+      console.trace(fn)
       setErr(true)
       setErrMsg(`${key} is already in use`)
       return false;
@@ -44,28 +47,30 @@ function App() {
       setErrMsg("invalid key")
       return false;
     }
-    hotkeys.current[key] = fn;
+    hotkeys[key] = fn;
     return true;
   }
   const deleteHotkey = key => {
     alert('here')
     alert(key)
-    delete hotkeys.current[key]
+    delete hotkeys[key]
   }
   useLayoutEffect( () => {
-    hotkeys.current = {}
     keywords.current= []
     document.body.addEventListener('keydown', e => {
+      
+      if(document.activeElement.tagName === "INPUT" || document.activeElement.tagName === "TEXTAREA") return
+      console.log(hotkeys)
       if(e.ctrlKey && e.shiftKey){
-	if (Object.keys(hotkeys.current).indexOf(e.key) !== -1){
-	  hotkeys.current[e.key]();
+	if (Object.keys(hotkeys).indexOf(e.key) !== -1){
+          e.preventDefault();
+	  hotkeys[e.key]();
           return;
 	}
       }else if(e.ctrlKey && e.key === "Enter"){
 	searchBarRef.current.focus()
         return;
       }
-      if(document.activeElement.tagName === "INPUT" || document.activeElement.tagName === "TEXTAREA") return
       keywords.current.forEach( (obj) => {
         if(obj.letter === e.key){
           if(obj.wordObject.current_index < obj.wordObject.word.length-1){
