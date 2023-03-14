@@ -13,11 +13,48 @@ import Weather from './components/wather'
 import Popup from './components/popup'
 import Login from './components/login.js'
 import {keyCodes} from './consts'
+import {keyCodes,URL} from './consts'
 import styled from 'styled-components'
 
 export const AppContext = createContext(false);
 
+async function refreshToken(){
+  const req = await fetch(URL+"/token", {
+    mode: 'cors',
+    method: "POST",
+    credentials: "same-origin",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({ token: getCookie("refresh_token") })
+  })
+  const res = await req.json()
+  if(!res.message){console.log(res.error); return;};
+  setCookie("access_token",res.token,3600000)
+}
 
+export function setCookie(name,value,expiraction=false){
+  if (!expiraction) expiraction = new Date(2030, 0, 1).toUTCString();
+  if(!name) return false;
+  if(!value) return false;
+  document.cookie = `${name}=${value}; ${expiraction};`
+}
+
+function getCookie(name){
+  console.log(name)
+  const decodedCookie = decodeURIComponent(document.cookie);
+  const cookieArr = decodedCookie.split("; ");
+  for(let i=0;i<cookieArr.length;i++){
+    if(cookieArr[i].indexOf(name)) return cookieArr[i].substring(name.length+1)
+  }
+}
+
+function parseJwt(token) {
+  if (!token) {
+    return false;
+  }
+  const base64Url = token.split(".")[1];
+  const base64 = base64Url.replace("-", "+").replace("_", "/");
+  return JSON.parse(window.atob(base64));
+}
 const hotkeys = []
 function App() {
   console.log('updated app.js')

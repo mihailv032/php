@@ -1,7 +1,7 @@
 import Popup, {useMount} from './popup.js'
 import { useState, useEffect, useContext } from 'react'
 import {URL} from '../consts'
-import {AppContext} from '../App'
+import {AppContext,setCookie} from '../App'
 import {
   LoginForm,
   LoginBtn,
@@ -35,6 +35,8 @@ export default function Login(){
       if(!res.message){ return setErr(res.error ? res.error : "something went wrong")}
       localStorage.setItem("token", res.token)
       localStorage.setItem("refresh_token", res.refresh_token)
+      setCookie("access_token",res.token,3600000)
+      setCookie("refresh_token",res.refresh_token)
       setLoggedIn(true)
       setOpened(false)
       return;
