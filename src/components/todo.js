@@ -49,7 +49,7 @@ class TodoWrapper extends React.PureComponent {
   componentDidMount(){
     console.log(this.context)
     const storedTodoItems = localStorage.getItem("todoItems") ? JSON.parse(localStorage.getItem("todoItems")) : []
-    this.props.setHotkey("U",() => this.todoInputRef.current.focus())
+    this.props.setHotkey("U",() => this.todoInputRef.current.focus(),true)
     console.log(storedTodoItems)
     this.setState({todoItems: storedTodoItems})
   }
@@ -58,9 +58,26 @@ class TodoWrapper extends React.PureComponent {
   }
   handleSubmitItem(e,title){
     e.preventDefault()
+    const id=uuidv4()
     this.setState( prevState => ({
-      todoItems: [{title: title,description: "",id:uuidv4()},...prevState.todoItems]
+      todoItems: [{title: title,description: "",id:id},...prevState.todoItems]
     }))
+
+      fetch(URL+"/addtodoitem",{
+	mode: 'cors',
+	method: "POST",
+	headers: {"Content-Type": "application/json",token: localStorage.getItem("token")},
+	body: JSON.stringify({title: title})
+      })
+     .then( res => res.json())
+     .then( res => {
+       if(!res.message){console.log(res.error); return;};
+       for(let i=0;i<this.state.todoItems.length;i++){
+         if(this.state.todoItems[i].id == id){
+           this.state.todoItems[i].id = res.todo_item.id;
+           localStorage.setItem("todoItems",JSON.stringify(this.state.todoItems));
+           return;
+     }}})
   }
   async handleChangeTitle(e,todoIndex,newTitle){
     e.preventDefault()
@@ -216,7 +233,7 @@ function TodoItem({text,categories,index,id}) {
   return (
     <TodoItemContainer>
       <TodoTitle originalTitle={text.title} index={index} />
-      <TodoCategories index={index} />
+      <TodoSideBtns index={index} />
       <TodoItemDescription desc={text.description} index={index} />
     </TodoItemContainer>
   )
@@ -234,13 +251,13 @@ function TodoTitle({originalTitle,index}){
   )
 }
 
-function TodoCategories({index}){
+function TodoSideBtns({index}){
   const [showSlidingMenu,setShowSlidingMenu] = useState(false)
-  const {deleteItem,categories} = useContext(TodoWrapperContext)
+  const {handlDeleteItem,categories} = useContext(TodoWrapperContext)
   return (
     <div>
       <TodoSideBtuttons>
-        <DeleteBtn onClick={deleteItem}>X</DeleteBtn>
+        <DeleteBtn onClick={ () => handlDeleteItem(index)}>X</DeleteBtn>
         
         <ItemCategoriesContainer>
           <CategorySvg alt="" src="./category-icon.svg" onClick={() => setShowSlidingMenu(!showSlidingMenu) } />
@@ -273,7 +290,7 @@ const TodoItemDescription = ({desc,index}) => {
 	)	
       })
     }
-      {showDescription && <TodoDescriptionFooter todoIndex={index} desc={desc}/>}
+      {(showDescription || desc.length == 0) && <TodoDescriptionFooter todoIndex={index} desc={desc}/>}
       { desc.length > 0 && 
       <DescriptionButton onClick={ () =>{setShowDescription(!showDescription)}}>
 	{showDescription ? "Hide Description" : "Show Description"}
