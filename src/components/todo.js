@@ -63,23 +63,26 @@ class TodoWrapper extends React.PureComponent {
     this.setState( prevState => ({
       todoItems: [{title: title,description: "",id:id},...prevState.todoItems]
     }))
-    
+    if(this.props.loggedIn) this.handleSendItemToSever();
+  }
+  handleSendItemToSever(title,id){
     fetch(URL+"/addtodoitem",{
       mode: 'cors',
+      credentials: 'include',
+      withCredentials: true ,
       method: "POST",
       headers: {"Content-Type": "application/json",token: localStorage.getItem("token")},
       body: JSON.stringify({title: title})
     })
-	.then( res => res.json())
-	.then( res => {
-	  if(!res.message){console.log(res.error); return;};
-	  for(let i=0;i<this.state.todoItems.length;i++){
-            if(this.state.todoItems[i].id == id){
-              this.state.todoItems[i].id = res.todo_item.id;
-              localStorage.setItem("todoItems",JSON.stringify(this.state.todoItems));
-              return;
-	}}})
-	.catch(err => console.log(err));
+      .then( res => res.json())
+      .then( res => {
+        if(!res.message){console.log(res.error); return;};
+        for(let i=0;i<this.state.todoItems.length;i++){
+          if(this.state.todoItems[i].id == id){
+            this.state.todoItems[i].id = res.todo_item.id;
+            localStorage.setItem("todoItems",JSON.stringify(this.state.todoItems));
+            return;
+      }}})
   }
   async handleChangeTitle(e,todoIndex,newTitle){
     e.preventDefault()
