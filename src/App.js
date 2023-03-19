@@ -12,42 +12,40 @@ import DoubleScreen from './components/doubleScreen'
 import Weather from './components/wather'
 import Popup from './components/popup'
 import Login from './components/login.js'
-import {keyCodes,URL} from './consts'
+import {keyCodes,URL,TOKEN_LIFE_TIME} from './consts'
 import TicTacToe from './components/game'
 import styled from 'styled-components'
 
 export const AppContext = createContext(false);
 
+async function handleJwt(setLoggedIn){
+  if(!localStorage.getItem("refresh_token")) return false;
+  if(await refreshToken()){setLoggedIn(true)}
+  const intervalId = setInterval( async () =>{
+    if(!(await refreshToken())){
+      setLoggedIn(false);
+      clearInterval(intervalId)
+      return;
+    }
+  },TOKEN_LIFE_TIME)
+}
+
 async function refreshToken(){
+  if(!localStorage.getItem("refresh_token")) return false;
   const req = await fetch(URL+"/token", {
     mode: 'cors',
     method: "POST",
-    credentials: "same-origin",
+    credentials: "include",
+    withCredentials: true ,
     headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({ token: getCookie("refresh_token") })
+    body: JSON.stringify({refresh_token: localStorage.getItem("refresh_token")})
   })
   const res = await req.json()
-  if(!res.message){console.log(res.error); return;};
-  setCookie("access_token",res.token,3600000)
+  if(!res.message){console.log(res.error); return false;};
+  return true;
 }
-
-export function setCookie(name,value,expiraction=false){
-  if (!expiraction) expiraction = new Date(2030, 0, 1).toUTCString();
-  if(!name) return false;
-  if(!value) return false;
-  document.cookie = `${name}=${value}; ${expiraction};`
-}
-
-function getCookie(name){
-  console.log(name)
-  const decodedCookie = decodeURIComponent(document.cookie);
-  const cookieArr = decodedCookie.split("; ");
-  for(let i=0;i<cookieArr.length;i++){
-    if(cookieArr[i].indexOf(name)) return cookieArr[i].substring(name.length+1)
-  }
-}
-
 function parseJwt(token) {
+  console.log(token)
   if (!token) {
     return false;
   }
@@ -60,7 +58,6 @@ function App() {
   console.log('updated app.js')
   const [currentBg,setCurrentBg] = useState(localStorage.getItem('bg') ? localStorage.getItem('bg') : 'default.png')
   const [loggedIn,setLoggedIn] = useState(false);
-  const [refresh_token] = useState(getCookie("refresh_token"))
   const [err,setErr] = useState(false);
   const [errMsg,setErrMsg] = useState("");
   const searchBarRef = useRef();
@@ -95,10 +92,7 @@ function App() {
   }
   useLayoutEffect( () => {
     //handle jwt 
-    const data = parseJwt(getCookie("access_token"))
-    if(data){
-      setInterval( () => refreshToken(),3600000)
-    }
+    handleJwt(setLoggedIn)
     keywords.current= []
     document.body.addEventListener('keydown', e => {
       

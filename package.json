@@ -17,6 +17,7 @@
   },
   "scripts": {
     "start": "PORT=33551 react-scripts start",
+    "start": "HTTPS=true SSL_CRT_FILE=/home/krug/prog/js/node/php/localhost.pem SSL_KEY_FILE=/home/krug/prog/js/node/php/localhost-key.pem PORT=33551 react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
