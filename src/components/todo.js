@@ -44,6 +44,7 @@ class TodoWrapper extends React.PureComponent {
     this.handleChangeDescription = this.handleChangeDescription.bind(this)
     this.handleRemoveDescription = this.handleRemoveDescription.bind(this)
     this.handleChangeTitle = this.handleChangeTitle.bind(this)
+    this.syncItem = this.syncItem.bind(this)
   }
 
   componentDidMount(){
@@ -140,10 +141,13 @@ class TodoWrapper extends React.PureComponent {
     const req = await fetch(URL+"/addtodoitem",{
       mode: 'cors',
       method: "POST",
+      credentials: "include",
+      withCredentials: true ,
       headers: {"Content-Type": "application/json",token: localStorage.getItem("token")},
       body: JSON.stringify(todoitems[item_index])
     })
     const res = await req.json()
+    console.log(res)
     if(!res.message) return;
     todoitems[item_index].id=res.todo_item.id
       this.setState({todoItems: todoitems})
@@ -167,6 +171,7 @@ class TodoWrapper extends React.PureComponent {
 	        handleChangeDescription:this.handleChangeDescription,
 	        handleRemoveDescription:this.handleRemoveDescription,
 	        handleChangeTitle:this.handleChangeTitle,
+		syncItem: this.syncItem,
                 todoInputRef:this.todoInputRef,
                 categories:categories,
                 addCategory:addCategory,
@@ -184,8 +189,8 @@ class TodoWrapper extends React.PureComponent {
 
 
 function Todo(){
-  const {todoItems,categories} = useContext(TodoWrapperContext)
-  const TodoItemsContainerWrapp = useMemo( () => TodoItemsContainer({todoItems,categories}),[todoItems,categories])
+  const {todoItems,syncItem,categories} = useContext(TodoWrapperContext)
+  const TodoItemsContainerWrapp = useMemo( () => TodoItemsContainer({todoItems,categories,syncItem}),[todoItems,categories])
   console.log('re-rendered')
   return (
     <StyledTodo>
@@ -215,12 +220,12 @@ function TodoHeader(){
   )
 }
 
-function TodoItemsContainer({todoItems,categories}) {
+function TodoItemsContainer({todoItems,categories,syncItem}) {
   return (
     <TodoContainer>
       {
 	todoItems.map( (todoItem,index) => {
-//          if(isNaN(todoItem.id)) 
+          if(isNaN(todoItem.id)) syncItem(index)
 	  return (
             < TodoItem text={todoItem}
 	    key={todoItem.id}
