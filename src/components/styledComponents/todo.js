@@ -262,3 +262,102 @@ export const ItemCategoriesWrapper = styled.div`
   padding: 10px;
   display: flex;
  `
+
+export const SyncList = styled.button`
+  position: relative;
+  background: #444;
+  color: #8A2BE2;
+  text-decoration: none;
+  text-transform: uppercase;
+  border: none;
+  letter-spacing: 0.1rem;
+  font-size: 1rem;
+  padding: 1rem 3rem;
+  transition: 0.2s;
+  margin-bottom: 10px;
+&:hover {
+  letter-spacing: 0.2rem;
+  padding: 1.1rem 3.1rem;
+  background: #8A2BE2;
+  color: #8A2BE2;
+  /* box-shadow: 0 0 35px #8A2BE2; */
+  animation: box 0.5s ease-in;
+}
+
+&::before {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  background: #272822;
+}
+
+& span {
+  position: relative;
+  z-index: 1;
+}
+& i {
+  position: absolute;
+  inset: 0;
+  display: block;
+}
+
+& i::before {
+  content: "";
+  position: absolute;
+  width: 10px;
+  height: 2px;
+  left: 80%;
+  top: -2px;
+  border: 2px solid #8A2BE2;
+  background: #272822;
+  transition: 0.2s;
+}
+
+&:hover i::before {
+  width: 15px;
+  left: 20%;
+  animation: move 3s infinite;
+}
+
+& i::after {
+  content: "";
+  position: absolute;
+  width: 10px;
+  height: 2px;
+  left: 20%;
+  bottom: -2px;
+  border: 2px solid #8A2BE2;
+  background: #272822;
+  transition: 0.2s;
+}
+
+&:hover i::after {
+  width: 15px;
+  left: 80%;
+  animation: move 3s infinite;
+}
+
+@keyframes move {
+  0% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(5px);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+@keyframes box {
+  0% {
+    box-shadow: #27272c;
+  }
+  50% {
+    box-shadow: 0 0 25px #8A2BE2;
+  }
+  100% {
+  box-shadow: #27272c;
+  }
+}
+`
