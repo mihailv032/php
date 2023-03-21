@@ -3,14 +3,14 @@ import { AppContext } from '../App';
 import styled from 'styled-components'
 import { v4 as uuidv4 } from 'uuid';
 import {SlidingMenu} from '../components/dropdown'
-import Categories, {AddCategoryDD} from '../components/categories'
+import Categories, {AddCategoryDD,CategoryBtn} from '../components/categories'
+import {CategoryBtn as CtgBtn} from '../components/styledComponents/styled_categories'
 import {URL} from '../consts'
 import {StyledInput,
 	TodoContainer,
 	SyncList,
         ItemCategoriesWrapper,
         ItemCategoriesContainer,
-        CategoryBtn,
 	TodoSideBtuttons,
         TodoHeaderWrapp,
         CategorySvg,
@@ -290,17 +290,17 @@ function Todo(){
 function TodoHeader(){
   const [input,setInput] = useState("")
   const [showDD,setShowDD] = useState(false)
-  const {todoInputRef,loggedIn,handleSubmitItem,categories,addCategory,deleteCategory,syncAllItems} = useContext(TodoWrapperContext)
+  const {todoInputRef,loggedIn,handleToggleCategory,selectedCategory,handleSubmitItem,categories,addCategory,deleteCategory,syncAllItems} = useContext(TodoWrapperContext)
   return (
     <TodoHeaderWrapp>
       {loggedIn && <SyncList onClick={syncAllItems}><span>Sync with server</span><i></i></SyncList>}
       <InputContainer onSubmit={e =>{handleSubmitItem(e,input);setInput("")}}>
         <StyledInput name="" type="text" onChange={e => setInput(e.target.value)} value={input} ref={todoInputRef} />
       </InputContainer>
-      <CategoryBtn onClick={() => setShowDD(!showDD) }>Add New Category</CategoryBtn>
+      <CtgBtn onClick={() => setShowDD(!showDD) }>Add New Category</CtgBtn>
       {
-        categories.map( ({id,name,description}) => {
-          return <CategoryBtn key={id} alt={description}>{name}</CategoryBtn>         
+        categories.map( ({id,name,description},index) => {
+          return (<span  onClick={() => handleToggleCategory(id) }><CategoryBtn key={id} active={id == selectedCategory} alt={description} name={name} deleteCategory={ () => deleteCategory(index)} /></span>)
         })
       }
       <AddCategoryDD opened={showDD} handleSubmit={addCategory} />
