@@ -49,15 +49,51 @@ const xButton = {
 }
 
 const BgBtn = styled.button`
-  width: 250px;
+  width: 200px;
   height: 50px;
-  background: transparent;
-  borders: 2px solid grey;
-  font-size: 20px;
-  font-family: sans-serif;
-  color: white;
 
   border: 1px solid white;
+
+  --border: 5px;    /* the border width */
+  --slant: 0.7em;   /* control the slanted corners */
+  --color: #f3738a; /* the color */
+  
+  font-size: 25px;
+  padding: 0.4em 1.2em;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+  color: #f3738a;
+  background: 
+     linear-gradient(to bottom left,#f3738a  50%,#0000 50.1%) top right,
+     linear-gradient(to top   right,#f3738a  50%,#0000 50.1%) bottom left;
+  background-size: calc(var(--slant) + 1.3*var(--border)) calc(var(--slant) + 1.3*var(--border));
+  background-repeat: no-repeat;
+  box-shadow:
+    0 0 0 200px inset var(--s,#0000),
+    0 0 0 var(--border) inset #f3738a;
+  clip-path: 
+      polygon(0 0, calc(100% - var(--slant)) 0, 100% var(--slant),
+              100% 100%, var(--slant) 100%,0 calc(100% - var(--slant))
+             );
+  transition: color var(--t,0.3s), background-size 0.3s;
+
+  &:focus-visible {
+  outline-offset: calc(-1*var(--border));
+  outline: var(--border) solid #000c;
+  clip-path: none;
+  background-size: 0 0;
+  } 
+  &:hover,
+  &:active{
+  background-size: 100% 100%;
+  color: #fff;
+  --t: 0.2s 0.1s;
+  }
+  &:active {
+  --s: #0005;
+  transition: none;
+  }
 `
 
 const PopupWrapp = styled.div`
