@@ -97,8 +97,6 @@ export function Register({}){
       const res = await req.json()
       setLoading(false)
       if(!res.message){ return setErr(res.error ? res.error : "something went wrong")}
-      localStorage.setItem("refresh_token", res.refresh_token)
-      setLoggedIn(true)
       setOpened(false)
       return;
     }catch(err){
