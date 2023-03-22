@@ -327,3 +327,8 @@ export const SyncList = styled.button`
   }
 }
 `
+
+export const TodoCtgBtn = styled.button`
+  background-color: ${props => props.active ? "transparent" : "red"}
+
+`
