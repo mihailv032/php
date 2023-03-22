@@ -37,12 +37,14 @@ class TodoWrapper extends React.PureComponent {
     super(props);
     this.state = {
       todoItems: [],
-      selectedCategory: ""
+      selectedCategory: "",
+      filter: []
     }
     this.todoInputRef = React.createRef();
 
     this.addCategoryToItem = this.addCategoryToItem.bind(this)
     this.handleToggleCategory = this.handleToggleCategory.bind(this)
+    this.handleToggleItemCategory=this.handleToggleItemCategory.bind(this)
     this.handlDeleteItem = this.handlDeleteItem.bind(this)
     this.handleSubmitItem = this.handleSubmitItem.bind(this)
     this.handleAddDescription = this.handleAddDescription.bind(this)
@@ -61,6 +63,8 @@ class TodoWrapper extends React.PureComponent {
     this.setState({todoItems: storedTodoItems})
   }
   componentDidUpdate(prevProps,prevState){
+    if((prevProps.loggedIn !== this.props.loggedIn) && this.props.loggedIn)
+      this.state.todoItems.forEach(({ notSynced },index) =>{if (notSynced) this.updateItem(index)})
     localStorage.setItem("todoItems",JSON.stringify(this.state.todoItems))
   }
   async handleSubmitItem(e,title){
@@ -95,24 +99,7 @@ class TodoWrapper extends React.PureComponent {
   async handleChangeTitle(e,todoIndex,newTitle){
     e.preventDefault()
     this.state.todoItems[todoIndex].title = newTitle
-    //this will not triger the componentWill update to avoid unneccessary re-render so we just save it manually
-    try{
-      const req = await fetch(URL+"/changetodoitem",{
-        mode: 'cors',
-        method: "POST",
-        credentials: "include",
-        withCredentials: true ,
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({id: this.state.todoItems[todoIndex].id, title: this.state.todoItems[todoIndex].title})
-      })
-      const res = await req.json()
-      if(!res.message) this.state.todoItems[todoIndex].notSynced = true
-      console.log(res)
-    }catch(err){
-      this.state.todoItems[todoIndex].notSynced = true
-      console.log(err)
-    }
-    localStorage.setItem("todoItems",JSON.stringify(this.state.todoItems))
+    this.handleChangeItem(todoIndex)
   }
   handlDeleteItem(index){
     const todoItemsArr = [...this.state.todoItems]
@@ -140,44 +127,12 @@ class TodoWrapper extends React.PureComponent {
       todoItems[index].description = [desc]
     }else todoItems[index].description = [desc,...todoItems[index].description]
     this.setState({todoItems: todoItems})
-
-    try{
-      const req = await fetch(URL+"/changetodoitem",{
-        mode: 'cors',
-        method: "POST",
-        credentials: "include",
-        withCredentials: true ,
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({id: todoItems[index].id, description : todoItems[index].description})
-      })
-      const res = await req.json()
-      console.log(res)
-    }catch(err){
-      console.log(err)
-    } 
-    
+    this.handleChangeItem(index)    
   }
   async handleChangeDescription(e,todoIndex,desc,descIndex){
     e.preventDefault()
     this.state.todoItems[todoIndex].description[descIndex] = desc
-    //this will not triger the componentWill update to avoid unneccessary re-render so we just save it manually
-    localStorage.setItem("todoItems",JSON.stringify(this.state.todoItems))
-    try{
-      const req = await fetch(URL+"/changetodoitem",{
-        mode: 'cors',
-        method: "POST",
-        credentials: "include",
-        withCredentials: true ,
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({id: this.state.todoItems[todoIndex].id, description : this.state.todoItems[todoIndex].description})
-      })
-      const res = await req.json()
-      console.log(res)
-    }catch(err){
-      console.log(err)
-    } 
-    
-
+    this.handleChangeItem(todoIndex)       
   }
   async handleRemoveDescription(e,todoIndex,descIndex){
     e.preventDefault()
@@ -185,23 +140,7 @@ class TodoWrapper extends React.PureComponent {
     todoItems[todoIndex].description.splice(descIndex,1)
     console.log(todoItems[todoIndex].description)
     this.setState({todoItems: todoItems})
-    try{
-      const req = await fetch(URL+"/changetodoitem",{
-        mode: 'cors',
-        method: "POST",
-        credentials: "include",
-        withCredentials: true ,
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({id: this.state.todoItems[todoIndex].id, description : this.state.todoItems[todoIndex].description})
-      })
-      const res = await req.json()
-      console.log(res)
-    }catch(err){
-      console.log(err)
-    } 
-  }
-  async handleChangeItem(){
-    
+    this.handleChangeItem(todoIndex)       
   }
   async syncAllItems(){
     if(!this.props.loggedIn) return;
@@ -220,7 +159,10 @@ class TodoWrapper extends React.PureComponent {
       const res = await req.json()
       console.log(res)
       if(!res.message){ console.log(res.error); return}
-      const itesm = res.todo_items.reduce( (acum,val,index) =>{acum[index] = {title: val.name,id: val.id,description: val.desc ? val.desc : [],categories: val.category_items}; return acum},[])
+      const itesm = res.todo_items.reduce( (acum,val,index) =>{
+	acum[index] = {title: val.name,id: val.id,description: val.desc ? val.desc : []};
+	acum[index].categories = val.category_items.reduce( (acum,val,index) =>{acum[index] = val.category_id; return acum},[])
+	return acum},[])
       this.setState({todoItems: itesm})
       console.log(res.todo_items)
     }catch(err){
@@ -248,17 +190,82 @@ class TodoWrapper extends React.PureComponent {
       console.log(err)
     }
   }
+  async handleChangeItem(todoIndex){
+    try{
+      const req = await fetch(URL+"/changetodoitem",{
+        mode: 'cors',
+        method: "POST",
+        credentials: "include",
+        withCredentials: true ,
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({
+          id: this.state.todoItems[todoIndex].id,
+          description : this.state.todoItems[todoIndex].description,
+          title: this.state.todoItems[todoIndex].title})
+      })
+      const res = await req.json()
+      console.log(res)
+      if (!res.message) {console.log(res.error);this.state.todoItems[todoIndex].notSynced = true;}
+      localStorage.setItem("todoItems", JSON.stringify(this.state.todoItems))
+    }catch(err){
+      console.log(err)
+      this.state.todoItems[todoIndex].notSynced = true;
+      localStorage.setItem("todoItems", JSON.stringify(this.state.todoItems))
+    } 
+  }
+  async updateItem(item_index){
+    
+  }
   async handleToggleCategory(id) {
-    if(isNaN(id) || !id) return 
+    if(isNaN(id) || id == undefined) return 
     this.setState( prevState => ({selectedCategory: prevState.selectedCategory === id ? "" : id}))
   }
+  async handleToggleItemCategory(itemIndex,category_id){
+    console.log(itemIndex)
+    if(itemIndex == undefined || category_id == undefined) return;
+    if(Array.isArray(this.state.todoItems[itemIndex].categories)){
+      if (this.state.todoItems[itemIndex].categories.indexOf(category_id) !== -1) this.removeCategoryFromItem(itemIndex,category_id)
+      else this.addCategoryToItem(itemIndex,category_id)
+    }else{this.addCategoryToItem(itemIndex,category_id)}
+  }
   async addCategoryToItem(itemIndex,category_id){
+    console.log('addctg')
     const todoItems = [...this.state.todoItems]
-    todoItems[itemIndex].categories ? todoItems[itemIndex].categories.push({category_id: category_id}) : todoItems[itemIndex].categories = [{category_id:category_id}]
-    this.setState({todoItems: todoItems})
-    if(!this.props.loggedIn || isNaN(this.state.todoItems[itemIndex].id)) return;
+    todoItems[itemIndex].categories ? todoItems[itemIndex].categories.push(category_id) : todoItems[itemIndex].categories = [category_id]
+    if(!this.props.loggedIn || isNaN(this.state.todoItems[itemIndex].id) || isNaN(category_id)){
+      todoItems[itemIndex].notSynced = true;this.setState({todoItems: todoItems}); return;}
+    else {this.setState({todoItems: todoItems})}
     try{
       const req = await fetch(URL+"/addcategorytoitem",{
+        mode: 'cors',
+        credentials: 'include',
+        withCredentials: true ,
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({category_id: category_id,item_id: this.state.todoItems[itemIndex].id})
+      })
+      const res = await req.json()
+      if (!res.message) { console.log(res.error); this.state.todoItems[itemIndex].notSynced = true; localStorage.setItem("todoItems", JSON.stringify(this.state.todoItems)); return false;};
+      return res.todo_item.id
+    }catch(err){
+      console.log(err)
+      this.state.todoItems[itemIndex].notSynced = true
+      localStorage.setItem("todoItems",JSON.stringify(this.state.todoItems))
+      return false
+    }
+    
+  }
+  async removeCategoryFromItem(itemIndex,category_id){
+    if(itemIndex == undefined || category_id == undefined) return;
+    const todoItems = [...this.state.todoItems]
+    if(!Array.isArray(todoItems[itemIndex].categories)) return;
+    if(todoItems[itemIndex].categories.indexOf(category_id === -1)) return;
+    this.setState({todoItems: todoItems})
+    if(!this.props.loggedIn || isNaN(this.state.todoItems[itemIndex].id) || isNaN(category_id)){todoItems[itemIndex].notSynced = true;this.setState({todoItems: todoItems}); return;}
+    else {this.setState({todoItems: todoItems})}
+;
+    try{
+      const req = await fetch(URL+"/removecategoryfromitem",{
         mode: 'cors',
         credentials: 'include',
         withCredentials: true ,
@@ -275,9 +282,6 @@ class TodoWrapper extends React.PureComponent {
     }
     
   }
-  async removeCategoryFromItem(itemIndex,cateogry_id){
-
-  }
   render() {
     return (
         <Categories loggedIn={this.props.loggedIn} render={ ({categories,addCategory,deleteCategory}) => { 
@@ -289,9 +293,9 @@ class TodoWrapper extends React.PureComponent {
 		syncAllItems: this.syncAllItems,
 	        handlDeleteItem:this.handlDeleteItem,
                 handleToggleCategory: this.handleToggleCategory,
+		handleToggleItemCategory: this.handleToggleItemCategory,
 	        handleAddDescription:this.handleAddDescription,
                 selectedCategory: this.state.selectedCategory,
-                addCategoryToItem: this.addCategoryToItem,
 	        handleChangeDescription:this.handleChangeDescription,
 	        handleRemoveDescription:this.handleRemoveDescription,
 		loggedIn: this.props.loggedIn,
@@ -338,7 +342,7 @@ function TodoHeader(){
       <CtgBtn onClick={() => setShowDD(!showDD) }>Add New Category</CtgBtn>
       {
         categories.map( ({id,name,description},index) => {
-          return (<span  onClick={() => handleToggleCategory(id) }><CategoryBtn key={id} active={id == selectedCategory} alt={description} name={name} deleteCategory={ () => deleteCategory(index)} /></span>)
+          return (<span  onClick={() => handleToggleCategory(id) }  key={id}><CategoryBtn active={id == selectedCategory} alt={description} name={name} deleteCategory={ () => deleteCategory(index)} /></span>)
         })
       }
       <AddCategoryDD opened={showDD} handleSubmit={addCategory} />
@@ -391,7 +395,7 @@ function TodoTitle({originalTitle,index}){
 
 function TodoSideBtns({index,ctgs}){
   const [showSlidingMenu,setShowSlidingMenu] = useState(false)
-  const {handlDeleteItem,categories,addCategoryToItem} = useContext(TodoWrapperContext)
+  const {handlDeleteItem,categories,handleToggleItemCategory} = useContext(TodoWrapperContext)
   return (
     <div>
       <TodoSideBtuttons>
@@ -403,7 +407,7 @@ function TodoSideBtns({index,ctgs}){
             <SlidingMenu opened={showSlidingMenu}>
               {
                 categories.map( ({name,id},indx) => {
-                  return <TodoCtgBtn key={id} active={ctgs.indexOf(id) !== -1 } onClick={ () => addCategoryToItem(index,id)}>{name}</TodoCtgBtn>
+                  return <TodoCtgBtn key={id} active={ctgs.indexOf(id) !== -1 } onClick={ () => handleToggleItemCategory(index,id)}>{name}</TodoCtgBtn>
                 })
               }
             </SlidingMenu>
