@@ -52,7 +52,7 @@ export const TodoContainer = styled.div`
   overflow-y: auto;
   overflow-x: hidden;
   max-width: 500px;
-  max-height: 60vh;
+  max-height: 40vh;
   box-sizing: border-box;
 `
 
