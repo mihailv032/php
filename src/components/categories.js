@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState,useEffect} from 'react';
 import ContextMenu from './dropdown'
 import { v4 as uuidv4 } from 'uuid';
 import * as Styled from './styledComponents/styled_categories'
@@ -107,14 +107,67 @@ export function AddCategoryDD({opened,handleSubmit}){
 
 export function CategoryBtn({name,deleteCategory,active}){
   const [showContext,setShowContext] = useState(false)
-  
+  const [showShare,setShowShare] = useState(false)
   return (
-    <span onContextMenu={e => {e.preventDefault();setShowContext(!showContext)}}>
+    <>
+    <Styled.ContextWrapp onContextMenu={e => {e.preventDefault();setShowContext(!showContext)}}>
       <Styled.CategoryBtn active={active}>{name}</Styled.CategoryBtn>
-      <ContextMenu opened={showContext} onClose={e => {e.preventDefault();setShowContext(!showContext)}}>
-              <button>change</button>
-              <button onClick={deleteCategory}>delete</button>
-      </ContextMenu>
-    </span>
+        <ContextMenu opened={showContext} onClose={e => {e.preventDefault();setShowContext(!showContext)}}>
+          <button>change</button>
+          <button onClick={() => setShowShare(!showShare) }>share</button>
+          <button onClick={deleteCategory}>delete</button>
+        </ContextMenu>
+    </Styled.ContextWrapp>
+    <Popup opened={showShare} onClose={() => setShowShare(false) }><Share/></Popup>
+    </>
+  )
+}
+
+function Share(){
+  const [name,setName] = useState("")
+  const [selectedUser,setSelectedUser] = useState("")
+  return (
+    <Styled.ShareContainer>
+      <Styled.Inp name="" placeholder="user name" type="text" value={name} onChange={e => setName(e.target.value) } />
+      <UsersResults input={name} selectUser={setSelectedUser} />
+      <Styled.ShareBtn><span>Share</span></Styled.ShareBtn>
+    </Styled.ShareContainer>
+  )
+}
+
+function UsersResults({input,selectUser}){
+  const [results,setResults] = useState([])
+  useEffect( () => {
+    async function getUsers(){
+      if(input.length === 0) return;
+      try{
+        const req = await fetch(URL+"/getusers",{
+          mode: 'cors',
+          credentials: 'include',
+          withCredentials: true ,
+          method: "POST",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({input: input})
+        })
+        const res = await req.json()
+        if(!res.message) return;
+        setResults(res.users)
+      }catch(err){
+        console.log(err)
+      }
+    }
+    getUsers()
+  },[input])
+  return (
+    <Styled.ResultsContainer>
+    {results.length === 0 && <Styled.Result>No users found</Styled.Result>}
+      {
+        results.map( ({name,id}) => {
+          return (
+            <Styled.Result key={id} onClick={selectUser(id,name)}>{name}</Styled.Result>
+          )
+        })
+      }
+    </Styled.ResultsContainer>
   )
 }
