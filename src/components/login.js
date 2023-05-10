@@ -127,3 +127,33 @@ export function Register({}){
     </>
   )
 }
+
+export function Logout(){
+  const [opened,setOpened] = useState(false)
+  const {setWord,setHotkey,loggedIn,setLoggedIn} = useContext(AppContext)
+  useEffect( () => {setWord("logout",() =>{if(!loggedIn){return;};setOpened(true);handleLogout();})},[])
+  async function handleLogout(){
+    try{
+      const req = await fetch(URL+"/logout", {
+	mode: 'cors',
+	method: "POST",
+	credentials: 'include',
+	withCredentials: true,
+	headers: {"Content-Type": "application/json",},
+      })
+      const res = await req.json()
+      if(!res.message){return};
+      localStorage.removeItem("refresh_token")
+      localStorage.removeItem("categories")
+      localStorage.removeItem("todoItems")
+      window.location.reload()
+    }catch(err){
+      console.log(err)
+    }
+  }
+  return (
+    <>
+      <LoadingPopup opened={opened} text="loading" />
+    </>
+  )
+}
