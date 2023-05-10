@@ -8,6 +8,7 @@ import {CategoryBtn as CtgBtn} from '../components/styledComponents/styled_categ
 import {URL} from '../consts'
 import {StyledInput,
 	TodoContainer,
+        Switch,
 	SyncList,
         TodoCtgBtn,
         ItemCategoriesWrapper,
@@ -37,12 +38,12 @@ class TodoWrapper extends React.PureComponent {
     super(props);
     this.state = {
       todoItems: [],
-      selectedCategory: "",
-      filter: []
+      selectedCategories: [],
+      showFiltered: false,
+      displayedTodoItems: []//todo items to be shown on the screen
     }
     this.todoInputRef = React.createRef();
 
-    this.addCategoryToItem = this.addCategoryToItem.bind(this)
     this.handleToggleCategory = this.handleToggleCategory.bind(this)
     this.handleToggleItemCategory=this.handleToggleItemCategory.bind(this)
     this.handlDeleteItem = this.handlDeleteItem.bind(this)
@@ -53,6 +54,7 @@ class TodoWrapper extends React.PureComponent {
     this.handleChangeTitle = this.handleChangeTitle.bind(this)
     this.syncAllItems = this.syncAllItems.bind(this)
     this.syncItem = this.syncItem.bind(this)
+    this.toggleFilter = this.toggleFilter.bind(this)
   }
   componentDidMount(){
     console.log(this.context)
@@ -60,7 +62,7 @@ class TodoWrapper extends React.PureComponent {
     this.props.setHotkey("U",() => this.todoInputRef.current.focus(),true)
     console.log(storedTodoItems)
     storedTodoItems.forEach(({ notSynced },index) =>{if (notSynced) this.syncItem(index)})
-    this.setState({todoItems: storedTodoItems})
+    this.setState({ todoItems: storedTodoItems, displayedTodoItems: storedTodoItems })
   }
   componentDidUpdate(prevProps,prevState){
     if((prevProps.loggedIn !== this.props.loggedIn) && this.props.loggedIn)
@@ -74,9 +76,27 @@ class TodoWrapper extends React.PureComponent {
     if (this.props.loggedIn) { id = await this.handleSendItemToServer(title); if(!id) id=uuidv4() }
     else id=uuidv4();
 
+    const todoItems = [{title: title,description: [],id:id, categories: this.state.selectedCategories},...this.state.todoItems]
     this.setState( prevState => ({
-      todoItems: [{title: title,description: [],id:id, categories: [this.state.selectedCategory]},...prevState.todoItems]
+      todoItems: todoItems,
+      displayedTodoItems: todoItems
     }))
+  }
+  toggleFilter(){
+    if(this.state.showFiltered){
+      return this.setState( prevState => ({displayedTodoItems: prevState.todoItems,showFiltered: false}))
+    }
+    this.filterItems()
+  }
+  filterItems(){
+    const filtered = this.state.todoItems.filter( item =>{
+      console.log(item)
+      for(let i=0;i<this.state.selectedCategories.length; i++){
+        if(item.categories.indexOf(this.state.selectedCategories[i]) !== -1) return item;
+      }
+    })
+    console.log(filtered)
+    this.setState({displayedTodoItems: filtered, showFiltered: true})
   }
   async handleSendItemToServer(title){
     try{
@@ -86,7 +106,7 @@ class TodoWrapper extends React.PureComponent {
         withCredentials: true ,
         method: "POST",
         headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({title: title,category_id: this.state.selectedCategory})
+        body: JSON.stringify({title: title,category_id: this.state.selectedCategories})
       })
       const res = await req.json()
       if(!res.message){console.log(res.error); return false;};
@@ -96,17 +116,31 @@ class TodoWrapper extends React.PureComponent {
       return false
     }
   }
-  async handleChangeTitle(e,todoIndex,newTitle){
+  async handleChangeTitle(e,id,newTitle){
     e.preventDefault()
-    this.state.todoItems[todoIndex].title = newTitle
-    this.handleChangeItem(todoIndex)
+    let index;
+    for(let i=0;i<this.state.todoItems.length; i++){
+      if(this.state.todoItems[i].id === id){
+        localStorage.setItem("todoItems",JSON.stringify(this.state.todoItems));
+        index=i;
+        this.state.todoItems[i].title = newTitle; break
+      }
+    }
+    if(this.props.loggedIn && index !== undefined) this.handleChangeItem(id,index)
   }
-  handlDeleteItem(index){
+  handlDeleteItem(id){
     const todoItemsArr = [...this.state.todoItems]
-    const delte_item = todoItemsArr.splice(index,1)
-    this.setState({todoItems:  todoItemsArr})
-    console.log(delte_item)
-    if(isNaN(delte_item[0].id) || !this.props.loggedIn) return;
+    let index;
+    console.log(id)
+    for(let i=0;i<todoItemsArr.length; i++){
+      console.log(todoItemsArr[i].id)
+      if(todoItemsArr[i].id == id){index=i; break}
+    }
+    console.log(index)
+    if(index == undefined) return;
+    todoItemsArr.splice(index,1)
+    this.setState({todoItems:  todoItemsArr, displayedTodoItems: todoItemsArr})
+    if(!this.props.loggedIn) return;
     try{
       fetch(URL+"/deletetodoitem",{
         mode: 'cors',
@@ -114,33 +148,47 @@ class TodoWrapper extends React.PureComponent {
         credentials: "include",
         withCredentials: true ,
         headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({id: delte_item[0].id})
+        body: JSON.stringify({id: id})
       })
     }catch(err){
       console.log(err)
+      //TODO send notification here
     }
   }
-  async handleAddDescription(e,index,desc){
+  async handleAddDescription(e,id,desc){
     e.preventDefault()
     let todoItems = [...this.state.todoItems]
+    let index;
+    for(let i=0; i<todoItems.length;i++){
+      if(todoItems[i].id == id){index=i;break;}
+    }
+    if(index == undefined) return;
     if(todoItems[index].description.length === 0){
       todoItems[index].description = [desc]
     }else todoItems[index].description = [desc,...todoItems[index].description]
-    this.setState({todoItems: todoItems})
-    this.handleChangeItem(index)    
+    this.setState({todoItems: todoItems, displayedTodoItems: todoItems})
+    this.handleChangeItem(id,index)    
   }
-  async handleChangeDescription(e,todoIndex,desc,descIndex){
+  async handleChangeDescription(e,id,desc,descIndex){
     e.preventDefault()
-    this.state.todoItems[todoIndex].description[descIndex] = desc
-    this.handleChangeItem(todoIndex)       
+    let index;
+    for(let i=0;i<this.state.todoItems.length;i++){if(this.state.todoItems[i].id==id){index=i; break}}
+    if(index == undefined) return;
+    console.log(desc)
+    console.log(id)
+    this.state.todoItems[index].description[descIndex] = desc
+    localStorage.setItem("todoItems",JSON.stringify(this.state.todoItems))
+    if(this.props.loggedIn) this.handleChangeItem(id,index)       
   }
-  async handleRemoveDescription(e,todoIndex,descIndex){
+  async handleRemoveDescription(e,id,descIndex){
     e.preventDefault()
     let todoItems = [...this.state.todoItems]
-    todoItems[todoIndex].description.splice(descIndex,1)
-    console.log(todoItems[todoIndex].description)
-    this.setState({todoItems: todoItems})
-    this.handleChangeItem(todoIndex)       
+    let index;
+    for(let i=0;i<todoItems.length;i++){if(todoItems[i].id==id){index=i; break}}
+    if(index == undefined) return;
+    todoItems[index].description.splice(descIndex,1)
+    this.setState({todoItems: todoItems, displayedTodoItems: todoItems})
+    this.handleChangeItem(id,index)       
   }
   async syncAllItems(){
     if(!this.props.loggedIn) return;
@@ -190,7 +238,7 @@ class TodoWrapper extends React.PureComponent {
       console.log(err)
     }
   }
-  async handleChangeItem(todoIndex){
+  async handleChangeItem(id,index=false){
     try{
       const req = await fetch(URL+"/changetodoitem",{
         mode: 'cors',
@@ -199,34 +247,53 @@ class TodoWrapper extends React.PureComponent {
         withCredentials: true ,
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify({
-          id: this.state.todoItems[todoIndex].id,
-          description : this.state.todoItems[todoIndex].description,
-          title: this.state.todoItems[todoIndex].title})
+          id: id,
+          description : this.state.todoItems[index].description,
+          title: this.state.todoItems[index].title})
       })
       const res = await req.json()
       console.log(res)
-      if (!res.message) {console.log(res.error);this.state.todoItems[todoIndex].notSynced = true;}
+      if (!res.message) {console.log(res.error);this.state.todoItems[index].notSynced = true;}
       localStorage.setItem("todoItems", JSON.stringify(this.state.todoItems))
     }catch(err){
       console.log(err)
-      this.state.todoItems[todoIndex].notSynced = true;
+      this.state.todoItems[index].notSynced = true;
       localStorage.setItem("todoItems", JSON.stringify(this.state.todoItems))
     } 
   }
-  async updateItem(item_index){
-    
+  async updateItem(id){
+    try{
+      this.handleChangeItem(id)
+//      this.state.todoItems[item_index].categories.forEach( (id,index) => {
+//        //      fetch(
+//      })
+    }catch(err){
+      console.log(err)
+    }
   }
   async handleToggleCategory(id) {
-    if(isNaN(id) || id == undefined) return 
-    this.setState( prevState => ({selectedCategory: prevState.selectedCategory === id ? "" : id}))
+    if(id == undefined) return 
+    console.log(id)
+    const categories = [...this.state.selectedCategories]
+    const indx = categories.indexOf(id)
+    if(indx != -1){categories.splice(indx,1)}
+    else{categories.push(id)}
+    this.setState( ({selectedCategories: categories}))
+
+    // needed because the setState is async and the filterItems will not get the new ctgs in time to update
+    this.state.selectedCategories = categories 
+
+    if(this.state.showFiltered) this.filterItems()
   }
-  async handleToggleItemCategory(itemIndex,category_id){
-    console.log(itemIndex)
-    if(itemIndex == undefined || category_id == undefined) return;
-    if(Array.isArray(this.state.todoItems[itemIndex].categories)){
-      if (this.state.todoItems[itemIndex].categories.indexOf(category_id) !== -1) this.removeCategoryFromItem(itemIndex,category_id)
-      else this.addCategoryToItem(itemIndex,category_id)
-    }else{this.addCategoryToItem(itemIndex,category_id)}
+  async handleToggleItemCategory(id,category_id){
+    if(id == undefined || category_id == undefined) return;
+    let index;
+    for(let i=0;i<this.state.todoItems.length;i++){if(this.state.todoItems[i].id==id){index=i; break}}
+    if(index == undefined) return;
+    if(Array.isArray(this.state.todoItems[index].categories)){
+      if (this.state.todoItems[index].categories.indexOf(category_id) !== -1) this.removeCategoryFromItem(index,category_id)
+      else this.addCategoryToItem(index,category_id)
+    }else{this.addCategoryToItem(index,category_id)}
   }
   async addCategoryToItem(itemIndex,category_id){
     console.log('addctg')
@@ -288,14 +355,15 @@ class TodoWrapper extends React.PureComponent {
           return (
             <TodoWrapperContext.Provider
               value={{
-	        todoItems: this.state.todoItems,
+	        todoItems: this.state.displayedTodoItems,
 	        handleSubmitItem:this.handleSubmitItem,
 		syncAllItems: this.syncAllItems,
 	        handlDeleteItem:this.handlDeleteItem,
                 handleToggleCategory: this.handleToggleCategory,
 		handleToggleItemCategory: this.handleToggleItemCategory,
+                toggleFilter: this.toggleFilter,
 	        handleAddDescription:this.handleAddDescription,
-                selectedCategory: this.state.selectedCategory,
+                selectedCategories: this.state.selectedCategories,
 	        handleChangeDescription:this.handleChangeDescription,
 	        handleRemoveDescription:this.handleRemoveDescription,
 		loggedIn: this.props.loggedIn,
@@ -319,7 +387,7 @@ class TodoWrapper extends React.PureComponent {
 
 function Todo(){
   const {todoItems,syncItem,categories} = useContext(TodoWrapperContext)
-  const TodoItemsContainerWrapp = useMemo( () => TodoItemsContainer({todoItems,categories,syncItem}),[todoItems,categories])
+  const TodoItemsContainerWrapp = useMemo( () => TodoItemsContainer({todoItems,categories,syncItem}),[todoItems])
   console.log('re-rendered')
   return (
     <StyledTodo>
@@ -332,17 +400,21 @@ function Todo(){
 function TodoHeader(){
   const [input,setInput] = useState("")
   const [showDD,setShowDD] = useState(false)
-  const {todoInputRef,loggedIn,handleToggleCategory,selectedCategory,handleSubmitItem,categories,addCategory,deleteCategory,syncAllItems} = useContext(TodoWrapperContext)
+  const {todoInputRef,loggedIn,handleToggleCategory,toggleFilter,selectedCategories,handleSubmitItem,categories,addCategory,deleteCategory,syncAllItems} = useContext(TodoWrapperContext)
   return (
     <TodoHeaderWrapp>
       {loggedIn && <SyncList onClick={syncAllItems}><span>Sync with server</span><i></i></SyncList>}
       <InputContainer onSubmit={e =>{handleSubmitItem(e,input);setInput("")}}>
         <StyledInput name="" type="text" onChange={e => setInput(e.target.value)} value={input} ref={todoInputRef} />
       </InputContainer>
+        <Switch >
+          <input type="checkbox" onClick={toggleFilter} />
+          <span></span>
+        </Switch>
       <CtgBtn onClick={() => setShowDD(!showDD) }>Add New Category</CtgBtn>
       {
-        categories.map( ({id,name,description},index) => {
-          return (<span  onClick={() => handleToggleCategory(id) }  key={id}><CategoryBtn active={id == selectedCategory} alt={description} name={name} deleteCategory={ () => deleteCategory(index)} /></span>)
+        categories.map( (category,index) => {
+          return (<span  onClick={() => handleToggleCategory(category.id) }  key={category.id}><CategoryBtn id={category.id} key={category.id} active={selectedCategories.indexOf(category.id) != -1 } alt={category.description} name={category.name} deleteCategory={ () => deleteCategory(index)} /></span>)
         })
       }
       <AddCategoryDD opened={showDD} handleSubmit={addCategory} />
@@ -351,6 +423,7 @@ function TodoHeader(){
 }
 
 function TodoItemsContainer({todoItems,categories,syncItem}) {
+  console.log('herender item')
   return (
     <TodoContainer>
       {
@@ -374,32 +447,32 @@ function TodoItemsContainer({todoItems,categories,syncItem}) {
 function TodoItem({text,categories,index,id,itemCategories}) {
   return (
     <TodoItemContainer>
-      <TodoTitle originalTitle={text.title} index={index} />
-      <TodoSideBtns index={index} ctgs={itemCategories} />
-      <TodoItemDescription desc={text.description} index={index} />
+      <TodoTitle originalTitle={text.title} id={id} />
+      <TodoSideBtns itemid={id} ctgs={itemCategories} />
+      <TodoItemDescription desc={text.description} id={id} />
     </TodoItemContainer>
   )
 }
 
-function TodoTitle({originalTitle,index}){
+function TodoTitle({originalTitle,id}){
   const [title,setTitle] = useState(originalTitle)
   const {handleChangeTitle} = useContext(TodoWrapperContext)
   return (
-    <TodoItemInputContainer onSubmit={e => { e.preventDefault(); handleChangeTitle(e,index,title)}}>
+    <TodoItemInputContainer onSubmit={e => { e.preventDefault(); handleChangeTitle(e,id,title)}}>
       <StyledTodoItem value={title} onChange={(e) => setTitle(e.target.value)} type="input" />
-      <TitleSubmitButton onSubmit={e =>{ handleChangeTitle(e,index,title)}}></TitleSubmitButton>
+      <TitleSubmitButton onSubmit={e =>{ handleChangeTitle(e,id,title)}}></TitleSubmitButton>
     </TodoItemInputContainer>
     
   )
 }
 
-function TodoSideBtns({index,ctgs}){
+function TodoSideBtns({itemid,ctgs}){
   const [showSlidingMenu,setShowSlidingMenu] = useState(false)
   const {handlDeleteItem,categories,handleToggleItemCategory} = useContext(TodoWrapperContext)
   return (
     <div>
       <TodoSideBtuttons>
-        <DeleteBtn onClick={ () => handlDeleteItem(index)}>X</DeleteBtn>
+        <DeleteBtn onClick={ () => handlDeleteItem(itemid)}>X</DeleteBtn>
         
         <ItemCategoriesContainer>
           <CategorySvg alt="" src="./category-icon.svg" onClick={() => setShowSlidingMenu(!showSlidingMenu) } />
@@ -407,7 +480,7 @@ function TodoSideBtns({index,ctgs}){
             <SlidingMenu opened={showSlidingMenu}>
               {
                 categories.map( ({name,id},indx) => {
-                  return <TodoCtgBtn key={id} active={ctgs.indexOf(id) !== -1 } onClick={ () => handleToggleItemCategory(index,id)}>{name}</TodoCtgBtn>
+                  return <TodoCtgBtn key={id} active={ctgs.indexOf(id) !== -1 } onClick={ () => handleToggleItemCategory(itemid,id)}>{name}</TodoCtgBtn>
                 })
               }
             </SlidingMenu>
@@ -418,7 +491,7 @@ function TodoSideBtns({index,ctgs}){
   )
 }
 
-const TodoItemDescription = ({desc,index}) => {
+const TodoItemDescription = ({desc,id}) => {
   const [showDescription,setShowDescription] = useState(false)
   if(!Array.isArray(desc)) return;
   return (
@@ -428,12 +501,12 @@ const TodoItemDescription = ({desc,index}) => {
 	return (<DescriptionTextArea
 		  desc={description}
 		  descIndex={descIndex}
-		  todoIndex={index}
+		  todoid={id}
 		  key={uuidv4()} />
 	)	
       })
     }
-      {(showDescription || desc.length === 0) && <TodoDescriptionFooter todoIndex={index} desc={desc}/>}
+      {(showDescription || desc.length === 0) && <TodoDescriptionFooter id={id} desc={desc}/>}
       { desc.length > 0 && 
       <DescriptionButton onClick={ () =>{setShowDescription(!showDescription)}}>
 	{showDescription ? "Hide Description" : "Show Description"}
@@ -443,19 +516,19 @@ const TodoItemDescription = ({desc,index}) => {
   )
 }
 
-const TodoDescriptionFooter = ({todoIndex,desc}) => {
+const TodoDescriptionFooter = ({id,desc}) => {
   const [inputValue,setInputValue] = useState("")
   const {handleAddDescription} = useContext(TodoWrapperContext)
   return (
     <>
-      <DescritionInputContainer onSubmit={(e) =>{setInputValue("");handleAddDescription(e,todoIndex,inputValue)}}>
+      <DescritionInputContainer onSubmit={(e) =>{setInputValue("");handleAddDescription(e,id,inputValue)}}>
 	<DescriptionInput placeholder="Description" value={inputValue}  onChange={(e) => setInputValue(e.target.value)} />
       </DescritionInputContainer>
     </>
   )
 }
 
-const DescriptionTextArea = ({desc,descIndex,todoIndex}) => {
+const DescriptionTextArea = ({desc,descIndex,todoid}) => {
   const [textAreatValue,setTextAreaValue] = useState(desc)
   const [changed,setChanged] = useState(false)
   const {handleChangeDescription,handleRemoveDescription} = useContext(TodoWrapperContext)
@@ -463,11 +536,11 @@ const DescriptionTextArea = ({desc,descIndex,todoIndex}) => {
 	  <DescriptionContentContainer>
 	    <DescriptionContent value={textAreatValue} onChange={ e =>{if(!changed){setChanged(true)};setTextAreaValue(e.target.value)}} />
 	    <DescriptionButtonContainer>
-	      <DescriptionDeleteButton onClick={e => handleRemoveDescription(e,todoIndex,descIndex) }>
+	      <DescriptionDeleteButton onClick={e => handleRemoveDescription(e,todoid,descIndex) }>
 		X
 	      </DescriptionDeleteButton>
 	      { changed &&
-		<DescriptionSaveButton onClick={(e) =>{setChanged(false);handleChangeDescription(e,todoIndex,textAreatValue,descIndex)}}>
+		<DescriptionSaveButton onClick={(e) =>{setChanged(false);handleChangeDescription(e,todoid,textAreatValue,descIndex)}}>
 		✔️
 	      </DescriptionSaveButton>
 	      }
