@@ -15,8 +15,20 @@ class Categories extends React.Component {
   }
   async componentDidMount(){
     const categories = localStorage.getItem("categories") ? JSON.parse(localStorage.getItem("categories")) : false
-    if(!categories) return;
-    this.setState({categories: categories})
+    if(categories){
+      categories.forEach( async ctg => {if(isNaN(ctg.id) && this.props.loggedIn){console.log(ctg.id);ctg.id = await this.handleSendToServer(ctg.name,ctg.description)}})
+      this.setState({categories: categories})
+    }
+    if(!this.props.loggedIn) return;
+    fetch(URL+"/getallusercategories", {
+        mode: 'cors',
+        credentials: 'include',
+        withCredentials: true ,
+        method: "GET",
+        headers: {"Content-Type": "application/json"},
+
+    }).then( res => res.json())
+    .then( res =>{console.log(res);if(res.message){this.setState({categories: res.categories})}})
   }
   async componentDidUpdate(){
     localStorage.setItem("categories", JSON.stringify(this.state.categories))
