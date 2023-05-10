@@ -19,6 +19,7 @@ import styled from 'styled-components'
 export const AppContext = createContext(false);
 
 async function handleJwt(setLoggedIn){
+  console.log(localStorage.getItem("refresh_token"))
   if(!localStorage.getItem("refresh_token")) return false;
   if(await refreshToken()){setLoggedIn(true)}
   const intervalId = setInterval( async () =>{
@@ -32,17 +33,22 @@ async function handleJwt(setLoggedIn){
 
 async function refreshToken(){
   if(!localStorage.getItem("refresh_token")) return false;
-  const req = await fetch(URL+"/token", {
-    mode: 'cors',
-    method: "POST",
-    credentials: "include",
-    withCredentials: true ,
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({refresh_token: localStorage.getItem("refresh_token")})
-  })
-  const res = await req.json()
-  if(!res.message){console.log(res.error); return false;};
-  return true;
+  try{
+    const req = await fetch(URL+"/token", {
+      mode: 'cors',
+      method: "POST",
+      credentials: "include",
+      withCredentials: true ,
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({refresh_token: localStorage.getItem("refresh_token")})
+    })
+    const res = await req.json()
+    if(!res.message){console.log(res.error); return false;};
+    return true;
+  }catch(err){
+    console.log(err)
+    return false;
+  }
 }
 function parseJwt(token) {
   console.log(token)
@@ -55,7 +61,6 @@ function parseJwt(token) {
 }
 const hotkeys = []
 function App() {
-  console.log('updated app.js')
   const [currentBg,setCurrentBg] = useState(localStorage.getItem('bg') ? localStorage.getItem('bg') : 'default.png')
   const [loggedIn,setLoggedIn] = useState(false);
   const [err,setErr] = useState(false);
