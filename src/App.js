@@ -11,7 +11,7 @@ import SearchBar from './components/searchbar'
 import DoubleScreen from './components/doubleScreen'
 import Weather from './components/wather'
 import Popup from './components/popup'
-import Login, {Register} from './components/login.js'
+import Login, {Register,Logout} from './components/login.js'
 import {keyCodes,URL,TOKEN_LIFE_TIME} from './consts'
 import TicTacToe from './components/game'
 import styled from 'styled-components'
@@ -141,6 +141,7 @@ function App() {
 	<FeedContainer/>
       </FeedSection>
       <Login />
+      <Logout />
       <Register />
       <TicTacToe />
     </AppContext.Provider>
