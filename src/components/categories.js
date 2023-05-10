@@ -3,6 +3,7 @@ import ContextMenu from './dropdown'
 import { v4 as uuidv4 } from 'uuid';
 import * as Styled from './styledComponents/styled_categories'
 import {URL} from '../consts'
+import Popup from './popup';
 
 class Categories extends React.Component {
   constructor(props) {
@@ -117,7 +118,7 @@ export function AddCategoryDD({opened,handleSubmit}){
   )
 }
 
-export function CategoryBtn({name,deleteCategory,active}){
+export function CategoryBtn({name,deleteCategory,active,id}){
   const [showContext,setShowContext] = useState(false)
   const [showShare,setShowShare] = useState(false)
   return (
@@ -130,7 +131,7 @@ export function CategoryBtn({name,deleteCategory,active}){
           <button onClick={deleteCategory}>delete</button>
         </ContextMenu>
     </Styled.ContextWrapp>
-    <Popup opened={showShare} onClose={() => setShowShare(false) }><Share/></Popup>
+    <Popup opened={showShare} onClose={() => setShowShare(false) }><Share category_id={id} /></Popup>
     </>
   )
 }
