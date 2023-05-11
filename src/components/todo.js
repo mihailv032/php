@@ -280,10 +280,8 @@ class TodoWrapper extends React.PureComponent {
     else{categories.push(id)}
     this.setState( ({selectedCategories: categories}))
 
-    // needed because the setState is async and the filterItems will not get the new ctgs in time to update
-    this.state.selectedCategories = categories 
-
-    if(this.state.showFiltered) this.filterItems()
+    // the assigment of state is needed because the setState is async and the filterItems will not get the new ctgs in time to update
+    if(this.state.showFiltered){this.state.selectedCategories = categories ;this.filterItems()}
   }
   async handleToggleItemCategory(id,category_id){
     if(id == undefined || category_id == undefined) return;
