@@ -324,11 +324,16 @@ class TodoWrapper extends React.PureComponent {
     if(itemIndex == undefined || category_id == undefined) return;
     const todoItems = [...this.state.todoItems]
     if(!Array.isArray(todoItems[itemIndex].categories)) return;
-    if(todoItems[itemIndex].categories.indexOf(category_id === -1)) return;
-    this.setState({todoItems: todoItems})
-    if(!this.props.loggedIn || isNaN(this.state.todoItems[itemIndex].id) || isNaN(category_id)){todoItems[itemIndex].notSynced = true;this.setState({todoItems: todoItems}); return;}
-    else {this.setState({todoItems: todoItems})}
-;
+    const ctgIndex=todoItems[itemIndex].categories.indexOf(category_id)
+    if(ctgIndex === -1) return;
+    todoItems[itemIndex].categories.splice(ctgIndex,1)
+    const update = (!this.props.loggedIn || isNaN(this.state.todoItems[itemIndex].id) || isNaN(category_id)) 
+    if(!update) todoItems[itemIndex].notSynced = true;
+    if(this.state.showFiltered){
+      this.state.todoItems = todoItems //avoid extra re-render
+      this.filterItems()
+    }else this.setState({todoItems: todoItems})
+    if(!update) return;
     try{
       const req = await fetch(URL+"/removecategoryfromitem",{
         mode: 'cors',
