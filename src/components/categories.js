@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import * as Styled from './styledComponents/styled_categories'
 import {URL} from '../consts'
 import Popup from './popup';
+import "./styles/categories.css"
 
 class Categories extends React.Component {
   constructor(props) {
@@ -44,7 +45,6 @@ class Categories extends React.Component {
   }
   async handleSendToServer(name,description){
     try{
-      console.log('here')
       const req = await fetch(URL+"/addtodocategory",{
         mode: 'cors',
         method: "POST",
@@ -125,11 +125,18 @@ export function CategoryBtn({name,deleteCategory,active,id}){
     <>
     <Styled.ContextWrapp onContextMenu={e => {e.preventDefault();setShowContext(!showContext)}}>
       <Styled.CategoryBtn active={active}>{name}</Styled.CategoryBtn>
-        <ContextMenu opened={showContext} onClose={e => {e.preventDefault();setShowContext(!showContext)}}>
-          <button>change</button>
-          <button onClick={() => setShowShare(!showShare) }>share</button>
-          <button onClick={deleteCategory}>delete</button>
-        </ContextMenu>
+      <ContextMenu opened={showContext} onClose={e => {e.preventDefault();setShowContext(!showContext)}}>
+	<div className="ddcontainer">
+          <button className="dditems">change</button>
+          <button className="dditems" onClick={() => setShowShare(!showShare) }>share</button>
+	  {/*<input class="dropdown-sub" type="checkbox" id="dropdown-sub" name="dropdown-sub"/>
+	  <label class="for-dropdown-sub" for="dropdown-sub">Shared With<i class="uil uil-plus"></i></label>
+	  <div class="section-dropdown-sub"> 
+	    <button className="dd_sub_item" onClick={() => setShowShare(!showShare) }>test</button>    
+	  </div>*/}
+          <button className="dditems" onClick={deleteCategory}>delete</button>
+	</div>
+      </ContextMenu>
     </Styled.ContextWrapp>
     <Popup opened={showShare} onClose={() => setShowShare(false) }><Share category_id={id} /></Popup>
     </>
