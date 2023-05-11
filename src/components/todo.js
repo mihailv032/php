@@ -478,9 +478,20 @@ function TodoSideBtns({itemid,ctgs}){
           <CategorySvg alt="" src="./category-icon.svg" onClick={() => setShowSlidingMenu(!showSlidingMenu) } />
           {showSlidingMenu && <ItemCategoriesWrapper>
             <SlidingMenu opened={showSlidingMenu}>
+	      {categories.length === 0 && <h6 style={{color: "#fcfcfcfc"}}>No Categories</h6> }
               {
                 categories.map( ({name,id},indx) => {
-                  return <TodoCtgBtn key={id} active={ctgs.indexOf(id) !== -1 } onClick={ () => handleToggleItemCategory(itemid,id)}>{name}</TodoCtgBtn>
+                  return (
+		    <>
+		      <TodoCtgBtn key={id} active={ctgs.indexOf(id) !== -1 } onClick={ () => handleToggleItemCategory(itemid,id)}>
+			<span></span>
+			<span></span>
+			<span></span>
+			<span></span>
+			{name}
+		      </TodoCtgBtn>
+		    </>
+		  )
                 })
               }
             </SlidingMenu>
