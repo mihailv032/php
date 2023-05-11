@@ -121,9 +121,10 @@ class TodoWrapper extends React.PureComponent {
     let index;
     for(let i=0;i<this.state.todoItems.length; i++){
       if(this.state.todoItems[i].id === id){
-        localStorage.setItem("todoItems",JSON.stringify(this.state.todoItems));
         index=i;
-        this.state.todoItems[i].title = newTitle; break
+        this.state.todoItems[i].title = newTitle; 
+        localStorage.setItem("todoItems",JSON.stringify(this.state.todoItems));
+	break;
       }
     }
     if(this.props.loggedIn && index !== undefined) this.handleChangeItem(id,index)
