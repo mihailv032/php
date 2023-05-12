@@ -79,10 +79,9 @@ class TodoWrapper extends React.PureComponent {
     else id=uuidv4();
 
     const todoItems = [{title: title,description: [],id:id, categories: this.state.selectedCategories},...this.state.todoItems]
-    this.setState( prevState => ({
-      todoItems: todoItems,
-      displayedTodoItems: todoItems
-    }))
+
+    if(this.state.showFiltered){this.state.todoItems=todoItems;this.filterItems()}
+    else this.setState( prevState => ({todoItems: todoItems,displayedTodoItems: todoItems}))
   }
   toggleFilter(){
     if(this.state.showFiltered){
