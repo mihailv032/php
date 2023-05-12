@@ -73,12 +73,14 @@ function App({name,url,icon,hotkey,changeAppDetails,deleteApp}){
   const [showContext,setShowContext] = useState(false)
   const [showChangeDetails,setShowDetails] = useState(false)
   const {setHotkey,deleteHotkey} = useContext(AppContext)
+  const controlRef = useRef()//needed to fix closing the contextMenu when closing by second clicking on the btn again
   useEffect( () => {
     if(hotkey && ref.current){if(!setHotkey(hotkey, () => ref.current.click())){changeAppDetails(name,url,false)}}
     
   },[ref,hotkey])
   const handleContext = e => {
     e.preventDefault()
+    if(controlRef.current) return;
     setShowContext(!showContext)
   }
   return (
@@ -89,7 +91,7 @@ function App({name,url,icon,hotkey,changeAppDetails,deleteApp}){
 	  <Styled.AppTitle>{name}</Styled.AppTitle>
 	</Styled.App>
       </a>
-      <RightClickMenu opened={showContext} handleClose={() => setShowContext(false) } deleteApp={deleteApp} changeAppDetails={() => setShowDetails(true) } />
+      <RightClickMenu controlRef={controlRef} opened={showContext} handleClose={() => setShowContext(false) } deleteApp={deleteApp} changeAppDetails={() => setShowDetails(true) } />
       <Popup opened={showChangeDetails} onClose={ () => setShowDetails(false)}>
 	<PopupContent submit={ (name,url,hotkey) =>{setShowDetails(false);changeAppDetails(name,url,hotkey);}} nameProp={name} urlProp={url} hotkeyProp={hotkey ? hotkey : ""} />
       </Popup>
@@ -139,11 +141,11 @@ function PopupContent({submit,nameProp="",urlProp="",hotkeyProp=""}){
   )
 }
 
-function RightClickMenu({opened,handleClose,changeAppDetails,deleteApp}){
+function RightClickMenu({opened,handleClose,changeAppDetails,deleteApp,controlRef}){
   return (
     <ContextMenu opened={opened} onClose={handleClose}>
       <Styled.ContexMenutWrapp>
-	<Styled.ContextMenuItem onClick={changeAppDetails}>change details</Styled.ContextMenuItem>
+	<Styled.ContextMenuItem onClick={changeAppDetails} ref={controlRef}>change details</Styled.ContextMenuItem>
 	<Styled.ContextMenuItem onClick={deleteApp}>Delete</Styled.ContextMenuItem>
       </Styled.ContexMenutWrapp>
     </ContextMenu>

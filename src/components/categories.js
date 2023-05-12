@@ -1,4 +1,4 @@
-import React, {useState,useEffect} from 'react';
+import React, {useState,useEffect, useRef}from 'react';
 import ContextMenu from './dropdown'
 import { v4 as uuidv4 } from 'uuid';
 import * as Styled from './styledComponents/styled_categories'
@@ -121,13 +121,15 @@ export function AddCategoryDD({opened,handleSubmit}){
 export function CategoryBtn({name,deleteCategory,active,id}){
   const [showContext,setShowContext] = useState(false)
   const [showShare,setShowShare] = useState(false)
+  const controlRef = useRef()//needed to fix closing the contextMenu when closing by second clicking on the btn again
+
   return (
     <>
-    <Styled.ContextWrapp onContextMenu={e => {e.preventDefault();setShowContext(!showContext)}}>
+      <Styled.ContextWrapp onContextMenu={e => {e.preventDefault();if(controlRef.current){return};setShowContext(!showContext)}}>
       <Styled.CategoryBtn active={active}>{name}</Styled.CategoryBtn>
-      <ContextMenu opened={showContext} onClose={e => {e.preventDefault();setShowContext(!showContext)}}>
+      <ContextMenu opened={showContext} onClose={e =>{e.preventDefault();setShowContext(false)}} >
 	<div className="ddcontainer">
-          <button className="dditems">change</button>
+          <button className="dditems" ref={controlRef}>change</button>
           <button className="dditems" onClick={() => setShowShare(!showShare) }>share</button>
 	  {/*<input class="dropdown-sub" type="checkbox" id="dropdown-sub" name="dropdown-sub"/>
 	  <label class="for-dropdown-sub" for="dropdown-sub">Shared With<i class="uil uil-plus"></i></label>
