@@ -508,10 +508,9 @@ function TodoSideBtns({itemid,ctgs}){
 
 const TodoItemDescription = ({desc,id}) => {
   const [showDescription,setShowDescription] = useState(false)
-  if(!Array.isArray(desc)) return;
   return (
     <DescriptionContainer>
-    { (showDescription) &&
+    { (showDescription && Array.isArray(desc)) &&
       desc.map( (description,descIndex) => {
 	return (<DescriptionTextArea
 		  desc={description}
