@@ -11,6 +11,7 @@ import SearchBar from './components/searchbar'
 import DoubleScreen from './components/doubleScreen'
 import Weather from './components/wather'
 import Popup from './components/popup'
+import Notifications from './components/notifications'
 import Login, {Register,Logout} from './components/login.js'
 import {keyCodes,URL,TOKEN_LIFE_TIME} from './consts'
 import TicTacToe from './components/game'
@@ -148,6 +149,7 @@ function App() {
       <Login />
       <Logout />
       <Register />
+      <Notifications />
       <TicTacToe />
     </AppContext.Provider>
   );
