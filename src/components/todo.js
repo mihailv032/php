@@ -46,6 +46,8 @@ class TodoWrapper extends React.PureComponent {
 
     this.handleToggleCategory = this.handleToggleCategory.bind(this)
     this.handleToggleItemCategory=this.handleToggleItemCategory.bind(this)
+    this.handleRemoveCategoryFromAllItems=this.handleRemoveCategoryFromAllItems.bind(this)
+    this.handleUpdateCategoryId = this.handleUpdateCategoryId.bind(this)
     this.handlDeleteItem = this.handlDeleteItem.bind(this)
     this.handleSubmitItem = this.handleSubmitItem.bind(this)
     this.handleAddDescription = this.handleAddDescription.bind(this)
@@ -168,7 +170,7 @@ class TodoWrapper extends React.PureComponent {
       todoItems[index].description = [desc]
     }else todoItems[index].description = [desc,...todoItems[index].description]
     this.setState({todoItems: todoItems, displayedTodoItems: todoItems})
-    this.handleChangeItem(id,index)    
+    if(this.props.loggedIn) this.handleChangeItem(id,index)    
   }
   async handleChangeDescription(e,id,desc,descIndex){
     e.preventDefault()
@@ -353,9 +355,35 @@ class TodoWrapper extends React.PureComponent {
     }
     
   }
+  handleRemoveCategoryFromAllItems(id){//for the case when category is deleted
+    const todoItems = [...this.state.todoItems]
+    todoItems.forEach( item => {
+      const ctgId = item.categories.indexOf(id)
+      if(ctgId !== -1) item.categories.splice(ctgId,1)
+    })
+    this.setState({todoItems: todoItems})
+  }
+  handleUpdateCategoryId(oldId,newId){//when the category is being synced with the server it will receive a new id
+    const todoItems = [...this.state.todoItems]
+    todoItems.forEach( (item,index) => {
+      const ctgId = item.categories.indexOf(oldId)
+      if(ctgId !== -1){
+	if(!this.props.loggedIn){item.categories.splice(ctgId,1,newId)}
+	else {
+	  item.categories.splice(ctgId,1)
+	  this.addCategoryToItem(index,newId)
+	}
+      }
+    })
+    if(!this.props.loggedIn){
+      this.state.todoItems = todoItems//no need to actually re-render the app
+      localStorage.setItem("todoItems",JSON.stringify(this.state.todoItems));
+    }
+  }
   render() {
     return (
-        <Categories loggedIn={this.props.loggedIn} render={ ({categories,addCategory,deleteCategory}) => { 
+      <Categories loggedIn={this.props.loggedIn} handleRemoveCategoryFromAllItems={this.handleRemoveCategoryFromAllItems} handleUpdateCategoryId={this.handleUpdateCategoryId}
+		  render={ ({categories,addCategory,deleteCategory}) => { 
           return (
             <TodoWrapperContext.Provider
               value={{
