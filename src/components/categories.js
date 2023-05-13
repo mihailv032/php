@@ -66,7 +66,7 @@ class Categories extends React.Component {
     const categories = [...this.state.categories]
     const delte_item = categories.splice(index,1)
     this.setState({categories:  categories})
-    console.log(delte_item)
+    this.props.handleRemoveCategoryFromAllItems(delte_item[0].id)
     if(isNaN(delte_item[0].id) || !this.props.loggedIn) return;
     try{
       fetch(URL+"/deletecategory", {
