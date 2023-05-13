@@ -37,13 +37,10 @@
 
 
 .dditems{
-    width: 100%;
     cursor: pointer;
     background: transparent;
     border: none;
-    position: relative;
     color: #fff;
-    transition: all 200ms linear;
     font-family: 'Roboto', sans-serif;
     font-weight: 500;
     font-size: 15px;
