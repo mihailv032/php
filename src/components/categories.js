@@ -18,7 +18,13 @@ class Categories extends React.Component {
   async componentDidMount(){
     const categories = localStorage.getItem("categories") ? JSON.parse(localStorage.getItem("categories")) : false
     if(categories){
-      categories.forEach( async ctg => {if(isNaN(ctg.id) && this.props.loggedIn){console.log(ctg.id);ctg.id = await this.handleSendToServer(ctg.name,ctg.description)}})
+      categories.forEach( async ctg => {
+	if(isNaN(ctg.id) && this.props.loggedIn){
+	  let old_id = ctg.id
+	  ctg.id = await this.handleSendToServer(ctg.name,ctg.description)
+	  this.props.handleUpdateCategoryId(old_id,ctg.id)
+	}
+      })
       this.setState({categories: categories})
     }
     if(!this.props.loggedIn) return;
