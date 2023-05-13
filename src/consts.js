@@ -1,4 +1,4 @@
-export const URL = 'https://127.0.0.1:3001'
+export const URL = 'https://localhost:3001'
 export const ANIMATION_TIME = 300
 //http://54.89.153.221:8080
 //http://127.0.0.1:8080

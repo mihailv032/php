@@ -85,6 +85,7 @@ class Categories extends React.Component {
       })
     }catch(err){
       console.log(err)
+      //TOOD add notification here
     }
   }
   render() {
@@ -185,14 +186,8 @@ function UsersResults({input,selectUser}){
   },[input])
   return (
     <Styled.ResultsContainer>
-    {results.length === 0 && <Styled.Result>No users found</Styled.Result>}
-      {
-        results.map( ({name,id}) => {
-          return (
-            <Styled.Result key={id} onClick={selectUser(id,name)}>{name}</Styled.Result>
-          )
-        })
-      }
+      {results.length === 0 && <Styled.Result>No users found</Styled.Result>}
+      {results.map( ({name,id}) => <Styled.Result key={id} onClick={ () => selectUser(id,name)}>{name}</Styled.Result>)}
     </Styled.ResultsContainer>
   )
 }
