@@ -356,11 +356,14 @@ class TodoWrapper extends React.PureComponent {
   }
   handleRemoveCategoryFromAllItems(id){//for the case when category is deleted
     const todoItems = [...this.state.todoItems]
+    const selectedCtgs = [...this.state.selectedCategories]
+    const ctgId = selectedCtgs.indexOf(id)
+    if(ctgId !== -1) selectedCtgs.splice(ctgId,1)
     todoItems.forEach( item => {
       const ctgId = item.categories.indexOf(id)
       if(ctgId !== -1) item.categories.splice(ctgId,1)
     })
-    this.setState({todoItems: todoItems})
+    this.setState({todoItems: todoItems,selectedCategories: selectedCtgs})
   }
   handleUpdateCategoryId(oldId,newId){//when the category is being synced with the server it will receive a new id
     const todoItems = [...this.state.todoItems]
