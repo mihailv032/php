@@ -128,19 +128,16 @@ export function CategoryBtn({name,deleteCategory,active,id}){
       <Styled.ContextWrapp onContextMenu={e => {e.preventDefault();if(controlRef.current){return};setShowContext(!showContext)}}>
       <Styled.CategoryBtn active={active}>{name}</Styled.CategoryBtn>
       <ContextMenu opened={showContext} onClose={e =>{e.preventDefault();setShowContext(false)}} >
-	<div className="ddcontainer">
-          <button className="dditems" ref={controlRef}>change</button>
-          <button className="dditems" onClick={() => setShowShare(!showShare) }>share</button>
-	  {/*<input class="dropdown-sub" type="checkbox" id="dropdown-sub" name="dropdown-sub"/>
-	  <label class="for-dropdown-sub" for="dropdown-sub">Shared With<i class="uil uil-plus"></i></label>
-	  <div class="section-dropdown-sub"> 
-	    <button className="dd_sub_item" onClick={() => setShowShare(!showShare) }>test</button>    
-	  </div>*/}
-          <button className="dditems" onClick={deleteCategory}>delete</button>
-	</div>
+	<ul className="ddcontainer">
+	  <li className="dditems"ref={controlRef} onClick={() => console.log('change') }>change </li>
+	  <li className="dditems" onClick={() => setShowShare(!showShare) }>share</li>
+	  <li className="dditems" onClick={deleteCategory}>delete</li>
+	</ul>
       </ContextMenu>
-    </Styled.ContextWrapp>
-    <Popup opened={showShare} onClose={() => setShowShare(false) }><Share category_id={id} /></Popup>
+      
+      
+      </Styled.ContextWrapp>
+      <Popup opened={showShare} onClose={() => setShowShare(false) }><Share category_id={id} /></Popup>
     </>
   )
 }
