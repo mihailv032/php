@@ -5,6 +5,10 @@ import * as Styled from './styledComponents/styled_categories'
 import {URL} from '../consts'
 import Popup from './popup';
 import "./styles/categories.css"
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { icon } from '@fortawesome/fontawesome-svg-core/import.macro'
+import { faEnvelope,faTrash,faSliders } from '@fortawesome/free-solid-svg-icons'
+
 
 class Categories extends React.Component {
   constructor(props) {
@@ -135,16 +139,16 @@ export function CategoryBtn({name,deleteCategory,active,id}){
       <Styled.ContextWrapp onContextMenu={e => {e.preventDefault();if(controlRef.current){return};setShowContext(!showContext)}}>
       <Styled.CategoryBtn active={active}>{name}</Styled.CategoryBtn>
       <ContextMenu opened={showContext} onClose={e =>{e.preventDefault();setShowContext(false)}} >
-	<ul className="ddcontainer">
-	  <li className="dditems"ref={controlRef} onClick={() => console.log('change') }>change </li>
-	  <li className="dditems" onClick={() => setShowShare(!showShare) }>share</li>
-	  <li className="dditems" onClick={deleteCategory}>delete</li>
+	<ul className="ddcontainer" ref={controlRef}>
+	  <li className="dditems" onClick={(e) =>{e.stopPropagation();console.log('change')} }>change <FontAwesomeIcon icon={faSliders} /></li>
+	  <li className="dditems" onClick={(e) =>{e.stopPropagation(); setShowShare(!showShare)}}>share <FontAwesomeIcon icon={faEnvelope} /></li>
+	  <li className="dditems" onClick={ e  =>{e.stopPropagation(); deleteCategory()}}>delete <FontAwesomeIcon icon={faTrash} /></li>
 	</ul>
       </ContextMenu>
       
       
       </Styled.ContextWrapp>
-      <Popup opened={showShare} onClose={() => setShowShare(false) }><Share category_id={id} /></Popup>
+      <Popup opened={showShare} onClose={(e) =>{e.stopPropagation();setShowShare(false)} }><Share category_id={id} /></Popup>
     </>
   )
 }
