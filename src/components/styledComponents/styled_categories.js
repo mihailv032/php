@@ -6,7 +6,6 @@ export const Container = styled.form`
   position: relative;
   z-index: 10000;
 
-  background-color: white;
   border-radius: 10px;
 `
 

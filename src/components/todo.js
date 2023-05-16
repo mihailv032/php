@@ -275,7 +275,6 @@ class TodoWrapper extends React.PureComponent {
   }
   async handleToggleCategory(id) {
     if(id == undefined) return 
-    console.log(id)
     const categories = [...this.state.selectedCategories]
     const indx = categories.indexOf(id)
     if(indx != -1){categories.splice(indx,1)}
@@ -422,7 +421,6 @@ class TodoWrapper extends React.PureComponent {
 function Todo(){
   const {todoItems,syncItem,categories} = useContext(TodoWrapperContext)
   const TodoItemsContainerWrapp = useMemo( () => TodoItemsContainer({todoItems,categories,syncItem}),[todoItems])
-  console.log('re-rendered')
   return (
     <StyledTodo>
       <TodoHeader/>
@@ -445,10 +443,10 @@ function TodoHeader(){
           <input type="checkbox" onClick={toggleFilter} />
           <span></span>
         </Switch>
-      <CtgBtn onClick={() => setShowDD(!showDD) }>Add New Category</CtgBtn>
+      <CtgBtn onClick={() => setShowDD(!showDD) } onContextMenu={(e) =>{e.preventDefault(); setShowDD(!showDD)}}>Add New Category</CtgBtn>
       {
         categories.map( (category,index) => {
-          return (<span  onClick={() => handleToggleCategory(category.id) }  key={category.id}><CategoryBtn id={category.id} key={category.id} active={selectedCategories.indexOf(category.id) != -1 } alt={category.description} name={category.name} deleteCategory={ () => deleteCategory(index)} /></span>)
+          return (<span  onClick={() => handleToggleCategory(category.id) } title={category.description} key={category.id}><CategoryBtn id={category.id} key={category.id} active={selectedCategories.indexOf(category.id) != -1 } name={category.name} deleteCategory={ () => deleteCategory(index)} /></span>)
         })
       }
       <AddCategoryDD opened={showDD} handleSubmit={addCategory} />
