@@ -74,9 +74,7 @@ function App() {
     keywords.current.push({letter: word[0], wordObject: {word: Array.from(word),current_index: 0},onType: () => fn()})
   }
   function setHotkey(key,fn,replace=false){
-    console.log('her')
     if(!replace && (Object.keys(hotkeys).indexOf(key) !== -1)){
-      console.log('heafd')
         console.log(key)
       console.trace(fn)
       setErr(true)
