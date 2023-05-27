@@ -39,7 +39,7 @@ function ContextMenuContent({children,onClose,opened}){
   useEffect( () => containerRef.current.focus(),[])
   useEffect( () => setAnimationIn(opened),[opened])
   return (
-    <div tabIndex={0} ref={containerRef} onBlur={onClose} >
+    <div tabIndex={0} ref={containerRef} onBlur={onClose} style={{position: "absolute"}} >
       <CSSTransition nodeRef={contentRef} timeout={ANIMATION_TIME} mountOnEnter unmountOnExit in={animationIn} classNames={contextAnimation}>
 	<div ref={contentRef} className={styles.container}>
 	  {children}
