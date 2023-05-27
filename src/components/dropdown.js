@@ -54,8 +54,6 @@ export function SlidingMenu({opened,onClose,children}){
   if (!mounted){
     return null;
   }
-
-
   return (
     <SlidingMenuContent opened={opened} onClose={onClose}>
       {children}
@@ -71,10 +69,10 @@ function SlidingMenuContent({children,onClose,opened}){
   useEffect( () => setAnimationIn(opened),[opened])
 
   return (
-      <CSSTransition nodeRef={contentRef} timeout={ANIMATION_TIME} mountOnEnter unmountOnExit in={animationIn} classNames={slidingMenuAnimation}>
-	<div ref={contentRef} className={styles.slidingContainer}>
-          {children}
-        </div>
-      </CSSTransition>
+    <CSSTransition nodeRef={contentRef} timeout={ANIMATION_TIME} mountOnEnter unmountOnExit in={animationIn} classNames={slidingMenuAnimation}>
+      <div ref={contentRef} className={styles.slidingContainer}>
+        {children}
+      </div>
+    </CSSTransition>
   )
 }

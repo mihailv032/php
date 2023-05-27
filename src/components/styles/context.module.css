@@ -41,4 +41,6 @@
 
 .slidingContainer {
     display: flex;
+    max-width: 450px;
+    overflow: auto;
 }

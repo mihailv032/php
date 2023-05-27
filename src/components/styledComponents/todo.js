@@ -223,9 +223,11 @@ export const ItemCategoriesWrapper = styled.div`
   position: absolute;
   right: 25px;
   background: rgb(63,94,251);
-  background: linear-gradient(90deg, rgba(63,94,251,1) 0%, rgba(252,70,107,1) 100%);
+  background: linear-gradient(153deg, rgba(63,94,251,1) 0%, rgba(252,70,107,1) 100%);
   border-radius: 5px;
-  padding: 10px;
+  padding-top: 10px;
+  padding-left: 10px;
+  padding-right: 10px;
   display: flex;
  `
 
@@ -329,47 +331,38 @@ export const SyncList = styled.button`
 `
 
 export const TodoCtgBtn = styled.a`
-  
   cursor: pointer;
   position: relative;
-  display: inline-block;
+  display: inline-block !importatn;
+  flex-shrink: 0;
   padding: 5px 10px;
-  color: #03e9f4;
+  color: #FF86FF;
   text-decoration: none;
   text-transform: uppercase;
   transition: 0.5s;
   letter-spacing: 4px;
   overflow: hidden;
   margin-right: 50px;
-  
   &:hover{
-    background: #03e9f4;
+    background: #FF86FF;
     color: #050801;
-    box-shadow: 0 0 5px #03e9f4,
-                0 0 25px #03e9f4,
-                0 0 50px #03e9f4,
-                0 0 200px #03e9f4;
+    box-shadow: 0 0 5px #FF86FF,
+                0 0 25px #FF86FF,
+                0 0 50px #FF86FF,
+                0 0 200px #FF86FF;
   }
-&:nth-child(1){
-    filter: hue-rotate(270deg);
-    cursor: pointer;
-}
-&:nth-child(2){
-    filter: hue-rotate(110deg);
-    cursor: pointer;
-}
-& span{
+  & span{
     cursor: pointer;
     position: absolute;
     display: block;
-}
+  }
 & span:nth-child(1){
     cursor: pointer;
     top: 0;
     left: 0;
     width: 100%;
     height: 2px;
-    background: linear-gradient(90deg,transparent,#03e9f4);
+    background: linear-gradient(90deg,transparent,#FF86FF);
     animation: animate1 1s linear infinite;
 }
   @keyframes animate1{
@@ -386,7 +379,7 @@ export const TodoCtgBtn = styled.a`
     right: 0;
     width: 2px;
     height: 100%;
-    background: linear-gradient(180deg,transparent,#03e9f4);
+    background: linear-gradient(180deg,transparent,#FF86FF);
     animation: animate2 1s linear infinite;
     animation-delay: 0.25s;
 }
@@ -404,7 +397,7 @@ export const TodoCtgBtn = styled.a`
     right: 0;
     width: 100%;
     height: 2px;
-    background: linear-gradient(270deg,transparent,#03e9f4);
+    background: linear-gradient(270deg,transparent,#FF86FF);
     animation: animate3 1s linear infinite;
     animation-delay: 0.50s;
 }
@@ -424,7 +417,7 @@ export const TodoCtgBtn = styled.a`
     left: 0;
     width: 2px;
     height: 100%;
-    background: linear-gradient(360deg,transparent,#03e9f4);
+    background: linear-gradient(360deg,transparent,#FF86FF);
     animation: animate4 1s linear infinite;
     animation-delay: 0.75s;
 }
@@ -436,7 +429,7 @@ export const TodoCtgBtn = styled.a`
         bottom: 100%;
     }
 }
-  ${props => props.active ? "background: #03e9f4;color: #000" : ""}
+  ${props => props.active ? "background: #FF86FF;color: #000" : ""}
 `
 
 export const Switch = styled.label`
