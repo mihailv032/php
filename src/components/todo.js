@@ -444,14 +444,12 @@ function TodoHeader(){
       <InputContainer onSubmit={e =>{handleSubmitItem(e,input);setInput("")}}>
         <StyledInput name="" type="text" onChange={e => setInput(e.target.value)} value={input} ref={todoInputRef} />
       </InputContainer>
-      <div>
-        <Switch >
-          <input type="checkbox" onClick={toggleFilter} />
-          <span></span>
-        </Switch>
+      <Switch >
+        <input type="checkbox" onClick={toggleFilter} />
+        <span></span>
+      </Switch>
       <CtgBtn onClick={() => setShowDD(!showDD) } onContextMenu={(e) =>{e.preventDefault(); setShowDD(!showDD)}}>Add New Category</CtgBtn>
       <AddCategoryDD opened={showDD} handleSubmit={addCategory} onClose={() => setShowDD(!showDD)} />
-      </div>
       {
 	categories.map( (category,index) => {
           return (<span  onClick={() => handleToggleCategory(category.id) } title={category.description} key={category.id}><CategoryBtn id={category.id} key={category.id} active={selectedCategories.indexOf(category.id) != -1 } name={category.name} deleteCategory={ () => deleteCategory(index)} /></span>)
