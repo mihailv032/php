@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect, useRef, useContext } from 'react'
-import {AppContext} from '../App'
+import {AppContext} from '../context'
 import styled from 'styled-components'
 import Popup from './popup'
 const images = require('../images.json').images

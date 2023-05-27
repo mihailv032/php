@@ -1,5 +1,5 @@
 import {useState, useContext, useEffect} from 'react'
-import {AppContext} from '../App'
+import {AppContext} from '../context'
 import Popup from "./popup"
 export default function TicTacToe(){
   const {setWord} = useContext(AppContext)

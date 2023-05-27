@@ -1,6 +1,8 @@
-import { useState, useRef, useLayoutEffect,createContext } from 'react'
+import { useState, useRef, useLayoutEffect } from 'react'
 
 import './App.css'
+
+import {AppContext} from './context'
 import GithubContainer from './components/github'
 import TodoWrapper from './components/todo'
 import MailsContainer from './components/mails'
@@ -17,7 +19,6 @@ import {keyCodes,URL,TOKEN_LIFE_TIME} from './consts'
 import TicTacToe from './components/game'
 import styled from 'styled-components'
 
-export const AppContext = createContext(false);
 
 async function handleJwt(setLoggedIn){
   console.log(localStorage.getItem("refresh_token"))

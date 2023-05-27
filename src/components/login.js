@@ -1,7 +1,7 @@
 import Popup, {LoadingPopup} from './popup.js'
 import { useState, useEffect, useContext } from 'react'
 import {URL} from '../consts'
-import {AppContext} from '../App'
+import {AppContext} from '../context'
 import {
   LoginForm,
   LoginBtn,

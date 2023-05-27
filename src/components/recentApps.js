@@ -1,5 +1,5 @@
 import React, { useState, useLayoutEffect, useEffect,useRef, useContext} from 'react';
-import {AppContext} from '../App'
+import {AppContext} from '../context'
 import * as Styled from './styledComponents/recentApps'
 import Popup from './popup'
 import {keyCodes,hotkeys} from '../consts'
