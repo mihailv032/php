@@ -43,7 +43,6 @@ class TodoWrapper extends React.PureComponent {
       displayedTodoItems: []//todo items to be shown on the screen
     }
     this.todoInputRef = React.createRef();
-
     this.handleToggleCategory = this.handleToggleCategory.bind(this)
     this.handleToggleItemCategory=this.handleToggleItemCategory.bind(this)
     this.handleRemoveCategoryFromAllItems=this.handleRemoveCategoryFromAllItems.bind(this)
@@ -79,7 +78,6 @@ class TodoWrapper extends React.PureComponent {
     else id=uuidv4();
 
     const todoItems = [{title: title,description: [],id:id, categories: this.state.selectedCategories},...this.state.todoItems]
-
     if(this.state.showFiltered){this.state.todoItems=todoItems;this.filterItems()}
     else this.setState( prevState => ({todoItems: todoItems,displayedTodoItems: todoItems}))
   }
@@ -110,10 +108,11 @@ class TodoWrapper extends React.PureComponent {
         body: JSON.stringify({title: title,category_id: this.state.selectedCategories})
       })
       const res = await req.json()
-      if(!res.message){console.log(res.error); return false;};
+      if(!res.message){this.context?.showMessageRef.current.showMessage(res.error ? res.error : "could not synchronize todo items", "error"); return false;};
       return res.todo_item.id
     }catch(err){
       console.log(err)
+      this.context?.showMessageRef.current.showMessage("could not synchronize todo items", "error")
       return false
     }
   }
@@ -154,7 +153,7 @@ class TodoWrapper extends React.PureComponent {
       })
     }catch(err){
       console.log(err)
-      //TODO send notification here
+      this.context?.showMessageRef.current.showMessage("could not delete item", "error")
     }
   }
   async handleAddDescription(e,id,desc){
@@ -214,9 +213,11 @@ class TodoWrapper extends React.PureComponent {
 	acum[index].categories = val.category_items.reduce( (acum,val,index) =>{acum[index] = val.category_id; return acum},[])
 	return acum},[])
       this.setState({todoItems: itesm})
+      this.context?.showMessageRef.current.showMessage("All items synchronized", "success")
       console.log(res.todo_items)
     }catch(err){
       console.log(err)
+      this.context?.showMessageRef.current.showMessage("could not sync with the server", "error")
     }
   }
   async syncItem(item_index){
@@ -237,6 +238,7 @@ class TodoWrapper extends React.PureComponent {
       todoitems[item_index].id=res.todo_item.id
       localStorage.setItem("todoItems",JSON.stringify(this.state.todoItems))
     }catch(err){
+      this.context?.showMessageRef.current.showMessage("could not synchronize the item with the server", "error")
       console.log(err)
     }
   }
@@ -261,6 +263,7 @@ class TodoWrapper extends React.PureComponent {
       console.log(err)
       this.state.todoItems[index].notSynced = true;
       localStorage.setItem("todoItems", JSON.stringify(this.state.todoItems))
+      this.context?.showMessageRef.current.showMessage("could not update item on server", "error")
     } 
   }
   async updateItem(id){
@@ -317,6 +320,7 @@ class TodoWrapper extends React.PureComponent {
       console.log(err)
       this.state.todoItems[itemIndex].notSynced = true
       localStorage.setItem("todoItems",JSON.stringify(this.state.todoItems))
+      this.context?.showMessageRef.current.showMessage("could not add the category on the server", "error")
       return false
     }
     
@@ -349,6 +353,7 @@ class TodoWrapper extends React.PureComponent {
       return res.todo_item.id
     }catch(err){
       console.log(err)
+      this.context?.showMessageRef.current.showMessage("could not remove the category", "error")
       return false
     }
     
@@ -439,17 +444,19 @@ function TodoHeader(){
       <InputContainer onSubmit={e =>{handleSubmitItem(e,input);setInput("")}}>
         <StyledInput name="" type="text" onChange={e => setInput(e.target.value)} value={input} ref={todoInputRef} />
       </InputContainer>
+      <div>
         <Switch >
           <input type="checkbox" onClick={toggleFilter} />
           <span></span>
         </Switch>
       <CtgBtn onClick={() => setShowDD(!showDD) } onContextMenu={(e) =>{e.preventDefault(); setShowDD(!showDD)}}>Add New Category</CtgBtn>
+      <AddCategoryDD opened={showDD} handleSubmit={addCategory} onClose={() => setShowDD(!showDD)} />
+      </div>
       {
-        categories.map( (category,index) => {
+	categories.map( (category,index) => {
           return (<span  onClick={() => handleToggleCategory(category.id) } title={category.description} key={category.id}><CategoryBtn id={category.id} key={category.id} active={selectedCategories.indexOf(category.id) != -1 } name={category.name} deleteCategory={ () => deleteCategory(index)} /></span>)
         })
       }
-      <AddCategoryDD opened={showDD} handleSubmit={addCategory} />
     </TodoHeaderWrapp>
   )
 }
