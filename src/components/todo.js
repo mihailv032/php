@@ -333,7 +333,7 @@ class TodoWrapper extends React.PureComponent {
     const ctgIndex=todoItems[itemIndex].categories.indexOf(category_id)
     if(ctgIndex === -1) return;
     todoItems[itemIndex].categories.splice(ctgIndex,1)
-    const update = (!this.props.loggedIn || isNaN(this.state.todoItems[itemIndex].id) || isNaN(category_id)) 
+    const update = (this.props.loggedIn && !isNaN(this.state.todoItems[itemIndex].id) && !isNaN(category_id)) 
     if(!update) todoItems[itemIndex].notSynced = true;
     if(this.state.showFiltered){
       this.state.todoItems = todoItems //avoid extra re-render
