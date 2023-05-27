@@ -65,35 +65,23 @@ const hotkeys = []
 function App() {
   const [currentBg,setCurrentBg] = useState(localStorage.getItem('bg') ? localStorage.getItem('bg') : 'default.png')
   const [loggedIn,setLoggedIn] = useState(false);
-  const [err,setErr] = useState(false);
-  const [errMsg,setErrMsg] = useState("");
   const searchBarRef = useRef();
   const keywords = useRef();
   const showMessageRef = useRef();
 
   function setWord(word,fn){
-    for(let i=0;i<keywords.current.length;i++){if(keywords.current[i].wordObject.word == word) return;};
+    for(let i=0;i<keywords.current.length;i++){
+      if(keywords.current[i].wordObject.word == word){console.log('here');return showMessageRef.current?.showMessage("word already taken","error")};
+    };
     keywords.current.push({letter: word[0], wordObject: {word: Array.from(word),current_index: 0},onType: () => fn()})
   }
   function setHotkey(key,fn,replace=false){
-    if(!replace && (Object.keys(hotkeys).indexOf(key) !== -1)){
-        console.log(key)
-      console.trace(fn)
-      setErr(true)
-      setErrMsg(`${key} is already in use`)
-      return false;
-    }
-    if(!(key in keyCodes)){
-      setErr(true)
-      setErrMsg("invalid key")
-      return false;
-    }
+    if(!replace && (hotkeys.indexOf(key) == -1)){showMessageRef.current?.showMessage(`key ${key} already taken`,"error"); return false;}
+    if(!(key in keyCodes)){showMessageRef.current?.showMessage("invalid key","error"); return false;}
     hotkeys[key] = fn;
     return true;
   }
-  const deleteHotkey = key => {
-    delete hotkeys[key]
-  }
+  const deleteHotkey = key => {delete hotkeys[key]}
   useLayoutEffect( () => {
     //handle jwt 
     handleJwt(setLoggedIn)
@@ -140,7 +128,7 @@ function App() {
 	  </div>
 	  <MainContainer>
 	    <DoubleScreen title1="Github" Component1={<GithubContainer />} title2="Mails" Component2={<MailsContainer />} />
-	    <DoubleScreen title1="TODO" Component1={<TodoWrapper setHotkey={setHotkey} loggedIn={loggedIn} />} title2="Anime" Component2={<MailsContainer />} />
+	    <DoubleScreen title1="TODO" Component1={<TodoWrapper loggedIn={loggedIn} />} title2="Anime" Component2={<MailsContainer />} />
 	  </MainContainer>
 	</Main>
 	<FeedSection>
