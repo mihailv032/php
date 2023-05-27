@@ -85,7 +85,7 @@ function App({name,url,icon,hotkey,changeAppDetails,deleteApp}){
   }
   return (
     <div onContextMenu={handleContext}>
-      <a href={url} ref={ref} title={hotkey ? hotkey : "not hotkey was added for this app"} >
+      <a href={url} ref={ref} title={hotkey ? hotkey : "no hotkey for this site"} >
 	<Styled.App>
 	  <img alt="" src={icon} />
 	  <Styled.AppTitle>{name}</Styled.AppTitle>
