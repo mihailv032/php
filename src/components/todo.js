@@ -58,8 +58,8 @@ class TodoWrapper extends React.PureComponent {
     this.syncItem = this.syncItem.bind(this)
     this.toggleFilter = this.toggleFilter.bind(this)
   }
+  static contextType = AppContext
   componentDidMount(){
-    console.log(this.context)
     const storedTodoItems = localStorage.getItem("todoItems") ? JSON.parse(localStorage.getItem("todoItems")) : []
     this.props.setHotkey("U",() => this.todoInputRef.current.focus(),true)
     console.log(storedTodoItems)
