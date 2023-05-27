@@ -13,7 +13,7 @@ import SearchBar from './components/searchbar'
 import DoubleScreen from './components/doubleScreen'
 import Weather from './components/wather'
 import Popup from './components/popup'
-import Notifications from './components/notifications'
+import {Notifications} from './components/notifications'
 import Login, {Register,Logout} from './components/login.js'
 import {keyCodes,URL,TOKEN_LIFE_TIME} from './consts'
 import TicTacToe from './components/game'
@@ -69,7 +69,8 @@ function App() {
   const [errMsg,setErrMsg] = useState("");
   const searchBarRef = useRef();
   const keywords = useRef();
-    
+  const showNotificationRef = useRef();
+
   function setWord(word,fn){
     for(let i=0;i<keywords.current.length;i++){if(keywords.current[i].wordObject.word == word) return;};
     keywords.current.push({letter: word[0], wordObject: {word: Array.from(word),current_index: 0},onType: () => fn()})
@@ -91,8 +92,6 @@ function App() {
     return true;
   }
   const deleteHotkey = key => {
-    alert('here')
-    alert(key)
     delete hotkeys[key]
   }
   useLayoutEffect( () => {
@@ -127,30 +126,32 @@ function App() {
   },[])
 
   return (
-    <AppContext.Provider value={{loggedIn,setLoggedIn,setHotkey,deleteHotkey,setWord}}>
-      <Head>
-	<SearchBar searchBarRef={searchBarRef} />
-	<RecentApps />
-	<ChangeBg updateBg={ (newBg) => {setCurrentBg(newBg);localStorage.setItem('bg',newBg)}  }/>
-      </Head>
-      <Main bg={currentBg}>
-	<div>
-	  <Weather/>
-	</div>
-	<MainContainer>
-	  <DoubleScreen title1="Github" Component1={<GithubContainer />} title2="Mails" Component2={<MailsContainer />} />
-	  <DoubleScreen title1="TODO" Component1={<TodoWrapper setHotkey={setHotkey} loggedIn={loggedIn} />} title2="Anime" Component2={<MailsContainer />} />
-	</MainContainer>
-      </Main>
-      <FeedSection>
-	<FeedContainer/>
-      </FeedSection>
-      <Login />
-      <Logout />
-      <Register />
-      <Notifications />
-      <TicTacToe />
-    </AppContext.Provider>
+    <>
+      <Notifications ref={showNotificationRef} />
+      <AppContext.Provider value={{loggedIn,setLoggedIn,setHotkey,deleteHotkey,setWord,showNotification:showNotificationRef.current.showMessage}}>
+	<Head>
+	  <SearchBar searchBarRef={searchBarRef} />
+	  <RecentApps />
+	  <ChangeBg updateBg={ (newBg) => {setCurrentBg(newBg);localStorage.setItem('bg',newBg)}  }/>
+	</Head>
+	<Main bg={currentBg}>
+	  <div>
+	    <Weather/>
+	  </div>
+	  <MainContainer>
+	    <DoubleScreen title1="Github" Component1={<GithubContainer />} title2="Mails" Component2={<MailsContainer />} />
+	    <DoubleScreen title1="TODO" Component1={<TodoWrapper setHotkey={setHotkey} loggedIn={loggedIn} />} title2="Anime" Component2={<MailsContainer />} />
+	  </MainContainer>
+	</Main>
+	<FeedSection>
+	  <FeedContainer/>
+	</FeedSection>
+	<Login />
+	<Logout />
+	<Register />
+	<TicTacToe />
+      </AppContext.Provider>
+    </>
   );
 }
 
