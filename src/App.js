@@ -61,7 +61,7 @@ function parseJwt(token) {
   const base64 = base64Url.replace("-", "+").replace("_", "/");
   return JSON.parse(window.atob(base64));
 }
-const hotkeys = []
+const hotkeys = {}
 function App() {
   const [currentBg,setCurrentBg] = useState(localStorage.getItem('bg') ? localStorage.getItem('bg') : 'default.png')
   const [loggedIn,setLoggedIn] = useState(false);
@@ -76,7 +76,7 @@ function App() {
     keywords.current.push({letter: word[0], wordObject: {word: Array.from(word),current_index: 0},onType: () => fn()})
   }
   function setHotkey(key,fn,replace=false){
-    if(!replace && (hotkeys.indexOf(key) == -1)){showMessageRef.current?.showMessage(`key ${key} already taken`,"error"); return false;}
+    if(!replace && hotkeys[key]){showMessageRef.current?.showMessage(`key ${key} already taken`,"error"); return false;}
     if(!(key in keyCodes)){showMessageRef.current?.showMessage("invalid key","error"); return false;}
     hotkeys[key] = fn;
     return true;
@@ -90,7 +90,7 @@ function App() {
       
       if(document.activeElement.tagName === "INPUT" || document.activeElement.tagName === "TEXTAREA") return
       if(e.ctrlKey && e.shiftKey){
-	if (Object.keys(hotkeys).indexOf(e.key) !== -1){
+	if (hotkeys[e.key]){
           e.preventDefault();
 	  hotkeys[e.key]();
           return;
