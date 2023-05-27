@@ -108,23 +108,22 @@ class Categories extends React.Component {
 
 export default Categories;
 
-export function AddCategoryDD({opened,handleSubmit}){
+export function AddCategoryDD({opened,onClose,handleSubmit}){
   const [name,setName] = useState("")
   const [descritpion,setDescription] = useState("")
-//  const [c
+
   return (
     <ContextMenu opened={opened} >
 	<ul className="ddcontainer" >
-	  <Styled.Container onSubmit={ e =>{e.preventDefault();handleSubmit(name,descritpion)}}>
+	  <Styled.Container onSubmit={ e =>{e.preventDefault();setName("");setDescription("");onClose();handleSubmit(name,descritpion)}}>
             <div>
               <input name="" placeholder="category name" type="text" value={name} onChange={e => setName(e.target.value) } className="dditems"/>       
             </div>
             <div>
               <input name="" placeholder="category description" type="text" value={descritpion} onChange={e => setDescription(e.target.value) } className="dditems"/>
             </div>
-            <button onSubmit={e => {e.preventDefault();handleSubmit(name,descritpion)}}>Submit</button>
+            <button onSubmit={e => {e.preventDefault();setName("");setDescription("");onClose();handleSubmit(name,descritpion)}}>Submit</button>
 	  </Styled.Container>
-	  
 	</ul>
     </ContextMenu>
   )
