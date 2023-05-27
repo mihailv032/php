@@ -32,7 +32,7 @@ function RecentApps(){
     if(deletedApp[0].hotkey) deleteHotkey(deletedApp[0].hotkey)
   }
   //cannot use the setShowPopup because the callback does not have access the latest showPopup value
-  useLayoutEffect( () =>{setHotkey("Y", () => addAppRef.current.click())},[])
+  useLayoutEffect( () =>{setHotkey("Y", () => addAppRef.current.click(),true)},[])
   useEffect( () => localStorage.setItem("apps", JSON.stringify(apps)),[apps])
   return (
     <Styled.RecntAppsContainer>
