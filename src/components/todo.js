@@ -89,7 +89,6 @@ class TodoWrapper extends React.PureComponent {
   }
   filterItems(){
     const filtered = this.state.todoItems.filter( item =>{
-      console.log(item)
       for(let i=0;i<this.state.selectedCategories.length; i++){
         if(item.categories.indexOf(this.state.selectedCategories[i]) !== -1) return item;
       }
@@ -137,10 +136,12 @@ class TodoWrapper extends React.PureComponent {
       console.log(todoItemsArr[i].id)
       if(todoItemsArr[i].id == id){index=i; break}
     }
-    console.log(index)
+    //if the item does not exist
     if(index == undefined) return;
     todoItemsArr.splice(index,1)
-    this.setState({todoItems:  todoItemsArr, displayedTodoItems: todoItemsArr})
+    if(this.state.showFiltered){this.state.todoItems=todoItemsArr;this.filterItems()}
+    else this.setState({todoItems:  todoItemsArr, displayedTodoItems: todoItemsArr})
+    
     if(!this.props.loggedIn) return;
     try{
       fetch(URL+"/deletetodoitem",{
