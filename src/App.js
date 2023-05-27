@@ -69,7 +69,7 @@ function App() {
   const [errMsg,setErrMsg] = useState("");
   const searchBarRef = useRef();
   const keywords = useRef();
-  const showNotificationRef = useRef();
+  const showMessageRef = useRef();
 
   function setWord(word,fn){
     for(let i=0;i<keywords.current.length;i++){if(keywords.current[i].wordObject.word == word) return;};
@@ -127,8 +127,8 @@ function App() {
 
   return (
     <>
-      <Notifications ref={showNotificationRef} />
-      <AppContext.Provider value={{loggedIn,setLoggedIn,setHotkey,deleteHotkey,setWord,showNotification:showNotificationRef.current.showMessage}}>
+      <Notifications ref={showMessageRef} />
+      <AppContext.Provider value={{loggedIn,setLoggedIn,setHotkey,deleteHotkey,setWord,showMessageRef:showMessageRef}}>
 	<Head>
 	  <SearchBar searchBarRef={searchBarRef} />
 	  <RecentApps />
