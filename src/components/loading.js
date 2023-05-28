@@ -1,4 +1,4 @@
-import "./styles/loading.module.css"
+import "./styles/loading.css"
 
 export default function LoadingSpinner(){
   return (
