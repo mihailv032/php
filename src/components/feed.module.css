@@ -19,3 +19,8 @@
   transition: opacity 300ms, transform 300ms;
 }
 
+
+.overlayH {
+    margin-top: 5px;
+    margin-bottom: 5px;
+}

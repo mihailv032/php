@@ -5,7 +5,9 @@ import {URL} from '../consts'
 import {useMount} from './popup'
 import {Overlay} from './styledComponents/popup'
 import styles from './feed.module.css';
-
+import { faFileExcel } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import LoadingSpinner from './loading'
 class FeedContainer extends React.Component {
   constructor(props) {
     super(props);
@@ -30,31 +32,22 @@ class FeedContainer extends React.Component {
       this.setState({error: true})
     }
   }
-  async fetchAnime(){
-    
-  }
-  async fetchNyt(){
-
-  }
   render() {
     return (
-      <Feed parentThis={this} 
-      />
+      <Feed handleSelection={this.handleSelection} items={this.state.selectionOptions} selection={this.state.selection} />
     )
   }
 };
 
 
-function Feed({parentThis}){
-  const MomoizedNav = useMemo( () => SelectionBar({handleSelection:parentThis.handleSelection,items: parentThis.state.selectionOptions}),[])
-  const FeedComponents = {
-    anime: AnimeContainer(),
-    nyt: NytContainer()
-  }
+function Feed({handleSelection,items,selection}){
+  const MomoizedNav = useMemo( () => SelectionBar({handleSelection:handleSelection,items: items}),[])
+
   return (
     <Styled.ContainerFeed>
       {MomoizedNav}
-      {FeedComponents[parentThis.state.selection]}
+      <AnimeContainer show={selection === "anime" } />
+      <NytContainer   show={selection === "nyt" } />
     </Styled.ContainerFeed>
     
   )
@@ -76,7 +69,7 @@ function SelectionBar({handleSelection,items}){
   )
 }
 
-function AnimeContainer(){
+function AnimeContainer({show}){
   const seasons = ["winter","spring","summer","fall"]
   const [err,setErr] = useState({seasonal:false,top:false,suggested:false})
   const [type, setType] = useState("animeType" in localStorage ? localStorage.getItem("animeType") : "seasonal")
@@ -141,12 +134,16 @@ function AnimeContainer(){
     }
   },[type,year,season]);
   console.log(Object.keys(data[type]))
+  if(!show) return;
   return (
-    <Anime data={currentData}
-	   err={err}
-	   type={type} setType={setType}
-	   season={season} setSeason={setSeason}
-	   year={year} setYear={setYear}/>
+    <>
+      <MemoizedAnimeNav type={type} setType={setType} season={season} setSeason={setSeason} year={year} setYear={setYear}/>
+      <Anime data={currentData}
+	     err={err}
+	     type={type} setType={setType}
+	     season={season} setSeason={setSeason}
+	     year={year} setYear={setYear}/>
+    </>
   )
 }
 
@@ -201,9 +198,16 @@ const MemoizedAnimeNav = memo(function AnimeNav({type,setType,season,setSeason,y
 })
 
 function Anime({data,err,type,setType,year,setYear,season,setSeason}){
-  const MemoizedAnimeCards = useMemo( () => {
-    if (err[type] || !data) return 
-    return (
+  if (err[type] || !data){ return (
+    <>
+      <div style={{display: "flex", alignItems: "center", flexDirection: "column", textTransform: "capitalize",fontSize: "100px",paddingTop: "40px"}}>
+	<FontAwesomeIcon icon={faFileExcel} />
+	<h1 style={{fontSize: "30px"}}>No anime </h1>
+      </div>
+    </>
+  )}
+  return (
+    <Styled.AnimeWrap>
       <Styled.AnimeContainerWeap>
 	<Styled.AnimeContainer>
 	  {
@@ -212,71 +216,25 @@ function Anime({data,err,type,setType,year,setYear,season,setSeason}){
 	</Styled.AnimeContainer>
       </Styled.AnimeContainerWeap>
       
-    )
-  },[data])
-  if (err[type] || !data){ return (
-    <>
-      <MemoizedAnimeNav type={type} setType={setType}
-	   season={season} setSeason={setSeason}
-	   year={year} setYear={setYear}/>
-      <h1>NO anime</h1>
-    </>
-  )}
-  return (
-    <Styled.AnimeWrap>
-      <MemoizedAnimeNav type={type} setType={setType}
-	   season={season} setSeason={setSeason}
-	   year={year} setYear={setYear}/>
-      {MemoizedAnimeCards}
     </Styled.AnimeWrap>
   )
 }
   
 function AnimeCard({details}){
   const [showOverlay,setShowOverlay] = useState(false)
-  const MemoizedContent = useMemo( () => {
-    return (
-      <>
-	<a href={`https://myanimelist.net/anime/${details.id}`}  >
-	  <Styled.AnimePreview alt="" src={details.main_picture.large} />
-	</a>
-	<h1>{details.mean}</h1>
-      </>
-    )
-  },[details])
-  const MemoizedOverlayContent = useMemo( () => {
-    if (!Array.isArray(details.genres)) return;
-    return (
-	<Styled.AnimeCardOverlayContent>
-	  <h5>episodes: {details.num_episodes}</h5>
-	  <div>
-	    <h3>studios</h3>
-	    {
-	      details.studios.map(studio => <h6 key={studio.id}>{studio.name}</h6>)
-	    }
-	  </div>
-	  <div>
-	    <h3>genres</h3>
-	  {
-	    details.genres.map(genre => <h6 key={genre.id}>{genre.name}</h6>)
-	  }
-	  </div>
-	  <Styled.AnimeCardOverlaySynopsis>
-	    {details.synopsis}
-	  </Styled.AnimeCardOverlaySynopsis>
-	</Styled.AnimeCardOverlayContent>
-    )
-  },[details,showOverlay])
+
   return (
     <Styled.AnimeCardContainer>
       <Styled.AnimeCardTitle title={details.title}>
 	{details.title.length > 20 ? `${details.title.slice(0,24)}...` : details.title}
+	<h6 className={styles.overlayH}>Top {details.rank}</h6>
       </Styled.AnimeCardTitle>
       <span onMouseLeave={() => setShowOverlay(false)} onMouseEnter={() => setShowOverlay(true)}>
-	<CardOverlay opened={showOverlay}>
-	  {MemoizedOverlayContent}
-	</CardOverlay>
-	  {MemoizedContent}
+	<a href={`https://myanimelist.net/anime/${details.id}`}  >
+	  <Styled.AnimePreview alt="" src={details.main_picture.large} />
+	</a>
+	<h1>{details.mean}</h1>
+	<CardOverlayContainer showOverlay={showOverlay} id={details.id} />
       </span>
     </Styled.AnimeCardContainer>
   )
@@ -287,6 +245,65 @@ const overlayAnimation = {
   enterActive: styles.overlayEnterActive,
   exit: styles.overlayExit,
   exitActive: styles.overlayExitActive,
+}
+
+function CardOverlayContainer({showOverlay,id}){
+  const [details,setDetails] = useState(false)
+
+  useEffect( () => {
+    async function getDetails(){
+      try{
+	console.log('called')
+	const req = await fetch(`${URL}/api/mal/animedetails?id=${id}`)
+	const res = await req.json()
+	console.log(res)
+	setDetails(res.message)
+      }catch(err){
+	
+      }
+    }
+    if(!details && showOverlay) getDetails()
+  },[showOverlay])
+  if(!details){return (
+    <CardOverlay opened={showOverlay}>
+    <LoadingSpinner />
+    </CardOverlay>
+  )}
+  return (
+    <CardOverlay opened={showOverlay}>
+      <Styled.AnimeCardOverlayContent>
+	<h5 className={styles.overlayH}>episodes: {details.num_episodes}</h5>
+	<h5 className={styles.overlayH}><span>Start Date: {details.start_date}</span>{details.end_date && <span> End Date: {details.end_date}</span>}</h5>
+	<h5 className={styles.overlayH}>Broadcasted on {details.broadcast.day_of_the_week}</h5>
+	<h5 className={styles.overlayH}>source: {details.source}</h5>
+	<div>
+	  <h5 className={styles.overlayH}>studios:</h5>
+	  {
+	    details.studios?.map(studio => <h6 key={studio.id}>{studio.name}</h6>)
+	  }
+	</div>
+	<div>
+	  <h3 className={styles.overlayH}>genres</h3>
+	  {
+	    details?.genres?.map(genre => <h6 key={genre.id}>{genre.name}</h6>)
+	  }
+	</div>
+	<div>
+	  <h3 className={styles.overlayH}>Synopsis</h3>
+	  {details?.synopsis}
+	</div>
+	<div>
+	  <h3 className={styles.overlayH}>Related Anime</h3>
+	  {
+	    details.related_anime.map( anime => {
+	      return <h5 className={styles.overlayH}>{anime.relation_type}: <a href={`https://myanimelist.net/anime/${anime.node.id}`}>{anime.node.title}</a></h5>
+	    })
+	  }
+	</div>
+      </Styled.AnimeCardOverlayContent>
+      
+    </CardOverlay>
+  )
 }
 
 function CardOverlay({opened,children}){
@@ -317,7 +334,9 @@ function OverlayLayout({opened,children}){
   )
 }
 
-function NytContainer(){
+function NytContainer({show}){
+
+  if(!show) return;
   return <Nyt />
 
 }
