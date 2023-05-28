@@ -24,3 +24,12 @@
     margin-top: 5px;
     margin-bottom: 5px;
 }
+
+.loadingContainer {
+    display: flex;
+    align-items: center;
+    flex-direction:column;
+    justify-content:center;
+    height: 100%;
+    color: white;
+}

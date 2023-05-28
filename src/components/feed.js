@@ -73,6 +73,7 @@ function AnimeContainer({show}){
   const seasons = ["winter","spring","summer","fall"]
   const [err,setErr] = useState({seasonal:false,top:false,suggested:false})
   const [type, setType] = useState("animeType" in localStorage ? localStorage.getItem("animeType") : "seasonal")
+  const [loading,setLoading] = useState(true)
   const [season,setSeason] = useState(
     "animeSeason" in localStorage ? JSON.parse(localStorage.getItem("animeSeason")) : seasons[Math.round((new Date().getMonth()+1)/4)]
   )
@@ -85,16 +86,6 @@ function AnimeContainer({show}){
     top: {},
     suggested: {}
   })
-  const getData = async url => {
-    try{
-      const req = await fetch(url)
-      const data = await req.json()
-      return data
-    }catch(err){
-      console.log(err);
-      return false;
-    }
-  }
   useEffect( () => {//only for setting data
     function setCurrData(){//returns true if succeded and false otherwise
       if(type === "seasonal"){
@@ -107,34 +98,49 @@ function AnimeContainer({show}){
 	}else return false;
       }else return false;
     }
-    const getSeasonalAnime = async () => {
-      try{
-	const url = URL + `/api/mal/seasonal?season=${season}&offset=0&limit=100&year=${year}`
-	const seasonalAnime = await getData(url)
-	console.log(seasonalAnime)
-	if(!seasonalAnime){
-	  setErr(Object.assign({},err,{seasonal:true}))
-	  console.log('no animes')
-	  return new Error("could not get seasonal anime");
-	}
-	let updatedData = Object.assign({},data)
-	if(Object.keys(updatedData.seasonal).indexOf(year) === -1) updatedData.seasonal[year] = {};
-	updatedData.seasonal[year][season] = seasonalAnime.data
-	setData(updatedData)
-      }catch(err){
-	console.log(err)
-	console.log('err')
-	return err
-      }
-    }
     if(!setCurrData()){
       getSeasonalAnime()
-      .then( (res) => setCurrData())
-      .catch( (err) => {setErr(Object.assign({},err,{[type]:true}));console.log(err)})
+	.then( (res) => setCurrData())
+	.catch( (err) => {setErr(Object.assign({},err,{[type]:true}));console.log(err)})
     }
   },[type,year,season]);
+  
+  const getData = async url => {
+    try{
+      setLoading(true)
+      const req = await fetch(url)
+      const data = await req.json()
+      setLoading(false)
+      return data
+    }catch(err){
+      setLoading(false)
+      console.log(err);
+      return new Error(err);
+    }
+  }
+  const getSeasonalAnime = async () => {
+    try{
+      const url = URL + `/api/mal/seasonal?season=${season}&offset=0&limit=100&year=${year}`
+      const seasonalAnime = await getData(url)
+      console.log(seasonalAnime)
+      if(!seasonalAnime){
+	setErr(Object.assign({},err,{seasonal:true}))
+	console.log('no animes')
+	return new Error("could not get seasonal anime");
+      }
+      let updatedData = Object.assign({},data)
+      if(Object.keys(updatedData.seasonal).indexOf(year) === -1) updatedData.seasonal[year] = {};
+      updatedData.seasonal[year][season] = seasonalAnime.data
+      setData(updatedData)
+    }catch(err){
+      console.log(err)
+      console.log('err')
+      return err
+    }
+  }
   console.log(Object.keys(data[type]))
   if(!show) return;
+  if(loading) return <div className={styles.loadingContainer}><LoadingSpinner /><h1 style={{color: "black"}}>Loading</h1></div>
   return (
     <>
       <MemoizedAnimeNav type={type} setType={setType} season={season} setSeason={setSeason} year={year} setYear={setYear}/>
@@ -236,7 +242,7 @@ function AnimeCard({details}){
 	<CardOverlayContainer showOverlay={showOverlay} id={details.id} />
       </span>
       <div style={{display: "flex",marginTop: "20px", justifyContent: "space-between"}}>
-	<h1 style={{margin: 0}}><FontAwesomeIcon icon={faStar} /> {details.mean}</h1>
+	<h1 style={{margin: 0}}><FontAwesomeIcon icon={faStar} /> {details.mean ? details.mean : "N/A"}</h1>
 	<Styled.AddToListBtn> Add to list</Styled.AddToListBtn>
       </div>
     </Styled.AnimeCardContainer>
@@ -269,7 +275,7 @@ function CardOverlayContainer({showOverlay,id}){
   },[showOverlay])
   if(!details){return (
     <CardOverlay opened={showOverlay}>
-    <LoadingSpinner />
+      <div className={styles.loadingContainer}><LoadingSpinner /><h1>Loading</h1></div>
     </CardOverlay>
   )}
   return (
@@ -277,12 +283,12 @@ function CardOverlayContainer({showOverlay,id}){
       <Styled.AnimeCardOverlayContent>
 	<h5 className={styles.overlayH}>episodes: {details.num_episodes ? details.num_episodes : "?"}</h5>
 	<h5 className={styles.overlayH}><span>Start Date: {details.start_date}</span>{details.end_date && <span> End Date: {details.end_date}</span>}</h5>
-	<h5 className={styles.overlayH}>Broadcasted on {details.broadcast.day_of_the_week}</h5>
+	<h5 className={styles.overlayH}>Broadcasted on {details.broadcast ? details.broadcast.day_of_the_week : "Unknown"}</h5>
 	<h5 className={styles.overlayH}>source: {details.source}</h5>
 	<div>
 	  <h5 className={styles.overlayH}>studios:</h5>
 	  {
-	    details.studios?.map(studio => <h6 key={studio.id}><a href={`https://myanimelist.net/anime/producer/${studio.id}`}>{studio.name}</a></h6>)
+	    details?.studios?.map(studio => <h6 key={studio.id}><a href={`https://myanimelist.net/anime/producer/${studio.id}`}>{studio.name}</a></h6>)
 	  }
 	</div>
 	<div>
@@ -296,15 +302,15 @@ function CardOverlayContainer({showOverlay,id}){
 	  {details?.synopsis}
 	</div>
 	<div>
-	  <h3 className={styles.overlayH}>Related Anime</h3>
+	  <h3 className={styles.overlayH}>{details?.related_anime?.length === 0 && "No"} Related Anime</h3>
 	  {
-	    details.related_anime.map( anime => {
+	    details?.related_anime?.map( anime => {
 	      return <h5 className={styles.overlayH}>{anime.relation_type}: <a href={`https://myanimelist.net/anime/${anime.node.id}`}>{anime.node.title}</a></h5>
 	    })
 	  }
 	</div>
+	<Styled.AddToListBtn style={{color: "white"}}><a href={`https://myanimelist.net/anime/${id}`}>Check ON MAL</a></Styled.AddToListBtn>
       </Styled.AnimeCardOverlayContent>
-      
     </CardOverlay>
   )
 }
