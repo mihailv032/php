@@ -6,6 +6,9 @@ import {SlidingMenu} from '../components/dropdown'
 import Categories, {AddCategoryDD,CategoryBtn} from '../components/categories'
 import {CategoryBtn as CtgBtn} from '../components/styledComponents/styled_categories'
 import {URL} from '../consts'
+import { faBars,faXmark } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+
 import {StyledInput,
 	TodoContainer,
         Switch,
@@ -510,10 +513,10 @@ function TodoSideBtns({itemid,ctgs}){
   return (
     <div>
       <TodoSideBtuttons>
-        <DeleteBtn onClick={ () => handlDeleteItem(itemid)}>X</DeleteBtn>
-        
+        <DeleteBtn onClick={ () => handlDeleteItem(itemid)}><FontAwesomeIcon icon={faXmark} /></DeleteBtn>
         <ItemCategoriesContainer>
-          <CategorySvg alt="" src="./category-icon.svg" onClick={() => setShowSlidingMenu(!showSlidingMenu) } />
+	  <CategorySvg onClick={() => setShowSlidingMenu(!showSlidingMenu) }> <FontAwesomeIcon icon={faBars} /></CategorySvg>
+	  
           {showSlidingMenu && <ItemCategoriesWrapper>
             <SlidingMenu opened={showSlidingMenu}>
 	      {categories.length === 0 && <h6 style={{color: "#fcfcfcfc"}}>No Categories</h6> }

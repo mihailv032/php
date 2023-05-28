@@ -202,12 +202,12 @@ export const InputContainer = styled.form`
 
 `
 
-export const CategorySvg = styled.img`
+export const CategorySvg = styled.button`
   margin-top: 10px;
-  fill: #94d31b; 
-  border: white;
-  background-color: white;
+  border: 0;
   color: white;
+  font-size: 16px;
+  background: none;
   max-width: 50px;
   max-height: 50px;
 `
