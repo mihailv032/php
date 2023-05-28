@@ -5,7 +5,7 @@ import {URL} from '../consts'
 import {useMount} from './popup'
 import {Overlay} from './styledComponents/popup'
 import styles from './feed.module.css';
-import { faFileExcel } from '@fortawesome/free-solid-svg-icons'
+import { faFileExcel,faStar } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import LoadingSpinner from './loading'
 class FeedContainer extends React.Component {
@@ -233,9 +233,12 @@ function AnimeCard({details}){
 	<a href={`https://myanimelist.net/anime/${details.id}`}  >
 	  <Styled.AnimePreview alt="" src={details.main_picture.large} />
 	</a>
-	<h1>{details.mean}</h1>
 	<CardOverlayContainer showOverlay={showOverlay} id={details.id} />
       </span>
+      <div style={{display: "flex",marginTop: "20px", justifyContent: "space-between"}}>
+	<h1 style={{margin: 0}}><FontAwesomeIcon icon={faStar} /> {details.mean}</h1>
+	<Styled.AddToListBtn> Add to list</Styled.AddToListBtn>
+      </div>
     </Styled.AnimeCardContainer>
   )
 }
@@ -272,20 +275,20 @@ function CardOverlayContainer({showOverlay,id}){
   return (
     <CardOverlay opened={showOverlay}>
       <Styled.AnimeCardOverlayContent>
-	<h5 className={styles.overlayH}>episodes: {details.num_episodes}</h5>
+	<h5 className={styles.overlayH}>episodes: {details.num_episodes ? details.num_episodes : "?"}</h5>
 	<h5 className={styles.overlayH}><span>Start Date: {details.start_date}</span>{details.end_date && <span> End Date: {details.end_date}</span>}</h5>
 	<h5 className={styles.overlayH}>Broadcasted on {details.broadcast.day_of_the_week}</h5>
 	<h5 className={styles.overlayH}>source: {details.source}</h5>
 	<div>
 	  <h5 className={styles.overlayH}>studios:</h5>
 	  {
-	    details.studios?.map(studio => <h6 key={studio.id}>{studio.name}</h6>)
+	    details.studios?.map(studio => <h6 key={studio.id}><a href={`https://myanimelist.net/anime/producer/${studio.id}`}>{studio.name}</a></h6>)
 	  }
 	</div>
 	<div>
 	  <h3 className={styles.overlayH}>genres</h3>
 	  {
-	    details?.genres?.map(genre => <h6 key={genre.id}>{genre.name}</h6>)
+	    details?.genres?.map(genre => <h6 key={genre.id}><a href={`https://myanimelist.net/anime/genre/${genre.id}`}>{genre.name}</a></h6>)
 	  }
 	</div>
 	<div>

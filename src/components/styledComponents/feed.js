@@ -164,6 +164,7 @@ export const AnimeCardContainer = styled.section`
 `
 
 export const AnimeCardOverlayContent = styled.div`
+  cursor: default;
   background: rgba(0,0,0,0.2);
   color: white;
   height: 100%;
@@ -210,5 +211,18 @@ export const Input = styled.input`
   width: 500px;
   &:focus {
   outline: none;
+  }
+`
+
+export const AddToListBtn = styled.button`
+  display: inline-block;
+  background: #4F74C8;
+  border: 0px;
+  color:  white;
+  text-transform: capitalize;
+  &: hover {
+    background: transparent;
+  border: 2px solid #4F74C8;
+  color: black;
   }
 `
