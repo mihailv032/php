@@ -194,7 +194,16 @@ export const AnimeCardTitle = styled.h1`
   font-weight: bold;
   font-size: 30px;
   text-align: center;
-  margin-bottom: 10px;
+  opacity: 1;
+  margin-bottom: 0px;
+`
+
+export const AnimeCardTitleWrapp = styled.div`
+  background: #111111;
+  opacity: 0.1;
+  position: absolute;
+  height: 100%;
+  width: 100%;
 `
 
 export const AnimePreview = styled.img`

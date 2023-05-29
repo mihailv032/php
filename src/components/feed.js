@@ -231,10 +231,13 @@ function AnimeCard({details}){
 
   return (
     <Styled.AnimeCardContainer>
-      <Styled.AnimeCardTitle title={details.title}>
-	{details.title.length > 20 ? `${details.title.slice(0,24)}...` : details.title}
-	<h6 className={styles.overlayH}>Top {details.rank}</h6>
-      </Styled.AnimeCardTitle>
+      <div style={{position: 'relative'}}>
+	<Styled.AnimeCardTitleWrapp/>
+	<Styled.AnimeCardTitle title={details.title}>
+	  {details.title.length > 20 ? `${details.title.slice(0,24)}...` : details.title}
+	  <h6 className={styles.overlayH}>Top {details.rank}</h6>
+	</Styled.AnimeCardTitle>
+      </div>
       <span onMouseLeave={() => setShowOverlay(false)} onMouseEnter={() => setShowOverlay(true)}>
 	<a href={`https://myanimelist.net/anime/${details.id}`}  >
 	  <Styled.AnimePreview alt="" src={details.main_picture.large} />
