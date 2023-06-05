@@ -279,7 +279,7 @@ function CardOverlayContainer({showOverlay,id,title}){
 	  endDate.splice(1,0,"/")
 	  endDate.splice(3,0,"/")
 	  endDate.reverse().join("")
-	  res.message.end_date=startDate
+	  res.message.end_date=endDate
 	}
 	setDetails(res.message)
       }catch(err){
