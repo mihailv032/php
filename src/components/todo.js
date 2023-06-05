@@ -79,7 +79,6 @@ class TodoWrapper extends React.PureComponent {
     let id;
     if (this.props.loggedIn) { id = await this.handleSendItemToServer(title); if(!id) id=uuidv4() }
     else id=uuidv4();
-
     const todoItems = [{title: title,description: [],id:id, categories: this.state.selectedCategories},...this.state.todoItems]
     if(this.state.showFiltered){this.state.todoItems=todoItems;this.filterItems()}
     else this.setState( prevState => ({todoItems: todoItems,displayedTodoItems: todoItems}))
@@ -171,7 +170,8 @@ class TodoWrapper extends React.PureComponent {
     if(todoItems[index].description.length === 0){
       todoItems[index].description = [desc]
     }else todoItems[index].description = [desc,...todoItems[index].description]
-    this.setState({todoItems: todoItems, displayedTodoItems: todoItems})
+    if(this.state.showFiltered){this.state.todoItems=todoItems;this.filterItems()}
+    else this.setState({todoItems: todoItems, displayedTodoItems: todoItems})
     if(this.props.loggedIn) this.handleChangeItem(id,index)    
   }
   async handleChangeDescription(e,id,desc,descIndex){
@@ -192,7 +192,9 @@ class TodoWrapper extends React.PureComponent {
     for(let i=0;i<todoItems.length;i++){if(todoItems[i].id==id){index=i; break}}
     if(index == undefined) return;
     todoItems[index].description.splice(descIndex,1)
-    this.setState({todoItems: todoItems, displayedTodoItems: todoItems})
+    if(this.state.showFiltered){this.state.todoItems=todoItems;this.filterItems()}
+    else this.setState({todoItems: todoItems, displayedTodoItems: todoItems})
+    
     this.handleChangeItem(id,index)       
   }
   async syncAllItems(){
