@@ -6,7 +6,6 @@ import {URL} from '../consts'
 import Popup from './popup';
 import "./styles/categories.css"
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { icon } from '@fortawesome/fontawesome-svg-core/import.macro'
 import { faEnvelope,faTrash,faSliders } from '@fortawesome/free-solid-svg-icons'
 
 

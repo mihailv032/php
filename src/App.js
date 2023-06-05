@@ -181,7 +181,15 @@ const Main = styled.main`
 const MainContainer = styled.main`
   display: flex;
   width: 100%;
-  justify-content: space-between
+  justify-content: space-between;
+  @media (max-width: 1022px) {
+  flex-direction: column-reverse;
+  overflow: auto;
+  align-items: center;
+  & section {
+  margin-top: 20px;
+  }
+  }
 `
 const FeedSection = styled.section`
   display: flex;
