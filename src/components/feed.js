@@ -234,7 +234,7 @@ function AnimeCard({details}){
       <div style={{position: 'relative'}}>
 	<Styled.AnimeCardTitleWrapp/>
 	<Styled.AnimeCardTitle title={details.title}>
-	  {details.title.length > 20 ? `${details.title.slice(0,24)}...` : details.title}
+	  {details.title.length > 20 ? `${details.title.slice(0,20)}...` : details.title}
 	  <h6 className={styles.overlayH}>Top {details.rank}</h6>
 	</Styled.AnimeCardTitle>
       </div>
@@ -242,7 +242,7 @@ function AnimeCard({details}){
 	<a href={`https://myanimelist.net/anime/${details.id}`}  >
 	  <Styled.AnimePreview alt="" src={details.main_picture.large} />
 	</a>
-	<CardOverlayContainer showOverlay={showOverlay} id={details.id} />
+	<CardOverlayContainer showOverlay={showOverlay} id={details.id} title={details.title} />
       </span>
       <div style={{display: "flex",marginTop: "20px", justifyContent: "space-between"}}>
 	<h1 style={{margin: 0}}><FontAwesomeIcon icon={faStar} /> {details.mean ? details.mean : "N/A"}</h1>
@@ -259,7 +259,7 @@ const overlayAnimation = {
   exitActive: styles.overlayExitActive,
 }
 
-function CardOverlayContainer({showOverlay,id}){
+function CardOverlayContainer({showOverlay,id,title}){
   const [details,setDetails] = useState(false)
 
   useEffect( () => {
@@ -269,9 +269,21 @@ function CardOverlayContainer({showOverlay,id}){
 	const req = await fetch(`${URL}/api/mal/animedetails?id=${id}`)
 	const res = await req.json()
 	console.log(res)
+	let startDate = res.message.start_date.split("-")
+	startDate.splice(1,0,"/")
+	startDate.splice(3,0,"/")
+	startDate.reverse().join("")
+	res.message.start_date = startDate
+	if(res.message.end_date){
+	  let endDate= res.message.end_date.split("-")
+	  endDate.splice(1,0,"/")
+	  endDate.splice(3,0,"/")
+	  endDate.reverse().join("")
+	  res.message.end_date=startDate
+	}
 	setDetails(res.message)
       }catch(err){
-	
+	console.log(err)
       }
     }
     if(!details && showOverlay) getDetails()
@@ -284,6 +296,7 @@ function CardOverlayContainer({showOverlay,id}){
   return (
     <CardOverlay opened={showOverlay}>
       <Styled.AnimeCardOverlayContent>
+	<h5>{title}</h5>
 	<h5 className={styles.overlayH}>episodes: {details.num_episodes ? details.num_episodes : "?"}</h5>
 	<h5 className={styles.overlayH}><span>Start Date: {details.start_date}</span>{details.end_date && <span> End Date: {details.end_date}</span>}</h5>
 	<h5 className={styles.overlayH}>Broadcasted on {details.broadcast ? details.broadcast.day_of_the_week : "Unknown"}</h5>

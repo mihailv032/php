@@ -165,7 +165,6 @@ export const AnimeCardContainer = styled.section`
 
 export const AnimeCardOverlayContent = styled.div`
   cursor: default;
-  background: rgba(0,0,0,0.2);
   color: white;
   height: 100%;
   width: 100%;
