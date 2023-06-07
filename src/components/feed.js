@@ -231,7 +231,7 @@ function AnimeCard({details}){
 
   return (
     <Styled.AnimeCardContainer>
-      <div style={{position: 'relative'}}>
+      <div style={{position: 'relative', height: "100%"}}>
 	<Styled.AnimeCardTitleWrapp/>
 	<Styled.AnimeCardTitle title={details.title}>
 	  {details.title.length > 20 ? `${details.title.slice(0,20)}...` : details.title}
@@ -245,7 +245,7 @@ function AnimeCard({details}){
 	<CardOverlayContainer showOverlay={showOverlay} id={details.id} title={details.title} />
       </span>
       <div style={{display: "flex",marginTop: "20px", justifyContent: "space-between"}}>
-	<h1 style={{margin: 0}}><FontAwesomeIcon icon={faStar} /> {details.mean ? details.mean : "N/A"}</h1>
+	<h1 style={{margin: 0}}><FontAwesomeIcon icon={faStar} /> {details.mean ? details.mean.toFixed(2) : "N/A"}</h1>
 	<Styled.AddToListBtn> Add to list</Styled.AddToListBtn>
       </div>
     </Styled.AnimeCardContainer>

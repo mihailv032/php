@@ -154,6 +154,7 @@ export const AnimeContainer = styled.main`
 export const AnimeCardContainer = styled.section`
   margin-left: 30px;
   margin-right: 30px;
+  margin-bottom: 30px;
   max-width: 400px;
   height: 750px;
   max-height: 750px;
