@@ -171,10 +171,13 @@ export const AnimeCardOverlayContent = styled.div`
   width: 100%;
   padding: 20px;
   box-sizing: border-box;
-
+  position: relative;
+  z-index: 1000;
+ 
   text-transform: capitalize;
   & > div {
   position: relative;
+  z-index: 1000;
   max-height: 150px;
   overflow-y: auto;
   border-bottom: 2px solid white;
@@ -182,6 +185,9 @@ export const AnimeCardOverlayContent = styled.div`
 
   & > div > h6 {
   margin: 0px;
+  position: relative;
+  z-index: 1000;
+
   }
 `
 
@@ -195,6 +201,8 @@ export const AnimeCardTitle = styled.h1`
   font-size: 30px;
   text-align: center;
   opacity: 1;
+  position: relative;
+  z-index: 1;
   margin-bottom: 0px;
 `
 

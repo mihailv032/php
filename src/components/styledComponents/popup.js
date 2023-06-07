@@ -7,6 +7,7 @@ export const Overlay = styled.div`
   right: 0px;
   left: 0px;
   background-color: rgba(0,0,0,0.6);
+  z-index: 999999;
   cursor: pointer;
 `
 

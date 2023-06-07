@@ -235,7 +235,7 @@ function AnimeCard({details}){
 	<Styled.AnimeCardTitleWrapp/>
 	<Styled.AnimeCardTitle title={details.title}>
 	  {details.title.length > 20 ? `${details.title.slice(0,20)}...` : details.title}
-	  <h6 className={styles.overlayH}>Top {details.rank}</h6>
+	  <h6 className={styles.overlayH}>{details.rank && `Top ${details.rank}`}</h6>
 	</Styled.AnimeCardTitle>
       </div>
       <span onMouseLeave={() => setShowOverlay(false)} onMouseEnter={() => setShowOverlay(true)}>
@@ -296,7 +296,7 @@ function CardOverlayContainer({showOverlay,id,title}){
   return (
     <CardOverlay opened={showOverlay}>
       <Styled.AnimeCardOverlayContent>
-	<h5>{title}</h5>
+	<h5 style={{position: "relative","zIndex": 1000}}>{title}</h5>
 	<h5 className={styles.overlayH}>episodes: {details.num_episodes ? details.num_episodes : "?"}</h5>
 	<h5 className={styles.overlayH}><span>Start Date: {details.start_date}</span>{details.end_date && <span> End Date: {details.end_date}</span>}</h5>
 	<h5 className={styles.overlayH}>Broadcasted on {details.broadcast ? details.broadcast.day_of_the_week : "Unknown"}</h5>
