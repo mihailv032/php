@@ -6,9 +6,8 @@ import {SlidingMenu} from '../components/dropdown'
 import Categories, {AddCategoryDD,CategoryBtn} from '../components/categories'
 import {CategoryBtn as CtgBtn} from '../components/styledComponents/styled_categories'
 import {URL} from '../consts'
-import { faBars,faXmark } from '@fortawesome/free-solid-svg-icons'
+import { faBars,faXmark,faPlus,faCheck } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-
 import {StyledInput,
 	TodoContainer,
         Switch,
@@ -29,8 +28,7 @@ import {StyledInput,
 	DescriptionInput,
 	DescritionInputContainer,
 	InputContainer,
-	DescriptionDeleteButton,
-	DescriptionSaveButton,
+	DescriptionBtns,
 	DescriptionButtonContainer,
 	TodoItemInputContainer,
 	TitleSubmitButton} from './styledComponents/todo'
@@ -448,12 +446,14 @@ function TodoHeader(){
     <TodoHeaderWrapp>
       {loggedIn && <SyncList onClick={syncAllItems}><span>Sync with server</span><i></i></SyncList>}
       <InputContainer onSubmit={e =>{handleSubmitItem(e,input);setInput("")}}>
-        <StyledInput name="" type="text" onChange={e => setInput(e.target.value)} value={input} ref={todoInputRef} />
+
+	{/* DELETEBTN TAG IS USED BACAUSE I COULD NOT BE BOTHERED TO WRITE A DIFFERENT CLASS FOR THIS BTN*/}
+	<DeleteBtn onSubmit={e =>{handleSubmitItem(e,input);setInput("")}}>
+	  <FontAwesomeIcon icon={faPlus} style={{fill: "white"}} inverse size="lg" />
+	</DeleteBtn>
+	<StyledInput placeholder='Add Description' type="text" onChange={e => setInput(e.target.value)} value={input} ref={todoInputRef} />
       </InputContainer>
-      <Switch >
-        <input type="checkbox" onClick={toggleFilter} />
-        <span></span>
-      </Switch>
+      <Switch ><input type="checkbox" onClick={toggleFilter} /><span></span></Switch>
       <CtgBtn onClick={() => setShowDD(!showDD) } onContextMenu={(e) =>{e.preventDefault(); setShowDD(!showDD)}}>Add New Category</CtgBtn>
       <AddCategoryDD opened={showDD} handleSubmit={addCategory} onClose={() => setShowDD(!showDD)} />
       {
@@ -490,9 +490,11 @@ function TodoItemsContainer({todoItems,categories,syncItem}) {
 function TodoItem({text,categories,index,id,itemCategories}) {
   return (
     <TodoItemContainer>
-      <TodoTitle originalTitle={text.title} id={id} />
+      <div style={{width: "100%"}}>
+	<TodoTitle originalTitle={text.title} id={id} />
+	<TodoItemDescription desc={text.description} id={id} />
+      </div>
       <TodoSideBtns itemid={id} ctgs={itemCategories} />
-      <TodoItemDescription desc={text.description} id={id} />
     </TodoItemContainer>
   )
 }
@@ -513,9 +515,8 @@ function TodoSideBtns({itemid,ctgs}){
   const [showSlidingMenu,setShowSlidingMenu] = useState(false)
   const {handlDeleteItem,categories,handleToggleItemCategory} = useContext(TodoWrapperContext)
   return (
-    <div>
       <TodoSideBtuttons>
-        <DeleteBtn onClick={ () => handlDeleteItem(itemid)}><FontAwesomeIcon icon={faXmark} /></DeleteBtn>
+        <DeleteBtn onClick={ () => handlDeleteItem(itemid)}><svg xmlns="http://www.w3.org/2000/svg" height="1em" style={{fill: "white"}} viewBox="0 0 512 512"><path d="M256 48a208 208 0 1 1 0 416 208 208 0 1 1 0-416zm0 464A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM175 175c-9.4 9.4-9.4 24.6 0 33.9l47 47-47 47c-9.4 9.4-9.4 24.6 0 33.9s24.6 9.4 33.9 0l47-47 47 47c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-47-47 47-47c9.4-9.4 9.4-24.6 0-33.9s-24.6-9.4-33.9 0l-47 47-47-47c-9.4-9.4-24.6-9.4-33.9 0z"/></svg></DeleteBtn>
         <ItemCategoriesContainer>
 	  <CategorySvg onClick={() => setShowSlidingMenu(!showSlidingMenu) }> <FontAwesomeIcon icon={faBars} /></CategorySvg>
 	  
@@ -541,7 +542,6 @@ function TodoSideBtns({itemid,ctgs}){
           </ItemCategoriesWrapper>}
         </ItemCategoriesContainer>
       </TodoSideBtuttons>
-    </div>
   )
 }
 
@@ -589,13 +589,11 @@ const DescriptionTextArea = ({desc,descIndex,todoid}) => {
 	  <DescriptionContentContainer>
 	    <DescriptionContent value={textAreatValue} onChange={ e =>{if(!changed){setChanged(true)};setTextAreaValue(e.target.value)}} />
 	    <DescriptionButtonContainer>
-	      <DescriptionDeleteButton onClick={e => handleRemoveDescription(e,todoid,descIndex) }>
-		X
-	      </DescriptionDeleteButton>
+	      <DescriptionBtns onClick={e => handleRemoveDescription(e,todoid,descIndex) }><FontAwesomeIcon icon={faXmark} reverse /></DescriptionBtns>
 	      { changed &&
-		<DescriptionSaveButton onClick={(e) =>{setChanged(false);handleChangeDescription(e,todoid,textAreatValue,descIndex)}}>
-		✔️
-	      </DescriptionSaveButton>
+		<DescriptionBtns onClick={(e) =>{setChanged(false);handleChangeDescription(e,todoid,textAreatValue,descIndex)}}>
+		  <FontAwesomeIcon icon={faCheck} />
+	      </DescriptionBtns>
 	      }
 	    </DescriptionButtonContainer>
 	  </DescriptionContentContainer>

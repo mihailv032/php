@@ -10,7 +10,10 @@ export const StyledInput = styled.input`
   font-size: 25px;
   width: 100%;
   box-sizing: border-box;
-
+  background: #1E1E1E;
+  border: none;
+  border-radius: 5px;
+  color: white;
   &:focus {
   outline: none;
   }
@@ -24,6 +27,9 @@ export const StyledTodoItem = styled.input`
   hyphens: auto;
   white-space: normal;
   width: 100%;
+  color: white;
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
   
   padding-left: 20px;
   padding-right: 20px;
@@ -31,7 +37,7 @@ export const StyledTodoItem = styled.input`
   padding-bottom: 5px;
   
   box-sizing: border-box;
-  background: white;
+  background: #1E1E1E;
 
   text-align: center;
   justify-content: center;
@@ -57,46 +63,43 @@ export const TodoContainer = styled.div`
 `
 
 export const TodoItemContainer = styled.div`
+  background: #1A1B1D;
+  padding-top: 15px;
+  padding-bottom: 15px;
+  padding-left: 15px;
+  padding-right: 5px;
+  border-radius: 5px;
+
   position: relative;
-  padding-right: 30px;
   display: flex;
   width: 100%;
-  justify-content: space-between;
-  flex-direction: column;
   margin-bottom: 15px;
   align-items: center;
   box-sizing: border-box;
 `
 
 export const TodoSideBtuttons = styled.div`
-   position: absolute;
-  top: 0;
-  right: 0; 
+  margin-left: 10px;
+  height: 100%;
 `
 
 export const DeleteBtn = styled.button`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
   background: transparent;
   font-weight: bold;
   width : 20px;
   height: 20px;
   border-radius: 100%;
   color: #933939;
-  background: white;
   fontWeight: bold;
   fontSize: 20px;
   maxHeight:40p;
-  
+  cursor: pointer;
   border: none;
 `
 
 export const DescriptionContainer = styled.div`
   display: flex;
   flex-direction: column;
-  background: #71797E;
   width: 100%;
   align-items: center;
   font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,
@@ -110,6 +113,9 @@ export const DescriptionButton = styled.button`
   background: #404447;
   border: none;
   color: white;
+  border-bottom-left-radius: 5px;
+  border-bottom-right-radius: 5px;
+
   font-weight: bold;
   font-size: 17px;
   padding-top: 5px;
@@ -123,9 +129,10 @@ export const DescriptionContentContainer = styled.div`
 `
 
 export const DescriptionContent = styled.textarea`
-
+  resize: none;
   margin: 0;
-  background: #71797E;
+
+  background-color:rgba(30, 30, 30, 0.5);
   font-size: 25px;
   padding-top: 10px;
   padding-bottom: 10px;
@@ -149,26 +156,18 @@ export const DescriptionContent = styled.textarea`
 export const DescriptionButtonContainer = styled.div`
   display: flex;
   flex-direction: column;
-  background: red;
   max-width: 20px;
   position: absolute;
   right: 0;
   top: 0;
 `
-
-export const DescriptionDeleteButton = styled.button`
+export const DescriptionBtns = styled.button`
   width: 20px;
   height: 20px;
-  background: red;
+  background: transparent;
   border: none;
   color: white;
-`
-export const DescriptionSaveButton = styled.button`
-  width: 20px;
-  height: 20px;
-  border: none
-  background: green;
-  color: white;
+  cursort: pointer;
 `
 
 export const DescritionInputContainer = styled.form`
@@ -179,7 +178,8 @@ export const DescriptionInput = styled.input`
   width: 100%;
   margin: 0px;
   text-align: center;
-  background: #5b6266;
+  background: #272727;
+  
   border: none;
   box-sizing: border-box;
   color: white;
@@ -198,8 +198,15 @@ export const TodoHeaderWrapp = styled.header`
 `
 export const InputContainer = styled.form`
   display: flex;
+  align-items: center;
   width: 100%;
-
+  box-sizing: border-box;
+  background: #1A1B1D;
+  padding-left: 10px;
+  padding-right: 20px;
+  padding-top: 20px;
+  padding-bottom: 20px;
+  border-radius: 5px;
 `
 
 export const CategorySvg = styled.button`
