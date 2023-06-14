@@ -29,6 +29,8 @@ export const Container = styled.div`
 `
 
 export const PopupContentWrapp = styled.div`
+  position: relative;
+  z-index: 999999999;
   min-width: ${ props => props.width ? props.width : "300px"};
   min-height: ${ props => props.height ? props.height : "500px"};
 `

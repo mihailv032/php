@@ -31,6 +31,8 @@ export const DropDownTitle = styled.li`
   position: relative;
   display: block;
   color: white;
+  min-height: 31px;
+  height: 100%;
   background: #61002d;
   font-weight: bold;
   text-transform: capitalize;
@@ -42,12 +44,14 @@ export const DropDownItem = styled.li`
   box-sizing: border-box;
   display: block;
   color: white;
+  height: 31px;
   padding-top: 5px;
   padding-bottom: 5px;
   padding-right: 10px;
   padding-left: 10px;
   box-sizing: border-box;
   border: none;
+  text-transform: capitalize;
   position: absolute;
   background: ${ props => props.selected ? "#2e51a2" : "#4165BA"};
   top: 0;
@@ -68,23 +72,21 @@ export const DropDown = styled.ul`
   position: relative;
   width: 180px;
   padding: 0;
-  margin-left: 10px;
-  margin-right: 10px;
   z-index: 100;
   list-style: none;
   cursor: pointer;
   box-sizing: border-box;
   &: hover ${DropDownItem}:nth-child(2) {
-  transform: translate(0,25px);
+  transform: translate(0,30px);
   }
   &: hover ${DropDownItem}:nth-child(3) {
-  transform: translate(0,53px);
+  transform: translate(0,60px);
   }
   &: hover ${DropDownItem}:nth-child(4) {
-  transform: translate(0,81px);
+  transform: translate(0,90px);
   }
   &: hover ${DropDownItem}:nth-child(5) {
-  transform: translate(0,110px);
+  transform: translate(0,120px);
   }
 `
 
