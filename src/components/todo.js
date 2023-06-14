@@ -92,6 +92,7 @@ class TodoWrapper extends React.PureComponent {
       for(let i=0;i<this.state.selectedCategories.length; i++){
         if(item.categories.indexOf(this.state.selectedCategories[i]) !== -1) return item;
       }
+      if(this.state.selectedCategories.length === 0){if(item.categories.length === 0) return item}
     })
     console.log(filtered)
     this.setState({displayedTodoItems: filtered, showFiltered: true})
