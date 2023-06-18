@@ -95,6 +95,7 @@ export const ErrorLabel = styled.label`
 
 export const ContexMenutWrapp = styled.ul`
   list-style: none;
+  width: 110px;
   background: #1A0F1C;
   padding-top: 10px;
   padding-bottom: 10px;

@@ -12,16 +12,37 @@ function RecentApps(){
 
   const addAppRef = useRef()
   const recntAppsRef = useRef()
-  const addMore = (name,url,hotkey) => {
-    const favicon = `https://s2.googleusercontent.com/s2/favicons?domain=${url}`
-    const newApps = [{name:name,url:url,icon:favicon,hotkey: hotkey},...apps]
 
+  const getFavIconUrl = (url) => {
+    let urlForDomain = Array.from(url)
+    if(urlForDomain.indexOf("/",9) !== -1){urlForDomain = urlForDomain.splice(0,urlForDomain.indexOf("/",8))}
+    else if(urlForDomain.indexOf("?") !== -1){urlForDomain = urlForDomain.splice(0,urlForDomain.indexOf("?"))}
+    urlForDomain=urlForDomain.join("")
+    urlForDomain= urlForDomain.split(".")
+    console.log(urlForDomain)
+    if(urlForDomain.length > 2){
+      console.log(8-urlForDomain[0].length)
+      console.log(urlForDomain[0].length)
+      urlForDomain[0] = urlForDomain[0].slice(0,8)
+      console.log(urlForDomain)
+      for(let i=1;i<urlForDomain.length -3;i++){
+	delete urlForDomain[i]
+      }
+      urlForDomain=urlForDomain.filter( item =>{if(item) return item})
+      urlForDomain[urlForDomain.length-2] = urlForDomain[urlForDomain.length-2]+"."
+    }
+    urlForDomain=urlForDomain.join("")
+    return `${urlForDomain}/favicon.ico`
+  }
+  const addMore = (name,url,hotkey) => {
+    const favicon = getFavIconUrl(url)
+    const newApps = [{name:name,url:url,icon:favicon,hotkey: hotkey},...apps]
     setApps(newApps)
     setShowPopup(false)
   }
   const changeAppDetails = (index,name,url,hotkey) => {
     const appArr = [...apps]
-    const favicon = `https://s2.googleusercontent.com/s2/favicons?domain=${url}`
+    const favicon = getFavIconUrl(url)
     appArr[index] = {name:name,url:url,icon:favicon,hotkey: hotkey}
     setApps(appArr)
   }
