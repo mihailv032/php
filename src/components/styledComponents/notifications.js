@@ -1,11 +1,11 @@
 import styled from 'styled-components'
 
 export const Contianer = styled.div`
-  position: absolute;
+  position: fixed;
   top: 20px;
   right: 20px;
   border-radius: 5px;
-  z-index: 999999;
+  z-index: 9999999999;
   background-color: ${props => props.color};
   color: white;
   padding: 30px;

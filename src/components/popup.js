@@ -36,7 +36,7 @@ export const useMount = ({opened}) => {
   }
 }
 
-function Portal({children}){
+export function Portal({children}){
   const [container] = useState( () => document.createElement('div'));
   useEffect( () => {
     document.body.appendChild(container)
