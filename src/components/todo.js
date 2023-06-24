@@ -169,7 +169,7 @@ class TodoWrapper extends React.PureComponent {
     if(index == undefined) return;
     if(todoItems[index].description.length === 0){
       todoItems[index].description = [desc]
-    }else todoItems[index].description = [desc,...todoItems[index].description]
+    }else todoItems[index].description = [...todoItems[index].description,desc]
     if(this.state.showFiltered){this.state.todoItems=todoItems;this.filterItems()}
     else this.setState({todoItems: todoItems, displayedTodoItems: todoItems})
     if(this.props.loggedIn) this.handleChangeItem(id,index)    
