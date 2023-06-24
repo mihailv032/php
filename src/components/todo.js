@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useContext, createContext } from 'react';
+import React, { useState, useMemo, useCallback, useContext, createContext } from 'react';
 import { AppContext } from '../context';
 import styled from 'styled-components'
 import { v4 as uuidv4 } from 'uuid';
@@ -40,7 +40,7 @@ class TodoWrapper extends React.PureComponent {
     this.state = {
       todoItems: [],
       selectedCategories: [],
-      showFiltered: false,
+      showFiltered: true,
       displayedTodoItems: []//todo items to be shown on the screen
     }
     this.todoInputRef = React.createRef();
@@ -64,7 +64,8 @@ class TodoWrapper extends React.PureComponent {
     this.context.setHotkey("U",() => this.todoInputRef.current.focus(),true)
     console.log(storedTodoItems)
     storedTodoItems.forEach(({ notSynced },index) =>{if (notSynced) this.syncItem(index)})
-    this.setState({ todoItems: storedTodoItems, displayedTodoItems: storedTodoItems })
+    if(this.state.showFiltered){this.state.todoItems=storedTodoItems;this.filterItems()}
+    else this.setState({ todoItems: storedTodoItems, displayedTodoItems: storedTodoItems })
   }
   componentDidUpdate(prevProps,prevState){
     if((prevProps.loggedIn !== this.props.loggedIn) && this.props.loggedIn)
@@ -442,19 +443,19 @@ function Todo(){
 function TodoHeader(){
   const [input,setInput] = useState("")
   const [showDD,setShowDD] = useState(false)
-  const {todoInputRef,loggedIn,handleToggleCategory,toggleFilter,selectedCategories,handleSubmitItem,categories,addCategory,deleteCategory,syncAllItems} = useContext(TodoWrapperContext)
+  const {todoInputRef,loggedIn,handleToggleCategory,toggleFilter,showFiltered,selectedCategories,handleSubmitItem,categories,addCategory,deleteCategory,syncAllItems} = useContext(TodoWrapperContext)
   return (
     <TodoHeaderWrapp>
       {loggedIn && <SyncList onClick={syncAllItems}><span>Sync with server</span><i></i></SyncList>}
       <InputContainer onSubmit={e =>{handleSubmitItem(e,input);setInput("")}}>
 
 	{/* DELETEBTN TAG IS USED BACAUSE I COULD NOT BE BOTHERED TO WRITE A DIFFERENT CLASS FOR THIS BTN*/}
-	<DeleteBtn onSubmit={e =>{handleSubmitItem(e,input);setInput("")}}>
+	<DeleteBtn onSubmit={e =>{handleSubmitItem(e,input);setInput("")}} style={{marginRight: "10px"}}>
 	  <FontAwesomeIcon icon={faPlus} style={{fill: "white"}} inverse size="lg" />
 	</DeleteBtn>
 	<StyledInput placeholder='Add Description' type="text" onChange={e => setInput(e.target.value)} value={input} ref={todoInputRef} />
       </InputContainer>
-      <Switch ><input type="checkbox" onClick={toggleFilter} /><span></span></Switch>
+      <Switch ><input type="checkbox" onClick={toggleFilter} checked={showFiltered} /><span></span></Switch>
       <CtgBtn onClick={() => setShowDD(!showDD) } onContextMenu={(e) =>{e.preventDefault(); setShowDD(!showDD)}}>Add New Category</CtgBtn>
       <AddCategoryDD opened={showDD} handleSubmit={addCategory} onClose={() => setShowDD(!showDD)} />
       {
