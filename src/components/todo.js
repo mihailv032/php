@@ -179,8 +179,6 @@ class TodoWrapper extends React.PureComponent {
     let index;
     for(let i=0;i<this.state.todoItems.length;i++){if(this.state.todoItems[i].id==id){index=i; break}}
     if(index == undefined) return;
-    console.log(desc)
-    console.log(id)
     this.state.todoItems[index].description[descIndex] = desc
     localStorage.setItem("todoItems",JSON.stringify(this.state.todoItems))
     if(this.props.loggedIn) this.handleChangeItem(id,index)       
@@ -410,6 +408,7 @@ class TodoWrapper extends React.PureComponent {
                 selectedCategories: this.state.selectedCategories,
 	        handleChangeDescription:this.handleChangeDescription,
 	        handleRemoveDescription:this.handleRemoveDescription,
+		showFiltered: this.state.showFiltered,
 		loggedIn: this.props.loggedIn,
 	        handleChangeTitle:this.handleChangeTitle,
 		syncItem: this.syncItem,
