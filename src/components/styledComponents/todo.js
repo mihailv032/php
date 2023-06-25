@@ -126,9 +126,15 @@ export const DescriptionButton = styled.button`
 export const DescriptionContentContainer = styled.div`
   width: 100%;
   position: relative;
+
+  & a {
+  color: #2C29FC;
+  text-decoration: underline;
+  cursor: pointer;
+  }
 `
 
-export const DescriptionContent = styled.textarea`
+export const DescriptionContent = styled.div`
   resize: none;
   margin: 0;
 
@@ -181,6 +187,8 @@ export const DescriptionInput = styled.input`
   background: #272727;
   
   border: none;
+  border-bottom-left-radius: 5px;
+  border-bottom-right-radius: 5px;
   box-sizing: border-box;
   color: white;
   font-size: 20px;
@@ -194,7 +202,6 @@ export const DescriptionInput = styled.input`
 `
 
 export const TodoHeaderWrapp = styled.header`
-  margin-bottom: 30px;
 `
 export const InputContainer = styled.form`
   display: flex;

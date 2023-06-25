@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback, useContext, createContext } from 'react';
+import React, { useState, useMemo, useCallback, useContext, createContext, useRef } from 'react';
 import { AppContext } from '../context';
 import styled from 'styled-components'
 import { v4 as uuidv4 } from 'uuid';
@@ -34,6 +34,29 @@ import {StyledInput,
 	TitleSubmitButton} from './styledComponents/todo'
 
 const TodoWrapperContext = createContext({})
+
+function AddAnchorToText(value){
+  const urlPattern = /(https?:\/\/[^\s]+)/gi; // Regular expression to match URLs
+  const matches = urlPattern.exec(value); // Find the first URL match
+  if (!matches) return value
+  const startIndex = matches.index;
+  let descClone = [...value]
+  if(descClone.splice(startIndex-6,5).join("") === "href=") return value
+  let desc = Array.from(value)
+  desc.splice(startIndex,matches[0].length)
+  
+  let domain = Array.from(matches[0])
+  domain.splice(0,8)
+  if(domain.indexOf("/",9) !== -1){domain.splice(domain.indexOf("/",8),domain.length-1)}
+  else if(domain.indexOf("?") !== -1){domain.splice(domain.indexOf("?"),domain.length-1)}
+  domain=domain.join("")
+  
+  const urlanchor = `<a href=${matches[0]} title=${matches[0]} contentEditable='false'>${domain}</a>`
+  desc.splice(startIndex,0,urlanchor)
+  console.log(desc)
+  desc = desc.join("")
+  return desc
+}
 class TodoWrapper extends React.PureComponent {
   constructor(props) {
     super(props);
@@ -133,7 +156,6 @@ class TodoWrapper extends React.PureComponent {
   handlDeleteItem(id){
     const todoItemsArr = [...this.state.todoItems]
     let index;
-    console.log(id)
     for(let i=0;i<todoItemsArr.length; i++){
       console.log(todoItemsArr[i].id)
       if(todoItemsArr[i].id == id){index=i; break}
@@ -167,6 +189,7 @@ class TodoWrapper extends React.PureComponent {
       if(todoItems[i].id == id){index=i;break;}
     }
     if(index == undefined) return;
+    desc=AddAnchorToText(desc)
     if(todoItems[index].description.length === 0){
       todoItems[index].description = [desc]
     }else todoItems[index].description = [...todoItems[index].description,desc]
@@ -179,6 +202,7 @@ class TodoWrapper extends React.PureComponent {
     let index;
     for(let i=0;i<this.state.todoItems.length;i++){if(this.state.todoItems[i].id==id){index=i; break}}
     if(index == undefined) return;
+    desc=AddAnchorToText(desc)
     this.state.todoItems[index].description[descIndex] = desc
     localStorage.setItem("todoItems",JSON.stringify(this.state.todoItems))
     if(this.props.loggedIn) this.handleChangeItem(id,index)       
@@ -193,7 +217,7 @@ class TodoWrapper extends React.PureComponent {
     if(this.state.showFiltered){this.state.todoItems=todoItems;this.filterItems()}
     else this.setState({todoItems: todoItems, displayedTodoItems: todoItems})
     
-    this.handleChangeItem(id,index)       
+    if(this.props.loggedIn) this.handleChangeItem(id,index)       
   }
   async syncAllItems(){
     if(!this.props.loggedIn) return;
@@ -583,16 +607,22 @@ const TodoDescriptionFooter = ({id,desc}) => {
 }
 
 const DescriptionTextArea = ({desc,descIndex,todoid}) => {
-  const [textAreatValue,setTextAreaValue] = useState(desc)
   const [changed,setChanged] = useState(false)
   const {handleChangeDescription,handleRemoveDescription} = useContext(TodoWrapperContext)
+  const onContentBlur = useCallback(e =>{
+    e.currentTarget.innerHTML=AddAnchorToText(e.currentTarget.innerHTML)
+    handleChangeDescription(e,todoid,e.currentTarget.innerHTML,descIndex)
+    setChanged(false);
+  })
+  //when u click on the tick to save the desc it will triger onBlur which will save the desc
+  const changeFocusRef = useRef()
   return (
-	  <DescriptionContentContainer>
-	    <DescriptionContent value={textAreatValue} onChange={ e =>{if(!changed){setChanged(true)};setTextAreaValue(e.target.value)}} />
+	  <DescriptionContentContainer ref={changeFocusRef}>
+	    <DescriptionContent contentEditable dangerouslySetInnerHTML={{__html: desc}} onBlur={onContentBlur} onFocus={() => setChanged(true) } />
 	    <DescriptionButtonContainer>
-	      <DescriptionBtns onClick={e => handleRemoveDescription(e,todoid,descIndex) }><FontAwesomeIcon icon={faXmark} reverse /></DescriptionBtns>
+	      <DescriptionBtns onClick={e => handleRemoveDescription(e,todoid,descIndex) }><FontAwesomeIcon icon={faXmark} /></DescriptionBtns>
 	      { changed &&
-		<DescriptionBtns onClick={(e) =>{setChanged(false);handleChangeDescription(e,todoid,textAreatValue,descIndex)}}>
+		<DescriptionBtns onClick={(e) =>{changeFocusRef.current.focus()}}>
 		  <FontAwesomeIcon icon={faCheck} />
 	      </DescriptionBtns>
 	      }
