@@ -8,6 +8,8 @@ import {CategoryBtn as CtgBtn} from '../components/styledComponents/styled_categ
 import {URL} from '../consts'
 import { faBars,faXmark,faPlus,faCheck } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { DndProvider,useDrag, useDrop } from 'react-dnd'
+import { HTML5Backend } from 'react-dnd-html5-backend'
 import {StyledInput,
 	TodoContainer,
         Switch,
@@ -69,6 +71,7 @@ class TodoWrapper extends React.PureComponent {
     }
     this.todoInputRef = React.createRef();
     this.handleToggleCategory = this.handleToggleCategory.bind(this)
+    this.handleChangeItemsOrder=  this.handleChangeItemsOrder.bind(this)
     this.handleToggleItemCategory=this.handleToggleItemCategory.bind(this)
     this.handleRemoveCategoryFromAllItems=this.handleRemoveCategoryFromAllItems.bind(this)
     this.handleUpdateCategoryId = this.handleUpdateCategoryId.bind(this)
@@ -83,6 +86,10 @@ class TodoWrapper extends React.PureComponent {
     this.toggleFilter = this.toggleFilter.bind(this)
   }
   static contextType = AppContext
+  findItem(id){
+    for(let i=0;i<this.state.todoItems.length; i++){
+      if(this.state.todoItems[i].id === id){return i}
+  }return false}
   componentDidMount(){
     const storedTodoItems = localStorage.getItem("todoItems") ? JSON.parse(localStorage.getItem("todoItems")) : []
     this.context.setHotkey("U",() => this.todoInputRef.current.focus(),true)
@@ -103,6 +110,17 @@ class TodoWrapper extends React.PureComponent {
     if (this.props.loggedIn) { id = await this.handleSendItemToServer(title); if(!id) id=uuidv4() }
     else id=uuidv4();
     const todoItems = [{title: title,description: [],id:id, categories: this.state.selectedCategories},...this.state.todoItems]
+    if(this.state.showFiltered){this.state.todoItems=todoItems;this.filterItems()}
+    else this.setState( prevState => ({todoItems: todoItems,displayedTodoItems: todoItems}))
+  }
+  handleChangeItemsOrder(dragIndex,hoverIndex,hoverId){
+    console.log(dragIndex+" "+hoverIndex)
+    const todoItems = [...this.state.todoItems]
+    console.log(this.state.todoItems)
+    const drgIndx = this.findItem(this.state.displayedTodoItems[dragIndex].id)
+    const hoverIndx = this.findItem(hoverId)
+    const draggItem = todoItems.splice(drgIndx,1)
+    todoItems.splice(hoverIndx,0,draggItem[0])
     if(this.state.showFiltered){this.state.todoItems=todoItems;this.filterItems()}
     else this.setState( prevState => ({todoItems: todoItems,displayedTodoItems: todoItems}))
   }
@@ -425,6 +443,7 @@ class TodoWrapper extends React.PureComponent {
 	        todoItems: this.state.displayedTodoItems,
 	        handleSubmitItem:this.handleSubmitItem,
 		syncAllItems: this.syncAllItems,
+		handleChangeItemsOrder: this.handleChangeItemsOrder,
 	        handlDeleteItem:this.handlDeleteItem,
                 handleToggleCategory: this.handleToggleCategory,
 		handleToggleItemCategory: this.handleToggleItemCategory,
@@ -479,7 +498,7 @@ function TodoHeader(){
 	</DeleteBtn>
 	<StyledInput placeholder='Add Description' type="text" onChange={e => setInput(e.target.value)} value={input} ref={todoInputRef} />
       </InputContainer>
-      <Switch ><input type="checkbox" onClick={toggleFilter} checked={showFiltered} /><span></span></Switch>
+      <Switch ><input type="checkbox" onChange={toggleFilter} checked={showFiltered} /><span></span></Switch>
       <CtgBtn onClick={() => setShowDD(!showDD) } onContextMenu={(e) =>{e.preventDefault(); setShowDD(!showDD)}}>Add New Category</CtgBtn>
       <AddCategoryDD opened={showDD} handleSubmit={addCategory} onClose={() => setShowDD(!showDD)} />
       {
@@ -492,30 +511,77 @@ function TodoHeader(){
 }
 
 function TodoItemsContainer({todoItems,categories,syncItem}) {
-  console.log('herender item')
   return (
-    <TodoContainer>
-      {
-	todoItems.map( (todoItem,index) => {
-          if(isNaN(todoItem.id)) syncItem(index)
-	  return (
-            < TodoItem text={todoItem}
-	    key={todoItem.id}
-            id={todoItem.id}
-	    index={index}
-            categories={categories}
-            itemCategories={todoItem.categories}
-            />
-	  )
-	})
-      }
-    </TodoContainer>
+    <DndProvider backend={HTML5Backend}>
+      <TodoContainer>
+	{
+	  todoItems.map( (todoItem,index) => {
+            if(isNaN(todoItem.id)) syncItem(index)
+	    return (
+              <TodoItem text={todoItem}
+			key={todoItem.id}
+			id={todoItem.id}
+			index={index}
+			categories={categories}
+			itemCategories={todoItem.categories}
+              />
+	    )
+	  })
+	}
+      </TodoContainer>
+    </DndProvider>
   )
 }
 
 function TodoItem({text,categories,index,id,itemCategories}) {
+  const {handleChangeItemsOrder} = useContext(TodoWrapperContext)
+  const ref=useRef(null)
+  const [{ handlerId }, drop] = useDrop({
+    accept: "Item",
+    collect(monitor) {
+      return {
+        handlerId: monitor.getHandlerId(),
+      }
+    },
+    hover(item, monitor) {
+      if (!ref.current) return
+      const dragIndex = item.index
+      const hoverIndex = index
+      // Don't replace items with themselves
+      if (dragIndex === hoverIndex) {return}
+      // Determine rectangle on screen
+      const hoverBoundingRect = ref.current?.getBoundingClientRect()
+      // Get vertical middle
+      const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2
+      // Determine mouse position
+      const clientOffset = monitor.getClientOffset()
+      // Get pixels to the top
+      const hoverClientY = clientOffset.y - hoverBoundingRect.top
+      // Only perform the move when the mouse has crossed half of the items height
+      // When dragging downwards, only move when the cursor is below 50%
+      // When dragging upwards, only move when the cursor is above 50%
+      // Dragging downwards
+      if (dragIndex < hoverIndex && hoverClientY < hoverMiddleY) return
+      // Dragging upwards
+      if (dragIndex > hoverIndex && hoverClientY > hoverMiddleY) return
+      // Time to actually perform the action
+      handleChangeItemsOrder(dragIndex, hoverIndex,id)
+      item.index = hoverIndex
+    },
+  })
+  const [{ isDragging }, drag] = useDrag({
+    type: "Item",
+    item: () => {
+      return { handlerId:id, index }
+    },
+    collect: (monitor) => ({
+      isDragging: monitor.isDragging(),
+    }),
+  })
+  drag(drop(ref))
   return (
-    <TodoItemContainer>
+
+    <TodoItemContainer ref={ref} data-handler-id={handlerId}>
       <div style={{width: "100%"}}>
 	<TodoTitle originalTitle={text.title} id={id} />
 	<TodoItemDescription desc={text.description} id={id} />
