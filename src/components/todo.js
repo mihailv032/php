@@ -44,7 +44,7 @@ function AddAnchorToText(value){
   const startIndex = matches.index;
   let descClone = [...value].splice(startIndex-6,5).join("")
   console.log(descClone)
-  if(descClone === "href=" || " src=") return value
+  if(descClone === "href=" || descClone === " src=") return value
   let desc = Array.from(value)
   desc.splice(startIndex,matches[0].length)
   
