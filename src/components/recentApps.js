@@ -1,9 +1,12 @@
-import React, { useState, useLayoutEffect, useEffect,useRef, useContext} from 'react';
+import React, { useState, useLayoutEffect, useEffect, useRef, useContext, useCallback } from 'react';
 import {AppContext} from '../context'
 import * as Styled from './styledComponents/recentApps'
 import Popup from './popup'
 import {keyCodes,hotkeys} from '../consts'
 import ContextMenu from './dropdown'
+import { DndProvider,useDrag, useDrop } from 'react-dnd'
+import { HTML5Backend } from 'react-dnd-html5-backend'
+
 
 function RecentApps(){
   const [apps, setApps] = useState(localStorage.getItem("apps") ? JSON.parse(localStorage.getItem("apps")) : [] )
@@ -29,8 +32,8 @@ function RecentApps(){
 	delete urlForDomain[i]
       }
       urlForDomain=urlForDomain.filter( item =>{if(item) return item})
-      urlForDomain[urlForDomain.length-2] = urlForDomain[urlForDomain.length-2]+"."
     }
+    urlForDomain[urlForDomain.length-2] = `${urlForDomain[urlForDomain.length-2]}.`
     urlForDomain=urlForDomain.join("")
     return `${urlForDomain}/favicon.ico`
   }
@@ -52,49 +55,111 @@ function RecentApps(){
     setApps(appsArr)
     if(deletedApp[0].hotkey) deleteHotkey(deletedApp[0].hotkey)
   }
+  function handleAppDrag(dragIndex,hoverIndex){
+    let appsArr = [...apps]
+    const draggApp = appsArr.splice(dragIndex,1)
+    appsArr.splice(hoverIndex,0,draggApp[0])
+    setApps(appsArr)
+  }
   //cannot use the setShowPopup because the callback does not have access the latest showPopup value
   useLayoutEffect( () =>{setHotkey("Y", () => addAppRef.current.click(),true)},[])
   useEffect( () => localStorage.setItem("apps", JSON.stringify(apps)),[apps])
   return (
     <Styled.RecntAppsContainer>
       <Styled.RecentAppsWrapp ref={recntAppsRef}>
-	<AppContainer apps={apps} changeAppDetails={changeAppDetails} deleteApp={deleteApp} />
+	<DndProvider backend={HTML5Backend}>
+	  <AppContainer apps={apps} changeAppDetails={changeAppDetails} deleteApp={deleteApp} handleAppDrag={handleAppDrag} />
+	</DndProvider>
 	<Styled.App onClick={ () => setShowPopup(!showPopup)} ref={addAppRef}>+</Styled.App>
       </Styled.RecentAppsWrapp>
       <Popup opened={showPopup} onClose={() => setShowPopup(false) } width="300px" height="500px">
 	<PopupContent submit={addMore} />
       </Popup>
-
+      
     </Styled.RecntAppsContainer>
   )
 }
 
-function AppContainer({apps,changeAppDetails,deleteApp}) {
+function AppContainer({apps,changeAppDetails,deleteApp,handleAppDrag}) {
+  const moveApp = (dragIndex,hoverIndex) => handleAppDrag(dragIndex,hoverIndex)
   return (
     <>
       {
-	apps.map( (app,index) => {
-	  return (
-	    <span key={app.url}>
-	      <App name={app.name} url={app.url} icon={app.icon}
-		   tabIndex={index}
-		   hotkey={app.hotkey} 
-		   changeAppDetails={ (name,url,hotkey) => changeAppDetails(index,name,url,hotkey)}
-		   deleteApp={ () => deleteApp(index)} />
-	    </span>
-	  )
-	})
+	apps.map( (app,index) => <App
+	key={app.url}
+	index={index}
+	name={app.name} url={app.url} icon={app.icon}
+	handleAppDrag={handleAppDrag}
+	hotkey={app.hotkey} 
+	moveApp={moveApp}
+	changeAppDetails={ (name,url,hotkey) => changeAppDetails(index,name,url,hotkey)}
+	deleteApp={ () => deleteApp(index)}      /> )
       }
     </>
   )
 }
 
-function App({name,url,icon,hotkey,changeAppDetails,deleteApp}){
-  const ref = useRef()
+function App({name,url,icon,hotkey,changeAppDetails,deleteApp,index,moveApp}){
+  const ref = useRef(null)
   const [showContext,setShowContext] = useState(false)
   const [showChangeDetails,setShowDetails] = useState(false)
   const {setHotkey,deleteHotkey} = useContext(AppContext)
   const controlRef = useRef()//needed to fix closing the contextMenu when closing by second clicking on the btn again
+  const [{ handlerId }, drop] = useDrop({
+    accept: "App",
+    collect(monitor) {
+      return {
+        handlerId: monitor.getHandlerId(),
+      }
+    },
+    hover(item, monitor) {
+      if (!ref.current) {
+        return
+      }
+      const dragIndex = item.index
+      const hoverIndex = index
+      // Don't replace items with themselves
+      if (dragIndex === hoverIndex) {
+        return
+      }
+      // Determine rectangle on screen
+      const hoverBoundingRect = ref.current?.getBoundingClientRect()
+      // Get vertical middle
+      const hoverMiddleY =
+        (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2
+      // Determine mouse position
+      const clientOffset = monitor.getClientOffset()
+      // Get pixels to the top
+      const hoverClientY = clientOffset.y - hoverBoundingRect.top
+      // Only perform the move when the mouse has crossed half of the items height
+      // When dragging downwards, only move when the cursor is below 50%
+      // When dragging upwards, only move when the cursor is above 50%
+      // Dragging downwards
+      if (dragIndex < hoverIndex && hoverClientY < hoverMiddleY) {
+        return
+      }
+      // Dragging upwards
+      if (dragIndex > hoverIndex && hoverClientY > hoverMiddleY) {
+        return
+      }
+      // Time to actually perform the action
+      moveApp(dragIndex, hoverIndex)
+      // Note: we're mutating the monitor item here!
+      // Generally it's better to avoid mutations,
+      // but it's good here for the sake of performance
+      // to avoid expensive index searches.
+      item.index = hoverIndex
+    },
+  })
+  const [{ isDragging }, drag] = useDrag({
+    type: "App",
+    item: () => {
+      return { handlerId:url, index }
+    },
+    collect: (monitor) => ({
+      isDragging: monitor.isDragging(),
+    }),
+  })
   useEffect( () => {
     if(hotkey && ref.current){if(!setHotkey(hotkey, () => ref.current.click())){changeAppDetails(name,url,false)}}
     
@@ -104,9 +169,10 @@ function App({name,url,icon,hotkey,changeAppDetails,deleteApp}){
     if(controlRef.current) return;
     setShowContext(!showContext)
   }
+  drag(drop(ref))
   return (
     <div onContextMenu={handleContext}>
-      <a href={url} ref={ref} title={hotkey ? hotkey : "no hotkey for this site"} >
+      <a href={url} ref={ref} data-handler-id={handlerId} title={hotkey ? hotkey : "no hotkey for this site"} >
 	<Styled.App>
 	  <img alt="" src={icon} />
 	  <Styled.AppTitle>{name}</Styled.AppTitle>
