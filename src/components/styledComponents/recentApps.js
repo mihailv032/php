@@ -37,6 +37,11 @@ export const App = styled.div`
   margin-right: 10px;
   cursor: pointer;
   font-size: 20px;
+
+  & img {
+  width: 16px;
+  height: 16px;
+  }
 `
 
 export const AppTitle = styled.span`

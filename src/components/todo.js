@@ -40,8 +40,9 @@ function AddAnchorToText(value){
   const matches = urlPattern.exec(value); // Find the first URL match
   if (!matches) return value
   const startIndex = matches.index;
-  let descClone = [...value]
-  if(descClone.splice(startIndex-6,5).join("") === "href=") return value
+  let descClone = [...value].splice(startIndex-6,5).join("")
+  console.log(descClone)
+  if(descClone === "href=" || " src=") return value
   let desc = Array.from(value)
   desc.splice(startIndex,matches[0].length)
   
