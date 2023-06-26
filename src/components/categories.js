@@ -17,6 +17,7 @@ class Categories extends React.Component {
     }
     this.addCategory = this.addCategory.bind(this)
     this.deleteCategory = this.deleteCategory.bind(this)
+    this.handleChangeCategoryOrder = this.handleChangeCategoryOrder.bind(this)
   }
   async componentDidMount(){
     const categories = localStorage.getItem("categories") ? JSON.parse(localStorage.getItem("categories")) : false
@@ -91,12 +92,19 @@ class Categories extends React.Component {
       //TOOD add notification here
     }
   }
+  handleChangeCategoryOrder(dragIndex,hoverIndex){
+    let categories = [...this.state.categories]
+    const draggCtg = categories.splice(dragIndex,1)
+    categories.splice(hoverIndex,0,draggCtg[0])
+    this.setState({categories: categories})
+  }
   render() {
     return (
       <>
       {
         this.props.render({categories:this.state.categories,
                            addCategory: this.addCategory,
+			   handleChangeCategoryOrder: this.handleChangeCategoryOrder,
                            deleteCategory: this.deleteCategory,
         })
       }

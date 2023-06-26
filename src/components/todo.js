@@ -436,13 +436,14 @@ class TodoWrapper extends React.PureComponent {
   render() {
     return (
       <Categories loggedIn={this.props.loggedIn} handleRemoveCategoryFromAllItems={this.handleRemoveCategoryFromAllItems} handleUpdateCategoryId={this.handleUpdateCategoryId}
-		  render={ ({categories,addCategory,deleteCategory}) => { 
+		  render={ ({categories,addCategory,deleteCategory,handleChangeCategoryOrder}) => { 
           return (
             <TodoWrapperContext.Provider
               value={{
 	        todoItems: this.state.displayedTodoItems,
 	        handleSubmitItem:this.handleSubmitItem,
 		syncAllItems: this.syncAllItems,
+		handleChangeCategoryOrder,
 		handleChangeItemsOrder: this.handleChangeItemsOrder,
 	        handlDeleteItem:this.handlDeleteItem,
                 handleToggleCategory: this.handleToggleCategory,
@@ -486,7 +487,7 @@ function Todo(){
 function TodoHeader(){
   const [input,setInput] = useState("")
   const [showDD,setShowDD] = useState(false)
-  const {todoInputRef,loggedIn,handleToggleCategory,toggleFilter,showFiltered,selectedCategories,handleSubmitItem,categories,addCategory,deleteCategory,syncAllItems} = useContext(TodoWrapperContext)
+  const {todoInputRef,loggedIn,toggleFilter,showFiltered,handleSubmitItem,categories,addCategory,syncAllItems} = useContext(TodoWrapperContext)
   return (
     <TodoHeaderWrapp>
       {loggedIn && <SyncList onClick={syncAllItems}><span>Sync with server</span><i></i></SyncList>}
@@ -501,12 +502,66 @@ function TodoHeader(){
       <Switch ><input type="checkbox" onChange={toggleFilter} checked={showFiltered} /><span></span></Switch>
       <CtgBtn onClick={() => setShowDD(!showDD) } onContextMenu={(e) =>{e.preventDefault(); setShowDD(!showDD)}}>Add New Category</CtgBtn>
       <AddCategoryDD opened={showDD} handleSubmit={addCategory} onClose={() => setShowDD(!showDD)} />
-      {
-	categories.map( (category,index) => {
-          return (<span  onClick={() => handleToggleCategory(category.id) } title={category.description} key={category.id}><CategoryBtn id={category.id} key={category.id} active={selectedCategories.indexOf(category.id) != -1 } name={category.name} deleteCategory={ () => deleteCategory(index)} /></span>)
-        })
-      }
+
+      <DndProvider backend={HTML5Backend}>
+	{categories.map( (category,index) => <CategoryItem category={category} index={index} key={category.id}/> )}
+      </DndProvider>
     </TodoHeaderWrapp>
+  )
+}
+
+function CategoryItem({category,index}){
+  const {handleToggleCategory,selectedCategories,deleteCategory,handleChangeCategoryOrder} = useContext(TodoWrapperContext)
+  const ref=useRef(null)
+  const [{ handlerId }, drop] = useDrop({
+    accept: "Category",
+    collect(monitor) {
+      return {
+        handlerId: monitor.getHandlerId(),
+      }
+    },
+    hover(item, monitor) {
+      if (!ref.current) return
+      const dragIndex = item.index
+      const hoverIndex = index
+      // Don't replace items with themselves
+      if (dragIndex === hoverIndex) {return}
+      // Determine rectangle on screen
+      const hoverBoundingRect = ref.current?.getBoundingClientRect()
+      // Get vertical middle
+      const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2
+      // Determine mouse position
+      const clientOffset = monitor.getClientOffset()
+      // Get pixels to the top
+      const hoverClientY = clientOffset.y - hoverBoundingRect.top
+      // Only perform the move when the mouse has crossed half of the items height
+      // When dragging downwards, only move when the cursor is below 50%
+      // When dragging upwards, only move when the cursor is above 50%
+      // Dragging downwards
+      if (dragIndex < hoverIndex && hoverClientY < hoverMiddleY) return
+      // Dragging upwards
+      if (dragIndex > hoverIndex && hoverClientY > hoverMiddleY) return
+      // Time to actually perform the action
+      handleChangeCategoryOrder(dragIndex, hoverIndex,category.id)
+      item.index = hoverIndex
+    },
+  })
+  const [{ isDragging }, drag] = useDrag({
+    type: "Category",
+    item: () => {
+      return { handlerId:category.id, index }
+    },
+    collect: (monitor) => ({
+      isDragging: monitor.isDragging(),
+    }),
+  })
+  drag(drop(ref))
+
+  return (
+    <span  onClick={() => handleToggleCategory(category.id) } title={category.description} key={category.id} ref={ref} data-handler-id={handlerId}>
+      <CategoryBtn id={category.id}  active={selectedCategories.indexOf(category.id) != -1 }
+		   name={category.name} deleteCategory={ () => deleteCategory(index)} />
+    </span>
   )
 }
 
@@ -684,7 +739,7 @@ const DescriptionTextArea = ({desc,descIndex,todoid}) => {
   //when u click on the tick to save the desc it will triger onBlur which will save the desc
   const changeFocusRef = useRef()
   return (
-	  <DescriptionContentContainer ref={changeFocusRef}>
+	  <DescriptionContentContainer ref={changeFocusRef} draggable={false}>
 	    <DescriptionContent contentEditable dangerouslySetInnerHTML={{__html: desc}} onBlur={onContentBlur} onFocus={() => setChanged(true) } />
 	    <DescriptionButtonContainer>
 	      <DescriptionBtns onClick={e => handleRemoveDescription(e,todoid,descIndex) }><FontAwesomeIcon icon={faXmark} /></DescriptionBtns>
