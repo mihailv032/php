@@ -16,9 +16,9 @@ export default function Login(){
   const [password,setPassword] = useState("")
   const [inputErr,setInputErr] = useState({})
   const [err,setErr] = useState(false)
-  const {setWord,setHotkey,loggedIn,setLoggedIn} = useContext(AppContext)
+  const {setWord,setHotkey,loggedIn,setLoggedIn,showMessageRef} = useContext(AppContext)
   const [loading,setLoading] = useState(false)
-  useEffect( () => {setWord("login",() =>{setHotkey('Escape', () =>setOpened(false));setOpened(true);})},[])
+  useEffect( () => {setWord("login",() =>{setHotkey('Escape', () =>setOpened(false),true);setOpened(true);})},[])
     
   async function handleSubmit(e){
     e.preventDefault()
@@ -38,12 +38,14 @@ export default function Login(){
       setLoading(false)
       if(!res.message){ return setErr(res.error ? res.error : "something went wrong")}
       localStorage.setItem("refresh_token", res.refresh_token)
+      showMessageRef.current.showMessage(res.message,"success")
       setLoggedIn(true)
       setOpened(false)
       return;
     }catch(err){
       console.log(err)
       setLoading(false)
+      showMessageRef.current.showMessage("something went wrong","error")
       return setErr("something went wrong")
     }
   }
@@ -61,7 +63,6 @@ export default function Login(){
 	{inputErr.password && <Err>{inputErr.password}</Err>}
         <Input name="" type="password" value={password} onChange={ e =>{if(inputErr.password){setInputErr(Object.assign({},inputErr,{password:false}))};setPassword(e.target.value)}} />
 	<div style={{margin: "auto"}}><LoginBtn onSubmit={handleSubmit} role="button"><span>Login</span></LoginBtn></div>
-	<RegisterBtn>create an account</RegisterBtn>
       </LoginForm>
     </Popup>
     </>
@@ -75,9 +76,9 @@ export function Register({}){
   const [repeatPassword,setRepeatPassword] = useState("")
   const [inputErr,setInputErr] = useState({})
   const [err,setErr] = useState(false)
-  const {setWord,setHotkey,loggedIn,setLoggedIn} = useContext(AppContext)
+  const {setWord,setHotkey,loggedIn,showMessageRef} = useContext(AppContext)
   const [loading,setLoading] = useState(false)
-  useEffect( () => {setWord("register",() =>{setHotkey('Escape', () =>setOpened(false));setOpened(true);})},[])
+  useEffect( () => {setWord("register",() =>{setHotkey('Escape', () =>setOpened(false),true);setOpened(true);})},[])
     
   async function handleSubmit(e){
     e.preventDefault()
@@ -96,15 +97,17 @@ export function Register({}){
       })
       const res = await req.json()
       setLoading(false)
-      if(!res.message){ return setErr(res.error ? res.error : "something went wrong")}
+      if(!res.message){return showMessageRef.current.showMessage(res.error ? res.error : "something went wrong","error")}
+      showMessageRef.current.showMessage(res.message,"success")
       setOpened(false)
       return;
     }catch(err){
       console.log(err)
       setLoading(false)
-      return setErr("something went wrong")
+      showMessageRef.current.showMessage("something went wrong","error")
     }
   }
+  if(loggedIn) return;
   return (
     <>
     <LoadingPopup opened={loading} text="loading" />
