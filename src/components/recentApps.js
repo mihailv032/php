@@ -161,7 +161,12 @@ function App({name,url,icon,hotkey,changeAppDetails,deleteApp,index,moveApp}){
     }),
   })
   useEffect( () => {
-    if(hotkey && ref.current){if(!setHotkey(hotkey, () => ref.current.click())){changeAppDetails(name,url,false)}}
+    if(hotkey && ref.current){
+      if(!setHotkey(hotkey, () => ref.current.click())){changeAppDetails(name,url,false)}
+    }else if(index < 10 && ref.current){
+      const keys = ["!","@","#","$","%","^","&","*","("]
+      setHotkey(keys[index], () => ref.current.click())
+    }
     
   },[ref,hotkey])
   const handleContext = e => {

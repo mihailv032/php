@@ -77,7 +77,7 @@ function App() {
   }
   function setHotkey(key,fn,replace=false){
     if(!replace && hotkeys[key]){showMessageRef.current?.showMessage(`key ${key} already taken`,"error"); return false;}
-    if(!(key in keyCodes)){showMessageRef.current?.showMessage("invalid key","error"); return false;}
+    if(!(key in keyCodes)){showMessageRef.current?.showMessage(`invalid key ${key}`,"error"); return false;}
     hotkeys[key] = fn;
     return true;
   }
