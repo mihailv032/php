@@ -60,7 +60,15 @@ function AddAnchorToText(value){
   desc = desc.join("")
   return desc
 }
-class TodoWrapper extends React.PureComponent {
+
+function TodoWrapper(){
+
+  return (
+    <TodoList />
+  )
+}
+
+class TodoList extends React.PureComponent {
   constructor(props) {
     super(props);
     this.state = {
@@ -436,14 +444,14 @@ class TodoWrapper extends React.PureComponent {
   render() {
     return (
       <Categories loggedIn={this.props.loggedIn} handleRemoveCategoryFromAllItems={this.handleRemoveCategoryFromAllItems} handleUpdateCategoryId={this.handleUpdateCategoryId}
-		  render={ ({categories,addCategory,deleteCategory,handleChangeCategoryOrder}) => { 
+		  render={ ({categories,addCategory,deleteCategory,handleChangeCategoryOrder,changeCategoryName}) => { 
           return (
             <TodoWrapperContext.Provider
               value={{
 	        todoItems: this.state.displayedTodoItems,
 	        handleSubmitItem:this.handleSubmitItem,
 		syncAllItems: this.syncAllItems,
-		handleChangeCategoryOrder,
+		handleChangeCategoryOrder,changeCategoryName,
 		handleChangeItemsOrder: this.handleChangeItemsOrder,
 	        handlDeleteItem:this.handlDeleteItem,
                 handleToggleCategory: this.handleToggleCategory,
@@ -467,7 +475,6 @@ class TodoWrapper extends React.PureComponent {
             </TodoWrapperContext.Provider>
           )
         }}/>
-      
     )
   }
 };
@@ -511,7 +518,7 @@ function TodoHeader(){
 }
 
 function CategoryItem({category,index}){
-  const {handleToggleCategory,selectedCategories,deleteCategory,handleChangeCategoryOrder} = useContext(TodoWrapperContext)
+  const {handleToggleCategory,selectedCategories,deleteCategory,handleChangeCategoryOrder,changeCategoryName} = useContext(TodoWrapperContext)
   const ref=useRef(null)
   const [{ handlerId }, drop] = useDrop({
     accept: "Category",
@@ -560,7 +567,7 @@ function CategoryItem({category,index}){
   return (
     <span  onClick={() => handleToggleCategory(category.id) } title={category.description} key={category.id} ref={ref} data-handler-id={handlerId}>
       <CategoryBtn id={category.id}  active={selectedCategories.indexOf(category.id) != -1 }
-		   name={category.name} deleteCategory={ () => deleteCategory(index)} />
+		   name={category.name} deleteCategory={ () => deleteCategory(index)} changeCategoryName={changeCategoryName} />
     </span>
   )
 }

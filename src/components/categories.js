@@ -17,6 +17,7 @@ class Categories extends React.Component {
     }
     this.addCategory = this.addCategory.bind(this)
     this.deleteCategory = this.deleteCategory.bind(this)
+    this.changeCategoryName = this.changeCategoryName.bind(this)
     this.handleChangeCategoryOrder = this.handleChangeCategoryOrder.bind(this)
   }
   async componentDidMount(){
@@ -72,6 +73,11 @@ class Categories extends React.Component {
     }
       
   }
+  async changeCategoryName(index,newName){
+    const categories = [...this.state.categories]
+    categories[index].name = newName
+    this.setState({categories: categories})
+  }
   deleteCategory(index){
     const categories = [...this.state.categories]
     const delte_item = categories.splice(index,1)
@@ -105,6 +111,7 @@ class Categories extends React.Component {
         this.props.render({categories:this.state.categories,
                            addCategory: this.addCategory,
 			   handleChangeCategoryOrder: this.handleChangeCategoryOrder,
+			   changeCategoryName: this.changeCategoryName,
                            deleteCategory: this.deleteCategory,
         })
       }
@@ -136,24 +143,30 @@ export function AddCategoryDD({opened,onClose,handleSubmit}){
   )
 }
 
-export function CategoryBtn({name,deleteCategory,active,id}){
+export function CategoryBtn({name,deleteCategory,active,id,changeCategoryName}){
   const [showContext,setShowContext] = useState(false)
   const [showShare,setShowShare] = useState(false)
+  const [showChangeName,setShowChangeName] = useState()
+  const [newName,setNewName] = useState("")
   const controlRef = useRef()//needed to fix closing the contextMenu when closing by second clicking on the btn again
-
+  const inputRef = useRef()
   return (
     <>
       <Styled.ContextWrapp onContextMenu={e => {e.preventDefault();if(controlRef.current){return};setShowContext(!showContext)}}>
       <Styled.CategoryBtn active={active}>{name}</Styled.CategoryBtn>
-      <ContextMenu opened={showContext} onClose={e =>{e.preventDefault();setShowContext(false)}} >
+      <ContextMenu opened={showContext} onClose={e =>{e.preventDefault();
+	console.log(document.activeElement)
+	if(document.activeElement === inputRef.current){return};
+	setShowContext(false)}} >
 	<ul className="ddcontainer" ref={controlRef}>
-	  <li className="dditems" onClick={(e) =>{e.stopPropagation();console.log('change')} }>change <FontAwesomeIcon icon={faSliders} /></li>
+	  <li className="dditems" onClick={(e) =>{e.stopPropagation();setShowChangeName(!showChangeName);inputRef.current?.focus()}}>
+	    change <FontAwesomeIcon icon={faSliders} />
+	  </li>
+	  <input ref={inputRef} onFocus={() =>{debugger} } />
 	  <li className="dditems" onClick={(e) =>{e.stopPropagation(); setShowShare(!showShare)}}>share <FontAwesomeIcon icon={faEnvelope} /></li>
 	  <li className="dditems" onClick={ e  =>{e.stopPropagation(); deleteCategory()}}>delete <FontAwesomeIcon icon={faTrash} /></li>
 	</ul>
       </ContextMenu>
-      
-      
       </Styled.ContextWrapp>
       <Popup opened={showShare} onClose={(e) =>{e.stopPropagation();setShowShare(false)} }><Share category_id={id} /></Popup>
     </>
