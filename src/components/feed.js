@@ -1,4 +1,5 @@
-import React, {memo,useEffect,useLayoutEffect,useRef, useMemo, useState} from 'react';
+import React, { memo, useEffect, useContext,useRef, useMemo, useState} from 'react';
+import {AppContext} from '../context'
 import {CSSTransition} from 'react-transition-group'
 import * as Styled from './styledComponents/feed'
 import {URL} from '../consts'
@@ -8,6 +9,7 @@ import styles from './feed.module.css';
 import { faFileExcel,faStar } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import LoadingSpinner from './loading'
+
 class FeedContainer extends React.Component {
   constructor(props) {
     super(props);
@@ -70,40 +72,39 @@ function SelectionBar({handleSelection,items}){
 }
 
 function AnimeContainer({show}){
+  const {showMessageRef} = useContext(AppContext)
   const seasons = ["winter","spring","summer","fall"]
   const [err,setErr] = useState({seasonal:false,top:false,suggested:false})
   const [type, setType] = useState("animeType" in localStorage ? localStorage.getItem("animeType") : "seasonal")
   const [loading,setLoading] = useState(true)
-  const [season,setSeason] = useState(
-    "animeSeason" in localStorage ? JSON.parse(localStorage.getItem("animeSeason")) : seasons[Math.round((new Date().getMonth()+1)/4)]
-  )
-  const [year,setYear] = useState(
-    "animeYear" in localStorage ? JSON.parse(localStorage.getItem("animeYear")) : String(new Date().getFullYear())
-  )
+
+  const [season,setSeason] = useState("animeSeason" in localStorage ? JSON.parse(localStorage.getItem("animeSeason")) : seasons[Math.round((new Date().getMonth()+1)/4)])
+  const [year,setYear] = useState("animeYear" in localStorage ? JSON.parse(localStorage.getItem("animeYear")) : String(new Date().getFullYear()))
+
+  const [rankType,setRankType] = useState("all")
+
   const [currentData,setCurrentData] = useState()
+  //the component that should be rendered by the anime Component
+  const AnimeRenderRef = useRef()
   const [data,setData] = useState({
     seasonal: {},
     top: {},
     suggested: {}
   })
   useEffect( () => {//only for setting data
-    function setCurrData(){//returns true if succeded and false otherwise
+    async function setCurrData(){
       if(type === "seasonal"){
-	if(err[type]) return false;
-	if(data[type][year]){
-	  if(data[type][year][season]){
-	    setCurrentData(data[type][year][season])
-	    return true;
-	  }else return false;
-	}else return false;
-      }else return false;
+	const handleErr = () => getSeasonalAnime().then( (res) => setCurrData()).catch( (err) => {setErr(Object.assign({},err,{[type]:true}));console.log(err)})
+	if(err[type]) return handleErr()
+	if(!data[type][year]) return handleErr()
+	if(data[type][year][season]){AnimeRenderRef.current=AnimeCard;setCurrentData(data[type][year][season]); return true;}else return handleErr()
+      }else if(type === "top"){
+//	const handleErr = () => 
+      }
     }
-    if(!setCurrData()){
-      getSeasonalAnime()
-	.then( (res) => setCurrData())
-	.catch( (err) => {setErr(Object.assign({},err,{[type]:true}));console.log(err)})
-    }
-  },[type,year,season]);
+    AnimeRenderRef.current=AnimeCard;
+    setCurrData()
+  },[type,year,season,rankType]);
   
   const getData = async url => {
     try{
@@ -114,18 +115,15 @@ function AnimeContainer({show}){
       return data
     }catch(err){
       setLoading(false)
-      console.log(err);
-      return new Error(err);
+      throw new Error(err);
     }
   }
   const getSeasonalAnime = async () => {
     try{
       const url = URL + `/api/mal/seasonal?season=${season}&offset=0&limit=100&year=${year}`
       const seasonalAnime = await getData(url)
-      console.log(seasonalAnime)
       if(!seasonalAnime){
 	setErr(Object.assign({},err,{seasonal:true}))
-	console.log('no animes')
 	return new Error("could not get seasonal anime");
       }
       let updatedData = Object.assign({},data)
@@ -134,18 +132,28 @@ function AnimeContainer({show}){
       setData(updatedData)
     }catch(err){
       console.log(err)
-      console.log('err')
-      return err
+      showMessageRef.current.showMessage("could not get the anime", "error")
+      throw new Error(err);
     }
   }
-  console.log(Object.keys(data[type]))
+  const getAnimeTop = async () => {
+    try{
+      const url = `${URL}/api/mal/ranking?type=${rankType}&offset=0&limit=100`
+      const topANime = await getData(url)
+    }catch(err){
+      console.log(err)
+      showMessageRef.current.showMessage("could not get the anime ranking", "error")
+      return new Error(err);
+    }
+  }
   if(!show) return;
   if(loading) return <div className={styles.loadingContainer}><LoadingSpinner /><h1 style={{color: "black"}}>Loading</h1></div>
   return (
     <>
-      <MemoizedAnimeNav type={type} setType={setType} season={season} setSeason={setSeason} year={year} setYear={setYear}/>
+      <MemoizedAnimeNav type={type} setType={setType} season={season} setSeason={setSeason} year={year} setYear={setYear} rankType={rankType} setRankType={setRankType} />
       <Anime data={currentData}
 	     err={err}
+             render={AnimeRenderRef.current}
 	     type={type} setType={setType}
 	     season={season} setSeason={setSeason}
 	     year={year} setYear={setYear}/>
@@ -153,7 +161,7 @@ function AnimeContainer({show}){
   )
 }
 
-const MemoizedAnimeNav = memo(function AnimeNav({type,setType,season,setSeason,year,setYear}){
+const MemoizedAnimeNav = memo(function AnimeNav({type,setType,season,setSeason,year,setYear,rankType,setRankType}){
   const [displayYear,setDisplayYear] = useState(year)
   const handleYear = e => {
     if (isNaN(e.target.value)) return;
@@ -163,47 +171,46 @@ const MemoizedAnimeNav = memo(function AnimeNav({type,setType,season,setSeason,y
   }
 
   return (
-      <Styled.AnimeNav>
-	<Styled.NavWrapp>
-	  <Styled.DropDown>
-	    <Styled.DropDownTitle >Types of anime</Styled.DropDownTitle>
-	    <Styled.DropDownItem selected={type === 'top' ? true : false } onClick={ () => setType("top")}>
-	      Top
-	    </Styled.DropDownItem>
-	    <Styled.DropDownItem selected={type === 'seasonal' ? true : false } onClick={() => setType('seasonal')}>
-	      Seasonal
-	    </Styled.DropDownItem>
-	    <Styled.DropDownItem selected={type === 'suggested' ? true : false } onClick={() => setType("suggested")}>
-	      Suggested
-	    </Styled.DropDownItem>
-	  </Styled.DropDown>
-	  { type === "seasonal" && <Styled.DropDown>
-	    <Styled.DropDownTitle >Season</Styled.DropDownTitle>
-	    <Styled.DropDownItem selected={season === 'spring' ? true : false } onClick={ () => setSeason("spring") }>
-	      Spring
-	    </Styled.DropDownItem>
-	    <Styled.DropDownItem selected={season === 'summer' ? true : false } onClick={ () => setSeason("summer") }>
-	      Summer
-	    </Styled.DropDownItem>
-	    <Styled.DropDownItem selected={season === 'fall' ? true : false }   onClick={ () => setSeason("fall") }>
-	      Fall
-	    </Styled.DropDownItem>
-	    <Styled.DropDownItem selected={season === 'winter' ? true : false } onClick={ () => setSeason("winter") }>
-	      Winter
-	    </Styled.DropDownItem>
-	  </Styled.DropDown>}
-	  { type === "seasonal" &&
-	    <form onSubmit={ e => {e.preventDefault();setYear(displayYear)}}>
-	      <Styled.NavInput placeholder="year" value={displayYear} onChange={handleYear} />
-	      <button style={{ display: "none"}} onSubmit={ e => {e.preventDefault();setYear(displayYear)}}></button>
-	    </form>
-	  }
-	</Styled.NavWrapp>
-      </Styled.AnimeNav>
+    <Styled.AnimeNav>
+      <Styled.NavWrapp>
+	<Styled.DropDown>
+	  <Styled.DropDownTitle >{type}</Styled.DropDownTitle>
+	  <Styled.DropDownItem selected={type === 'top' ? true : false } onClick={ () => setType("top")}>
+	    Top
+	  </Styled.DropDownItem>
+	  <Styled.DropDownItem selected={type === 'seasonal' ? true : false } onClick={() => setType('seasonal')}>
+	    Seasonal
+	  </Styled.DropDownItem>
+	  <Styled.DropDownItem selected={type === 'suggested' ? true : false } onClick={() => setType("suggested")}>
+	    Suggested
+	  </Styled.DropDownItem>
+	</Styled.DropDown>
+	{ type === "seasonal" && <Styled.DropDown>
+	  <Styled.DropDownTitle >{season}</Styled.DropDownTitle>
+	  <Styled.DropDownItem selected={season === 'spring'} onClick={ () => setSeason("spring") }>Spring</Styled.DropDownItem>
+	  <Styled.DropDownItem selected={season === 'summer'} onClick={ () => setSeason("summer") }>Summer</Styled.DropDownItem>
+	  <Styled.DropDownItem selected={season === 'fall'}   onClick={ () => setSeason("fall") }>Fall</Styled.DropDownItem>
+	  <Styled.DropDownItem selected={season === 'winter'} onClick={ () => setSeason("winter") }>Winter</Styled.DropDownItem>
+	</Styled.DropDown>}
+	{ type === "seasonal" &&
+	  <form onSubmit={ e => {e.preventDefault();setYear(displayYear)}}>
+	    <Styled.NavInput placeholder="year" value={displayYear} onChange={handleYear} />
+	    <button style={{ display: "none"}} onSubmit={ e => {e.preventDefault();setYear(displayYear)}}></button>
+	  </form>
+	}
+	{ type === "top" && <Styled.DropDown>
+	  <Styled.DropDownTitle >{rankType}</Styled.DropDownTitle>
+	  <Styled.DropDownItem selected={rankType === 'all'} onClick={ () => setRankType("all") }>All Anime</Styled.DropDownItem>
+	  <Styled.DropDownItem selected={rankType === 'airing'} onClick={ () => setRankType("airing") }>airing</Styled.DropDownItem>
+	  <Styled.DropDownItem selected={rankType === 'bypopularity'}   onClick={ () => setRankType("bypopularity") }>most popular</Styled.DropDownItem>
+	  <Styled.DropDownItem selected={rankType === 'favorite'} onClick={ () => setRankType("favorite") }>most favourited</Styled.DropDownItem>
+	</Styled.DropDown>}
+      </Styled.NavWrapp>
+    </Styled.AnimeNav>
   )
 })
 
-function Anime({data,err,type,setType,year,setYear,season,setSeason}){
+function Anime({data,err,type,render}){
   if (err[type] || !data){ return (
     <>
       <div style={{display: "flex", alignItems: "center", flexDirection: "column", textTransform: "capitalize",fontSize: "100px",paddingTop: "40px"}}>
@@ -217,7 +224,7 @@ function Anime({data,err,type,setType,year,setYear,season,setSeason}){
       <Styled.AnimeContainerWeap>
 	<Styled.AnimeContainer>
 	  {
-	    data.map( anime => <AnimeCard key={anime.node.id} details={anime.node} />)
+	    data.map( anime => <React.Fragment key={anime.node.id}>{render({details: anime.node})}</React.Fragment>)
 	  }
 	</Styled.AnimeContainer>
       </Styled.AnimeContainerWeap>
@@ -234,13 +241,13 @@ function AnimeCard({details}){
       <div style={{position: 'relative', height: "100%"}}>
 	<Styled.AnimeCardTitleWrapp/>
 	<Styled.AnimeCardTitle title={details.title}>
-	  {details.title.length > 20 ? `${details.title.slice(0,20)}...` : details.title}
-	  <h6 className={styles.overlayH}>{details.rank && `Top ${details.rank}`}</h6>
+	  {details?.title?.length > 20 ? `${details.title.slice(0,20)}...` : details.title}
 	</Styled.AnimeCardTitle>
+	<h4 className={styles.overlayH} style={{textAlign: 'center'}}>{details.rank && `Top ${details.rank}`}</h4>
       </div>
       <span onMouseLeave={() => setShowOverlay(false)} onMouseEnter={() => setShowOverlay(true)}>
 	<a href={`https://myanimelist.net/anime/${details.id}`}  >
-	  <Styled.AnimePreview alt="" src={details.main_picture.large} />
+	  <Styled.AnimePreview alt="" src={details.main_picture?.large} />
 	</a>
 	<CardOverlayContainer showOverlay={showOverlay} id={details.id} title={details.title} />
       </span>
@@ -321,7 +328,7 @@ function CardOverlayContainer({showOverlay,id,title}){
 	  <h3 className={styles.overlayH}>{details?.related_anime?.length === 0 && "No"} Related Anime</h3>
 	  {
 	    details?.related_anime?.map( anime => {
-	      return <h5 className={styles.overlayH}>{anime.relation_type}: <a href={`https://myanimelist.net/anime/${anime.node.id}`}>{anime.node.title}</a></h5>
+	      return <h5 className={styles.overlayH} key={anime.node.id}>{anime.relation_type}: <a href={`https://myanimelist.net/anime/${anime.node.id}`}>{anime.node.title}</a></h5>
 	    })
 	  }
 	</div>
