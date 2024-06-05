@@ -1,5 +1,5 @@
 import './App.css'
-import { Button,Title, Flex,Center} from "@mantine/core"
+import { Button,Title, Flex,Center, BackgroundImage} from "@mantine/core"
 import Nav from './ui_elements/nav/nav'
 import { useState, createContext, useRef, useLayoutEffect } from 'react'
 import Github from './ui_elements/github/github'
@@ -25,18 +25,18 @@ function App() {
   },[])
   return (
     <AppContext.Provider value={changeBg}>
-    <div className="py-24 max-h-screen h-screen w-screen">
-      <img alt="./images/archlinux.png" ref={bgImgRef} className='absolute top-0 left-0 bottom-0 h-full w-full bg-no-repeat bg-cover bg-center object-none z-[-1]'
-	   src={"./images/ign_waifu.png"} />
-      <Nav />
-      <Header />
-      <Center className="w-screen">
-	<Flex className="justify-between w-3/4 xl:flex-row flex-col space-y-5 ">
-	  <Github />
-	  <Todo />
-	</Flex>
-      </Center>
-    </div>
+    <BackgroundImage ref={bgImgRef} className='absolute h-full w-full bg-no-repeat bg-cover bg-center object-none z-[-1]' src={"./images/ign_waifu.png"}>
+      <div className="py-24 max-h-screen h-screen w-screen">
+	<Nav />
+	<Header />
+	<Center className="w-screen">
+	  <Flex className="justify-between w-3/4 xl:flex-row flex-col space-y-5 ">
+	    <Github />
+	    <Todo />
+	  </Flex>
+	</Center>
+      </div>
+    </BackgroundImage>
     </AppContext.Provider>
   )
 }
