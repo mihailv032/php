@@ -20,17 +20,15 @@ const Nav:FC = () => {
 }
 
 function Searchbar(){
+  const {setHotkeys} = useContext(HotkeysContext)
   const inputRef = useRef<HTMLInputElement>(null)
   useEffect(() => {
     inputRef.current?.focus()
+    if(inputRef.current) setHotkeys("KeyS", () => inputRef.current?.focus(),true)
   }, [inputRef])
   return (
     <form action="https://www.google.com/search" method="get" id="search-form" >
-      <Input name="q" type="text" placeholder="saerch"  variant="filled" className="w-96" ref={inputRef}
-	     leftSection={
-	       <IconSearch />
-             }
-/>
+      <Input name="q" type="text" placeholder="saerch" variant="filled" className="w-96" ref={inputRef} leftSection={<IconSearch />}/>
     </form>
   )
 }
