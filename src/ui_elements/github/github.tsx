@@ -1,5 +1,5 @@
 import { Popover, Box,Input,Checkbox,Flex, Text, Menu, Avatar, Stack, Card, Button, FloatingIndicator, UnstyledButton,ScrollArea,Badge, Select,Breadcrumbs } from '@mantine/core'
-import { useState, useEffect, useRef, memo} from 'react'
+import { useState, useEffect, useRef, memo, useContext} from 'react'
 import { IconSettings,IconRotate,IconCircleCheck, IconGitBranch,IconChevronsDown, IconChevronsUp,IconFolder,IconFile } from '@tabler/icons-react';
 import {octokit} from './octokit'
 import { addTimestamp, checkTimestamp } from '../../utils/timestamps'
@@ -8,6 +8,7 @@ import './styles.css';
 import { notifications } from '@mantine/notifications';
 import { useDisclosure } from '@mantine/hooks';
 import { Endpoints } from "@octokit/types";
+import { HotkeysContext } from '../../hotkeys';
 
 
 type Unpacked<T> = T extends (infer U)[] ? U : T;
@@ -18,17 +19,12 @@ type Commit = Endpoints["GET /repos/{owner}/{repo}/commits"]["response"]["data"]
 type Content = Endpoints["GET /repos/{owner}/{repo}/contents/{path}"]["response"]["data"]
 
 export default function GithubContainer(){
-  const [user, setUser] = useState<User|null>(null)
-  const [repos, setRepos] = useState<Repo|null>(null)
+  // @ts-ignore:
+  const [user, setUser] = useState<User|null>(localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')) : null)
+  // @ts-ignore:
+  const [repos, setRepos] = useState<Repo|null>(localStorage.getItem('repos') ? JSON.parse(localStorage.getItem('repos')) : null)
   const [showForked,setShowForked] = useState<boolean>(false)
-
-  useEffect(() => {
-    const user = localStorage.getItem('user')
-    const repos = localStorage.getItem('repos')
-    if(user) setUser(JSON.parse(user))
-    if(repos) setRepos(JSON.parse(repos))
-  }, [])
-  
+ 
   const updateUser = async (username:string,rememberUser:boolean):Promise<void> => {
     if(username.length === 0 ) return;
     try{
@@ -80,17 +76,23 @@ export default function GithubContainer(){
 
 const Header = memo(({user,updateUser,showForked,refetchRepos,setShowForked}:
 		     {user: User|null,updateUser: (username: string,remember:boolean) => Promise<void>,
-		      showForked: boolean, refetchRepos: () => void, setShowForked: (a:boolean) => void}) => {
+		      showForked: boolean, refetchRepos: () => void, setShowForked: (a:boolean) => void}) =>
+{
   const remember = useRef(false)
   const [username, setUsername] = useState(user ? user.login : '')
-
+  const githubAnchorRef = useRef<HTMLAnchorElement | null>(null);
+  const {setHotkeys} = useContext(HotkeysContext)
+  useEffect( () => {
+    if(!setHotkeys) return;
+    setHotkeys("KeyG",() => githubAnchorRef.current?.click(),true)
+  },[githubAnchorRef,setHotkeys])
   return (
     <form className="space-y-5 flex flex-col items-center w-full" onSubmit={ (e) =>{e.preventDefault();updateUser(username,remember.current)}}>
       <Flex align="center" justify="space-around" className="space-x-4 bg-secondary-100 rounded-t-md px-8 py-2 w-full relative">
 	<GithubSettings remember={remember.current} showForked={showForked} refetchRepos={refetchRepos} setShowForked={setShowForked} />
 
 
-	<a href={`https://github.com/${user ? user.login : ""}`}>
+	<a href={`https://github.com/${user ? user.login : ""}`} ref={githubAnchorRef}>
 	  <Avatar color="blue" radius="xl" src={user ? user.avatar_url : "./github-mark-white.png"} />
 	  <Text>{user ? user.name : ""}</Text>
 	</a>
