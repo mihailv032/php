@@ -1,5 +1,5 @@
 import './App.css'
-import { Button,Title, Flex,Center, BackgroundImage} from "@mantine/core"
+import { Button,Title, Flex,Center, BackgroundImage, ScrollArea} from "@mantine/core"
 import Nav from './ui_elements/nav/nav'
 import { useState, createContext, useRef, useLayoutEffect } from 'react'
 import Github from './ui_elements/github/github'
@@ -29,12 +29,14 @@ function App() {
       <div className="py-24 max-h-screen h-screen w-screen">
 	<Nav />
 	<Header />
-	<Center className="w-screen">
-	  <Flex className="justify-between w-3/4 xl:flex-row flex-col space-y-5 ">
-	    <Github />
-	    <Todo />
-	  </Flex>
-	</Center>
+	<ScrollArea h="1000" className='max-h-full'>
+	  <Center className="w-screen">
+	    <Flex className="justify-between w-3/4 xl:flex-row flex-col space-y-5 ">
+	      <Github />
+	      <Todo />
+	    </Flex>
+	  </Center>
+	</ScrollArea>
       </div>
     </BackgroundImage>
     </AppContext.Provider>
