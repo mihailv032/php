@@ -4,6 +4,7 @@ import Nav from './ui_elements/nav/nav'
 import { useState, createContext, useRef, useLayoutEffect } from 'react'
 import Github from './ui_elements/github/github'
 import Todo from './ui_elements/todo/todo'
+import Settings from './ui_elements/settings/settings'
 
 type AppContextType = (url:string) => void
 
@@ -38,6 +39,7 @@ function App() {
 	  </Center>
 	</ScrollArea>
       </div>
+      <Settings />
     </BackgroundImage>
     </AppContext.Provider>
   )

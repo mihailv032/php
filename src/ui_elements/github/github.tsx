@@ -12,7 +12,7 @@ import { HotkeysContext } from '../../hotkeys';
 
 
 type Unpacked<T> = T extends (infer U)[] ? U : T;
-type Repo = Endpoints["GET /users/{username}/repos"]["response"]["data"]
+type Repo = Endpoints["GET /user/repos"]["response"]["data"]
 type User = Endpoints["GET /users/{username}"]["response"]["data"]
 type Branch = Endpoints["GET /repos/{owner}/{repo}/branches"]["response"]["data"]
 type Commit = Endpoints["GET /repos/{owner}/{repo}/commits"]["response"]["data"]
@@ -46,10 +46,11 @@ export default function GithubContainer(){
 
   const updateRepos = async () => {
     console.log("user")
+    console.log(user)
     if(!user) return;
     notifications.show({title:"Fetching Repos",message:"Please wait",autoClose:3000, loading: true })
     try{
-      let repos = await octokit.request(`GET /users/{username}/repos`,{
+      let repos = await octokit.request(`GET /user/repos`,{
 	username: user.login,
       })
 
@@ -154,7 +155,7 @@ function Repos({repos}:{repos: Repo|null}){
 }
 
 function Repo({repo}:{repo: Unpacked<Repo>}){
-  const [activeBranch, setActiveBranch] = useState(repo.default_branch)
+  const [activeBranch, setActiveBranch] = useState<string|null>(repo.default_branch)
 
   return (
     <Card >
@@ -164,7 +165,7 @@ function Repo({repo}:{repo: Unpacked<Repo>}){
   )
 }
 
-function RepoHeader({repo,activeBranch,setActiveBranch}: {repo: Unpacked<Repo>,activeBranch: string|undefined,setActiveBranch: (branch: string|undefined) => void}){
+function RepoHeader({repo,activeBranch,setActiveBranch}: {repo: Unpacked<Repo>,activeBranch: string|null,setActiveBranch: (branch: string|null) => void}){
   const [activeCloneUrl, setActiveCloneUrl] = useState(0);
   const [rootRef, setRootRef] = useState<HTMLDivElement | null>(null);
   const [controlsRefs, setControlsRefs] = useState<Record<string, HTMLButtonElement | null>>({});
@@ -251,7 +252,7 @@ function RepoHeader({repo,activeBranch,setActiveBranch}: {repo: Unpacked<Repo>,a
   )
 }
 
-function RepoBody({repo,branch}:{repo: Unpacked<Repo>,branch: string|undefined}){
+function RepoBody({repo,branch}:{repo: Unpacked<Repo>,branch: string|null}){
   const [commits, setCommits] = useState<Commit|null>(null)
   const [contents, setContents] = useState<Content|null>(null)
   const [opened, {toggle}] = useDisclosure(false)
@@ -357,7 +358,7 @@ interface RepoPath {
   content: Content|null
 }
 
-function RepoContent({contents,branch,getContents}:{contents: Content|null,branch: string|undefined,getContents: (path:string) => Promise<Content>}){
+function RepoContent({contents,branch,getContents}:{contents: Content|null,branch: string|null,getContents: (path:string) => Promise<Content>}){
   const [paths, setPaths] = useState<RepoPath[]>([{label:"./",content:contents}])
   const prevBranch = usePrevious(branch ? branch : "")
 
